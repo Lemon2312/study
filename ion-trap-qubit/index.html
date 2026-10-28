@@ -1,0 +1,1093 @@
+<title>イオンの中の1ビット</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;900&display=swap">
+<style>
+/* Layout: 実験ノートの見出し → 光学定盤のような暗いステージ（canvas）＋右にキャプションの時間軸 → 下に解説ノート。
+   暗い実験室（蛍光イメージングの黒背景）に寄せて、あえてダーク単一テーマで統一している。色は波長に対応させる。 */
+:root{
+  color-scheme:dark;
+  --bg:#090e1a;
+  --panel:#101828;
+  --panel-2:#0c1322;
+  --line:#22304b;
+  --ink:#e6ebf5;
+  --muted:#93a1bf;
+  --uv:#a491ff;      /* 369.5 nm 蛍光・検出光 */
+  --v399:#6f86ff;    /* 399 nm 光イオン化 */
+  --ir:#ff6b80;      /* 935 nm リポンプ */
+  --mw:#f4b74a;      /* 12.6 GHz マイクロ波 */
+  --raman:#e86fd4;   /* 355 nm ラマン */
+  --cyan:#5fd4e8;    /* |0⟩ */
+  --dark:#56658a;
+  --ok:#6fdc9a;
+  --bad:#ff7b6b;
+  --void:#03050b;
+  --f-display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.8}
+.wrap{max-width:1200px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px;max-width:70ch}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--uv);text-transform:uppercase}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.2;margin:0;text-wrap:balance}
+h1 .ket{font-family:var(--f-mono);font-weight:600;color:var(--uv);font-size:.8em}
+.lede{color:var(--muted);margin:0}
+.lede b{color:var(--ink);font-weight:500}
+
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px}
+nav.tabs button{font:inherit;font-size:14px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+nav.tabs button .n{font-family:var(--f-mono);font-size:12px;color:var(--dark)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--uv);background:color-mix(in srgb,var(--uv) 14%,transparent)}
+nav.tabs button[aria-selected="true"] .n{color:var(--uv)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--uv);outline-offset:2px}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:920px){.stage{grid-template-columns:minmax(0,1fr)}}
+.canvas-box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+canvas{display:block;width:100%;aspect-ratio:16/10;max-width:100%}
+.transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.side h2{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0}
+ol.phases{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;counter-reset:ph}
+ol.phases li{counter-increment:ph;border-left:2px solid var(--line);padding:6px 0 6px 12px;cursor:pointer;color:var(--muted);transition:color .2s,border-color .2s}
+ol.phases li .t{font-weight:700;font-size:14px;display:block;color:inherit}
+ol.phases li .t::before{content:counter(ph) ". ";font-family:var(--f-mono);font-size:12px}
+ol.phases li .d{font-size:13.5px;line-height:1.7;display:none}
+ol.phases li.on{border-left-color:var(--uv);color:var(--ink)}
+ol.phases li.on .d{display:block}
+.controls{display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.controls:empty{display:none}
+.controls label{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--muted)}
+.controls label span.v{font-family:var(--f-mono);color:var(--ink)}
+.controls input[type=range]{width:100%;accent-color:var(--uv)}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn{font:inherit;font-size:13px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+.btn:hover{border-color:var(--uv)}
+.btn[aria-pressed="true"]{border-color:var(--uv);background:color-mix(in srgb,var(--uv) 18%,transparent)}
+.chk{flex-direction:row!important;align-items:center;gap:8px!important}
+.note{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0}
+
+article{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px 32px}
+article section{min-width:0}
+article h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 6px;text-wrap:balance}
+article h3 small{font-family:var(--f-mono);font-size:12px;color:var(--uv);display:block;letter-spacing:.08em}
+article p{margin:0 0 10px;max-width:68ch}
+.wide{grid-column:1/-1}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12.5px}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.mono{font-family:var(--f-mono)}
+.c-uv{color:var(--uv)}.c-cy{color:var(--cyan)}.c-ir{color:var(--ir)}.c-mw{color:var(--mw)}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Trapped-ion qubit · ¹⁷¹Yb⁺ hyperfine</div>
+    <h1>イオンの中の1ビット <span class="ket">|0⟩ / |1⟩</span></h1>
+    <p class="lede">現在主流のイオントラップ方式（IonQ・Quantinuum などが採用する<b>超微細構造（ハイパーファイン）量子ビット</b>）で、1ビットがどこに書き込まれ、どうやって読み出されるのかを、順番に動かして見ていくページです。代表例として <b>¹⁷¹Yb⁺</b> の実際の数値を使っています。</p>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="場面"></nav>
+
+  <div class="stage">
+    <div class="canvas-box">
+      <canvas id="stage" width="800" height="500" aria-label="アニメーション"></canvas>
+      <div class="transport">
+        <button class="btn" id="play" type="button">一時停止</button>
+        <button class="btn" id="restart" type="button">最初から</button>
+        <span>速度</span>
+        <button class="btn" data-speed="0.5" type="button">0.5×</button>
+        <button class="btn" data-speed="1" type="button" aria-pressed="true">1×</button>
+        <button class="btn" data-speed="2" type="button">2×</button>
+      </div>
+    </div>
+    <aside class="side">
+      <h2 id="sceneTitle"></h2>
+      <ol class="phases" id="phases"></ol>
+      <div class="controls" id="controls"></div>
+    </aside>
+  </div>
+
+  <article>
+    <section class="wide">
+      <h3><small>OVERVIEW</small>ひとことで言うと</h3>
+      <p>1個のイオン（¹⁷¹Yb⁺）の最外殻電子が、基底状態の中のわずかに異なる2つのエネルギー準位のどちらにいるか、で 0 と 1 を表します。両者の差は 12.6 GHz（マイクロ波）しかなく、どちらも光を出して崩壊しないので非常に長く量子状態を保てます。読み出しでは、片方の準位（|1⟩）にだけ共鳴する紫外レーザーを当てます。|1⟩ なら電子が何百回も励起と放出を繰り返してイオンが<span class="c-uv">光り</span>、|0⟩ なら<span class="c-cy">暗いまま</span>です。光子を数えて「光った／光らない」で 0/1 を決めます。</p>
+    </section>
+
+    <section>
+      <h3><small>STEP 1 · 捕まえる</small>イオンを宙に浮かせる</h3>
+      <p>真空槽の中で中性 Yb 原子を加熱して飛ばし、399 nm（中性原子の共鳴）と 369 nm（電離限界を超える2段目）のレーザーで電子を1個はぎ取って Yb⁺ にします。電荷を持ったイオンは電場で捕まえられます。</p>
+      <p>静電場だけでは3次元の安定点を作れない（アーンショウの定理）ため、20〜40 MHz 程度の高周波（RF）電圧で鞍型ポテンシャルを高速に反転させ、時間平均で中心に戻す力を作ります（ポール・トラップ）。軸方向は端の電極の直流電圧で弱く閉じ込めるので、冷えたイオンは数 µm 間隔の一列に並びます。最近の装置は、電極を平面に描いた表面電極トラップ（チップ）が主流です。</p>
+    </section>
+
+    <section>
+      <h3><small>STEP 2 · 表現</small>|0⟩ と |1⟩ の定義</h3>
+      <p>Yb⁺ は最外殻（6s）に電子1個だけを持つ水素のようなイオンです。¹⁷¹Yb の原子核はスピン I = ½ を持つので、基底状態 ²S₁/₂ は電子スピンとの結合で F = 0 と F = 1 の2つの超微細準位に分かれます。</p>
+      <p><span class="c-cy mono">|0⟩ ≡ |F=0, m<sub>F</sub>=0⟩</span>、<span class="c-uv mono">|1⟩ ≡ |F=1, m<sub>F</sub>=0⟩</span>。この2つは磁場の1次の影響を受けない「時計遷移」の組で、残るのは 310.8 Hz/G² の2次効果だけです。だから磁場の揺らぎに強く、コヒーレンス時間は通常でも秒単位、磁場遮蔽と動的デカップリングを組み合わせた実験では1時間を超えた報告もあります。量子ビットは一般の重ね合わせ α|0⟩ + β|1⟩ をとることができ、ブロッホ球上の1点として表されます。</p>
+    </section>
+
+    <section>
+      <h3><small>STEP 3 · 初期化</small>光ポンピングで |0⟩ に揃える</h3>
+      <p>369 nm 光に電気光学変調器（EOM）で 2.105 GHz のサイドバンドを付け、F=1 → ²P₁/₂ F′=1 に共鳴させます。F′=1 から自然放出すると約 1/3 の確率で F=0 に落ちます。F=0 は 12.6 GHz 以上離調しているのでもう光を吸収せず、そこに溜まります（暗状態）。散乱 n 回後に F=1 に残る確率は約 (2/3)ⁿ で、20 回ほど、時間にして数 µs で 99.9% 以上が |0⟩ になります。</p>
+    </section>
+
+    <section>
+      <h3><small>STEP 4 · 操作</small>重ね合わせを作る</h3>
+      <p>12.6 GHz のマイクロ波、または 355 nm パルスレーザー2本の周波数差を 12.6 GHz に合わせた誘導ラマン遷移で、|0⟩ と |1⟩ の間を共鳴的に駆動します。ブロッホ球上ではベクトルが回転し、回転角 θ はパルスの強さ×時間（パルス面積）で決まります。θ = π/2 で等しい重ね合わせ、π で反転です。ラマン光は2本のビームの波数差でイオンの振動とも結合できるので、2量子ビットゲートにも使われます。</p>
+    </section>
+
+    <section class="wide">
+      <h3><small>STEP 5 · 測定</small>状態依存蛍光による読み出し</h3>
+      <p>369.5 nm の検出光を <span class="c-uv">²S₁/₂ F=1 → ²P₁/₂ F′=0</span> に正確に共鳴させて当てます。選択則により F′=0 は F=1 にしか戻れない（F′=0 → F=0 は禁制）ので、|1⟩ にいる電子は「吸収→ 8 ns で放出」を延々と繰り返す閉じたサイクルに入ります。1 µs あたり数個〜十数個の光子を全方向に放出し、そのうち対物レンズ（NA 0.3〜0.6）が拾える数 % が光電子増倍管（PMT）、アバランシェフォトダイオード、または EMCCD カメラに届きます。100〜300 µs の検出窓で、明るいイオンからは平均 10〜30 カウントほどが得られます。</p>
+      <p>一方 |0⟩（F=0）から最も近い遷移は F′=1 で、検出光から 14.7 GHz 離れています。自然幅 Γ/2π ≈ 19.6 MHz の約 750 倍も離調しているので、ほとんど光を吸収しません。カウントは迷光や暗計数による 0〜1 個程度です。こうしてカウント数の分布は「平均 ~0.1 付近」と「平均 ~10 以上」の2つのポアソン分布にきれいに分かれ、しきい値（例えば 2 カウント以上なら 1）で判定します。</p>
+      <p>量子力学的には、検出光を当てた瞬間に重ね合わせ α|0⟩+β|1⟩ は |0⟩ か |1⟩ のどちらかに射影され、その確率は |α|²、|β|² です。1回の測定で得られるのは 0 か 1 の1ビットだけなので、同じ状態準備と測定を数百〜数千回繰り返して確率を推定します。</p>
+      <p>誤差の主な原因は3つです。(1) |1⟩ の電子が F′=1 を 2.1 GHz 離調で非共鳴励起され、F=0 に落ちて途中で暗くなる。(2) |0⟩ の電子が 14.7 GHz 離調で励起されて明るくなる。(3) ²P₁/₂ から 0.5% の確率で準安定な ²D₃/₂ に落ちて暗くなる（935 nm のリポンプ光で ³D[3/2]₁/₂ に汲み上げて基底状態に戻す）。集光効率を上げて検出窓を短くするほど (1)(2) は減ります。この方式の状態準備＋測定（SPAM）忠実度はおおむね 99.9% 以上です。</p>
+    </section>
+
+    <section class="wide">
+      <h3><small>NUMBERS</small>¹⁷¹Yb⁺ 量子ビットの主な数値</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>項目</th><th>値</th><th>意味</th></tr></thead>
+          <tbody>
+            <tr><td>量子ビット周波数</td><td class="num">12.642 812 118 GHz</td><td>|0⟩ と |1⟩ のエネルギー差（マイクロ波）</td></tr>
+            <tr><td>検出・冷却の遷移</td><td class="num">369.5 nm</td><td>²S₁/₂ ↔ ²P₁/₂（紫外）</td></tr>
+            <tr><td>²P₁/₂ の寿命 / 自然幅</td><td class="num">8.1 ns / 19.6 MHz</td><td>1サイクルの速さ。最大で毎秒約 6×10⁷ 光子を散乱</td></tr>
+            <tr><td>²P₁/₂ 超微細分裂</td><td class="num">2.105 GHz</td><td>F′=0 と F′=1 の差。光ポンピングに使う</td></tr>
+            <tr><td>|0⟩ から見た検出光の離調</td><td class="num">14.7 GHz ≈ 750 Γ</td><td>|0⟩ が暗いままでいられる理由</td></tr>
+            <tr><td>²D₃/₂ への分岐比</td><td class="num">約 0.5%</td><td>935 nm リポンプで回収</td></tr>
+            <tr><td>2次ゼーマン係数</td><td class="num">310.8 Hz/G²</td><td>時計遷移は磁場の1次の影響を受けない</td></tr>
+            <tr><td>検出窓 / 明状態の平均カウント</td><td class="num">100–300 µs / 10–30</td><td>装置によって異なる典型値</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="wide">
+      <h3><small>VARIANTS</small>ほかの方式との違い</h3>
+      <p>Quantinuum の H1/H2 は ¹⁷¹Yb⁺ を量子ビットに使い、冷却用に ¹³⁸Ba⁺ を混ぜています。新しい世代（Quantinuum Helios など）では ¹³⁷Ba⁺ の超微細量子ビットへの移行が進んでいます。Ba⁺ では測定の前に 1762 nm のレーザーで |1⟩ だけを寿命約 30 秒の ²D₅/₂ へ「棚上げ（shelving）」してから 493 nm の蛍光で読むので、非共鳴励起による漏れがほぼなくなり、さらに高い読み出し忠実度が得られます。⁴⁰Ca⁺ を使う光学量子ビット（S₁/₂ と D₅/₂ の間、729 nm）も同じ考え方で、D₅/₂ が暗状態、S₁/₂ が 397 nm で光る明状態になります。どの方式でも「片方の状態だけを閉じたサイクルで光らせて光子を数える」という読み出しの原理は共通です。</p>
+    </section>
+  </article>
+
+  <footer>アニメーションは時間を大きく引き延ばしています（光ポンピングは実際には数 µs、検出窓は数百 µs、RF の反転は 1 周期 30 ns 程度）。測定シミュレーションのカウント統計は典型的な実験値に合わせたポアソン過程のモデルです。</footer>
+</div>
+
+<script>
+(() => {
+const W = 800, H = 500;
+const cv = document.getElementById('stage');
+const ctx = cv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = getComputedStyle(document.documentElement);
+const C = {};
+['bg','panel','panel-2','line','ink','muted','uv','v399','ir','mw','raman','cyan','dark','ok','bad','void'].forEach(k => C[k] = css.getPropertyValue('--' + k).trim());
+const FONT = '"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif';
+const MONO = '"JetBrains Mono",ui-monospace,Menlo,monospace';
+let scale = 1;
+
+/* ---------- drawing helpers ---------- */
+function rgba(hex, a) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+function txt(s, x, y, o = {}) {
+  ctx.font = `${o.w || 400} ${o.size || 13}px ${o.mono ? MONO : FONT}`;
+  ctx.fillStyle = o.color || C.ink;
+  ctx.textAlign = o.align || 'left';
+  ctx.textBaseline = o.base || 'alphabetic';
+  ctx.globalAlpha = o.a == null ? 1 : o.a;
+  ctx.fillText(s, x, y);
+  ctx.globalAlpha = 1;
+}
+function line(x1, y1, x2, y2, col, w = 1, dash = null, a = 1) {
+  ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = col; ctx.lineWidth = w;
+  if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore();
+}
+function head(x, y, ang, col, s = 7, a = 1) {
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col; ctx.translate(x, y); ctx.rotate(ang);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-s, -s * 0.5); ctx.lineTo(-s, s * 0.5); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function arrow(x1, y1, x2, y2, col, w = 1.5, dash = null, a = 1) {
+  line(x1, y1, x2, y2, col, w, dash, a);
+  head(x2, y2, Math.atan2(y2 - y1, x2 - x1), col, 7, a);
+}
+function dbl(x1, y1, x2, y2, col) {
+  line(x1, y1, x2, y2, col, 1.2);
+  head(x2, y2, Math.atan2(y2 - y1, x2 - x1), col, 6);
+  head(x1, y1, Math.atan2(y1 - y2, x1 - x2), col, 6);
+}
+function wavy(x1, y1, x2, y2, col, prog = 1, amp = 4, waves = 6, w = 1.8, a = 1) {
+  const L = Math.hypot(x2 - x1, y2 - y1); if (L < 1 || prog <= 0) return;
+  const ux = (x2 - x1) / L, uy = (y2 - y1) / L, nx = -uy, ny = ux;
+  ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath();
+  const end = L * Math.min(1, prog);
+  for (let s = 0; s <= end; s += 1.5) {
+    const o = Math.sin(s / L * waves * Math.PI * 2) * amp * Math.min(1, s / 8, (L - s) / 8 + 0.2);
+    const px = x1 + ux * s + nx * o, py = y1 + uy * s + ny * o;
+    s === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.stroke(); ctx.restore();
+  if (prog >= 1) head(x2, y2, Math.atan2(uy, ux), col, 7, a);
+}
+function glow(x, y, r, col, a = 1) {
+  if (a <= 0.003) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, rgba(col, a)); g.addColorStop(0.35, rgba(col, a * 0.45)); g.addColorStop(1, rgba(col, 0));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+}
+function dot(x, y, r, col, a = 1) { ctx.globalAlpha = a; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; }
+function rect(x, y, w, h, fill, stroke, r = 4) {
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+}
+function level(x1, x2, y, col, w = 2.5, a = 1) { line(x1, y, x2, y, col, w, null, a); }
+function heading(s, x = 24, y = 34) { txt(s, x, y, { size: 15, w: 700 }); }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, u) => a + (b - a) * u;
+const ease = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+/* Bloch sphere: |0⟩ at the north pole */
+function bloch(cx, cy, r, th, ph, o = {}) {
+  const az = 0.5, el = 0.33;
+  const P = (x, y, z) => {
+    const d = x * Math.cos(az) + y * Math.sin(az);
+    return [cx + r * (-x * Math.sin(az) + y * Math.cos(az)), cy - r * (z * Math.cos(el) - d * Math.sin(el)), d];
+  };
+  const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.1, cx, cy, r);
+  g.addColorStop(0, rgba(C.ink, 0.07)); g.addColorStop(1, rgba(C.ink, 0.015));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = rgba(C.muted, 0.5); ctx.lineWidth = 1; ctx.stroke();
+  for (let i = 0; i < 72; i++) {
+    const a1 = i / 72 * Math.PI * 2, a2 = (i + 1) / 72 * Math.PI * 2;
+    const p1 = P(Math.cos(a1), Math.sin(a1), 0), p2 = P(Math.cos(a2), Math.sin(a2), 0);
+    line(p1[0], p1[1], p2[0], p2[1], C.muted, 1, null, p1[2] < 0 ? 0.18 : 0.5);
+  }
+  const ax = [[P(0, 0, 1.15), '|0⟩', C.cyan], [P(0, 0, -1.15), '|1⟩', C.uv]];
+  const pz = P(0, 0, 1), nz = P(0, 0, -1);
+  line(pz[0], pz[1], nz[0], nz[1], C.muted, 1, [3, 3], 0.5);
+  const px = P(1, 0, 0), mx = P(-1, 0, 0), py = P(0, 1, 0), my = P(0, -1, 0);
+  line(mx[0], mx[1], px[0], px[1], C.muted, 1, [3, 3], 0.3);
+  line(my[0], my[1], py[0], py[1], C.muted, 1, [3, 3], 0.3);
+  ax.forEach(([p, s, c]) => txt(s, p[0], p[1] + (s === '|0⟩' ? -4 : 14), { align: 'center', mono: true, size: o.small ? 11 : 13, color: c, w: 600 }));
+  if (o.trail) {
+    ctx.save(); ctx.strokeStyle = rgba(C.mw, 0.8); ctx.lineWidth = 2; ctx.beginPath();
+    const steps = 40;
+    for (let i = 0; i <= steps; i++) {
+      const t2 = th * i / steps;
+      const q = P(Math.sin(t2) * Math.cos(ph), Math.sin(t2) * Math.sin(ph), Math.cos(t2));
+      i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  const v = P(Math.sin(th) * Math.cos(ph), Math.sin(th) * Math.sin(ph), Math.cos(th));
+  const vz = P(0, 0, Math.cos(th));
+  line(v[0], v[1], vz[0], vz[1], C.muted, 1, [2, 3], 0.6);
+  const col = o.col || C.mw;
+  arrow(cx, cy, v[0], v[1], col, 2.4);
+  glow(v[0], v[1], 12, col, 0.6);
+  return v;
+}
+
+/* ---------- random helpers ---------- */
+function poisson(l) { if (l <= 0) return 0; if (l > 60) return Math.max(0, Math.round(l + Math.sqrt(l) * gauss())); let L = Math.exp(-l), k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; }
+function gauss() { return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random()); }
+const expo = rate => -Math.log(1 - Math.random()) / rate;
+
+/* =========================================================
+   Scene 1 — trap
+   ========================================================= */
+const EQ5 = [-1.7429, -0.8221, 0, 0.8221, 1.7429];  // 5イオン鎖の平衡位置（無次元）
+const S1 = {
+  key: 'trap', name: '捕まえる', dur: 16, t: 0,
+  phases: [
+    { t: 0, title: '原子を電離する', text: 'オーブンから飛び出した中性 Yb 原子に 399 nm と 369 nm のレーザーを当て、電子を1個はぎ取って Yb⁺ イオンにします（2段階光イオン化）。電荷を持ったので電場で捕まえられるようになります。' },
+    { t: 3.5, title: '高周波電場で閉じ込める', text: '電極に数十 MHz の高周波電圧をかけると、鞍型のポテンシャルが高速に反転し、時間平均では中心に引き戻す「お椀」（擬ポテンシャル）ができます。右上の断面図は反転を約5000万倍スローにして描いています。イオンはまだ熱く、激しく動き回っています。' },
+    { t: 7.5, title: 'レーザーで冷やす', text: '369 nm の光を共鳴より少し低い周波数で当てます（ドップラー冷却）。光に向かって動くイオンほど光子を吸収して減速し、運動は 1 mK 以下まで小さくなります。冷えたイオンは散乱光で光って見えます。' },
+    { t: 11.5, title: '一列に並ぶ', text: '冷えたイオンはクーロン反発と閉じ込め力の釣り合いで、数 µm 間隔の一列（クーロン結晶）になります。カメラにはイオン1個1個が独立した光点として写ります。この1個1個が量子ビットの入れ物です。' }
+  ],
+  draw() {
+    const t = this.t, cx = 300, cy = 250;
+    heading('リニア・ポール・トラップ（側面図）');
+    // oven + atomic beam
+    rect(18, 452, 70, 26, C.panel, C.line);
+    txt('Yb オーブン', 53, 470, { align: 'center', size: 11, color: C.muted });
+    if (t < 3.5) {
+      for (let k = 0; k < 16; k++) {
+        const u = (t * 0.7 + k / 16) % 1;
+        const x = lerp(70, cx, u), y = lerp(452, cy, u);
+        dot(x, y, 2, C.muted, 0.7 * (1 - u * 0.5));
+      }
+    }
+    // laser beams
+    const beam = (y, col, a, label, ly) => {
+      const g = ctx.createLinearGradient(0, 0, 560, 0);
+      g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, a * 0.35));
+      ctx.fillStyle = g; ctx.fillRect(0, y - 4, 560, 8);
+      txt(label, 8, ly, { size: 11, color: col, mono: true });
+    };
+    if (t < 3.5) { beam(cy - 7, C.v399, 0.45, '399 nm', cy - 16); beam(cy + 7, C.uv, 0.45, '369 nm', cy + 24); }
+    else beam(cy, C.uv, t >= 7.5 ? 0.5 : 0.12, t >= 7.5 ? '369 nm 冷却光' : '', cy - 10);
+    // electrodes
+    rect(90, 116, 420, 20, rgba(C.muted, 0.25), rgba(C.muted, 0.5), 3);
+    rect(90, 364, 420, 20, rgba(C.muted, 0.25), rgba(C.muted, 0.5), 3);
+    txt('RF 電極', 300, 110, { align: 'center', size: 11, color: C.muted });
+    txt('RF 電極', 300, 400, { align: 'center', size: 11, color: C.muted });
+    rect(40, 205, 34, 90, rgba(C.muted, 0.2), rgba(C.muted, 0.5), 3);
+    rect(526, 205, 34, 90, rgba(C.muted, 0.2), rgba(C.muted, 0.5), 3);
+    txt('DC', 57, 312, { align: 'center', size: 11, color: C.muted });
+    txt('DC', 543, 312, { align: 'center', size: 11, color: C.muted });
+    txt('← 軸方向：端の電極の直流電圧でゆるく閉じ込め →', 300, 430, { align: 'center', size: 11.5, color: C.muted });
+    // ions
+    const A = t < 7.5 ? 26 : 26 * Math.exp(-(t - 7.5) * 1.6) + 0.6;
+    const micro = Math.cos(t * 2 * Math.PI * 0.6);
+    const sp = 46;
+    const bright = t >= 7.5 ? clamp((t - 7.5) / 1.2, 0, 1) : 0.12;
+    for (let i = 0; i < 5; i++) {
+      const ta = 0.6 + i * 0.55;
+      if (t < ta) continue;
+      const n1 = Math.sin(t * 2.3 + i * 1.7) * 0.6 + Math.sin(t * 3.9 + i * 4.1) * 0.4;
+      const n2 = Math.sin(t * 2.9 + i * 2.9) * 0.6 + Math.sin(t * 1.7 + i * 0.7) * 0.4;
+      const x = cx + EQ5[i] * sp + A * n1 * (t < 7.5 ? 2.2 : 1);
+      const y = cy + A * 0.8 * n2 + micro * (A > 3 ? 2.5 : 0.4);
+      glow(x, y, 20, C.uv, 0.9 * bright);
+      dot(x, y, 3.6, C.ink);
+      const u = (t - ta) / 0.7;
+      if (u < 1) {
+        ctx.strokeStyle = rgba(C.v399, 1 - u); ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(x, y, 4 + 30 * u, 0, Math.PI * 2); ctx.stroke();
+        dot(x + 50 * u, y - 60 * u, 2.4, C.mw, 1 - u * 0.6);
+        txt('e⁻', x + 50 * u + 6, y - 60 * u, { size: 11, color: C.mw, a: 1 - u * 0.6 });
+        txt('Yb⁺', x, y + 24, { align: 'center', size: 11, color: C.ink, a: 1 - u });
+      }
+    }
+    if (t >= 11.5) {
+      const a = clamp((t - 11.5) / 0.8, 0, 1);
+      const x1 = cx + EQ5[2] * sp, x2 = cx + EQ5[3] * sp;
+      dbl(x1, cy + 34, x2, cy + 34, rgba(C.ink, a));
+      txt('≈ 5 µm', (x1 + x2) / 2, cy + 52, { align: 'center', size: 11, color: C.ink, a, mono: true });
+    }
+    // cross-section inset
+    const ix = 590, iy = 56, iw = 190, ih = 210, qx = ix + iw / 2, qy = iy + 108, R = 50;
+    rect(ix, iy, iw, ih, C.panel, C.line, 8);
+    txt('断面：RF 電場', ix + 12, iy + 22, { size: 12, w: 700 });
+    const c = Math.cos(t * 2 * Math.PI * 0.6);
+    const st = 6;
+    for (let gx = -R; gx <= R; gx += st) for (let gy = -R; gy <= R; gy += st) {
+      if (gx * gx + gy * gy > R * R) continue;
+      const v = (gx * gx - gy * gy) / (R * R) * c;
+      ctx.fillStyle = v > 0 ? rgba(C.mw, v * 0.6) : rgba(C.cyan, -v * 0.6);
+      ctx.fillRect(qx + gx - st / 2, qy + gy - st / 2, st, st);
+    }
+    [[R + 13, 0, 1], [-R - 13, 0, 1], [0, R + 13, -1], [0, -R - 13, -1]].forEach(([dx, dy, s]) => {
+      const pos = s * c > 0;
+      dot(qx + dx, qy + dy, 11, pos ? C.mw : C.cyan, 0.85);
+      txt(pos ? '+' : '−', qx + dx, qy + dy + 5, { align: 'center', size: 15, w: 700, color: C.void });
+    });
+    dot(qx + c * 2, qy, 3.5, C.ink);
+    txt('U ∝ (x²−y²)·cos Ωt', ix + iw / 2, iy + ih - 10, { align: 'center', size: 11, mono: true, color: C.muted });
+    // camera inset
+    const kx = 590, ky = 290, kw = 190, kh = 120;
+    rect(kx, ky, kw, kh, C.void, C.line, 8);
+    txt('カメラ像（369 nm 蛍光）', kx + 12, ky + 20, { size: 11.5, color: C.muted });
+    const ca = t >= 11.5 ? clamp((t - 11.5) / 0.8, 0, 1) : 0;
+    for (let i = 0; i < 5; i++) glow(kx + kw / 2 + EQ5[i] * 26, ky + 72, 11, C.uv, ca);
+    if (ca === 0) txt('—', kx + kw / 2, ky + 76, { align: 'center', color: C.dark });
+  }
+};
+
+/* =========================================================
+   Scene 2 — levels
+   ========================================================= */
+const S2 = {
+  key: 'levels', name: '1ビットの正体', dur: 14, t: 0, B: 2, Btouched: false,
+  phases: [
+    { t: 0, title: '主役は最外殻の電子1個', text: 'Yb⁺ は最外殻（6s）に電子が1個だけ残った、水素のようなイオンです。量子ビットはこの電子（と原子核スピン）がとるエネルギー準位に書き込みます。' },
+    { t: 3.5, title: '|0⟩ と |1⟩ を決める', text: '基底状態 ²S₁/₂ は、核スピン I=½ と電子スピンの組み合わせで F=0 と F=1 の2つの超微細準位に分かれます。|0⟩ ≡ |F=0, m_F=0⟩、|1⟩ ≡ |F=1, m_F=0⟩ と定義します。' },
+    { t: 7, title: '間隔は 12.6 GHz', text: '2つの準位のエネルギー差は h × 12.642 812 118 GHz（マイクロ波）。どちらも基底状態なので自然放出でほとんど崩壊せず、寿命は事実上無限です。重ね合わせ α|0⟩+β|1⟩ は右のブロッホ球の1点として表されます。' },
+    { t: 10.5, title: '磁場に鈍い「時計遷移」', text: 'm_F=±1 の準位は磁場で ±1.4 MHz/G ずれますが、m_F=0 同士の差は2次の効果（310.8 Hz/G²）しか変わりません。下のスライダーで磁場を変えて確かめてください。これがコヒーレンス時間が秒〜1時間にも達する理由です。' }
+  ],
+  controls() {
+    return `<label for="bfield">磁場 B <span class="v" id="bval"></span><input type="range" id="bfield" min="0" max="10" step="0.1"></label>
+    <p class="note">動かさなければ、4番目の場面で自動的に揺れます。</p>`;
+  },
+  bind() {
+    const r = document.getElementById('bfield');
+    r.value = this.B; this.showB();
+    r.addEventListener('input', () => { this.B = +r.value; this.Btouched = true; this.showB(); });
+  },
+  showB() { const el = document.getElementById('bval'); if (el) el.textContent = this.B.toFixed(1) + ' G'; },
+  draw() {
+    const t = this.t, ph = this.phaseIndex();
+    if (ph === 3 && !this.Btouched) {
+      this.B = 4 + 4 * Math.sin((t - 10.5) * 2.2);
+      const r = document.getElementById('bfield'); if (r) r.value = this.B; this.showB();
+    }
+    const B = this.B;
+    heading('¹⁷¹Yb⁺ のエネルギー準位（縦は誇張）');
+    const pulse = 0.5 + 0.5 * Math.sin(t * 5);
+    // ground
+    const yF0 = 446, yF1 = 392, k = 3.2;
+    const subX = [118, 160, 202];
+    level(116, 204, yF0, C.cyan, 3);
+    if (ph >= 1) glow(160, yF0, 34, C.cyan, 0.25 + 0.2 * pulse);
+    [-1, 0, 1].forEach((m, i) => {
+      const y = yF1 - m * B * k;
+      const isQ = m === 0;
+      level(subX[i] - 17, subX[i] + 17, y, isQ ? C.uv : C.muted, isQ ? 3 : 2, isQ ? 1 : 0.8);
+      txt(`m=${m > 0 ? '+' + m : m}`, subX[i], y - 7, { align: 'center', size: 9.5, color: C.muted, mono: true });
+    });
+    if (ph >= 1) glow(160, yF1, 30, C.uv, 0.25 + 0.2 * pulse);
+    txt('F=1', 228, yF1 + 4, { size: 12, color: C.muted, mono: true });
+    txt('F=0', 216, yF0 + 4, { size: 12, color: C.muted, mono: true });
+    txt('²S₁/₂', 40, 425, { size: 15, w: 700 });
+    txt('基底状態', 40, 444, { size: 11, color: C.muted });
+    if (ph >= 1) {
+      txt('|1⟩', 92, yF1 + 5, { align: 'right', size: 15, mono: true, w: 600, color: C.uv });
+      txt('|0⟩', 108, yF0 + 5, { align: 'right', size: 15, mono: true, w: 600, color: C.cyan });
+    }
+    // gap
+    const ga = ph >= 2 ? 1 : 0.35;
+    ctx.globalAlpha = ga; dbl(268, yF1, 268, yF0, C.mw); ctx.globalAlpha = 1;
+    txt('12.643 GHz', 276, (yF1 + yF0) / 2 + 4, { size: 12, color: C.mw, mono: true, a: ga });
+    if (ph === 2) wavy(250, yF0 - 2, 250, yF1 + 2, C.mw, ((t - 7) * 0.8) % 1.2, 3, 4, 1.5);
+    // P1/2 etc.
+    const yP0 = 172, yP1 = 152;
+    level(116, 204, yP0, C.ink, 2.5); level(116, 204, yP1, C.ink, 2.5);
+    txt('F′=0', 212, yP0 + 4, { size: 11, color: C.muted, mono: true });
+    txt('F′=1', 212, yP1 + 4, { size: 11, color: C.muted, mono: true });
+    txt('²P₁/₂', 40, 166, { size: 15, w: 700 });
+    txt('寿命 8.1 ns', 40, 184, { size: 11, color: C.muted });
+    txt('2.105 GHz', 254, yP1 + 14, { size: 10.5, color: C.muted, mono: true });
+    wavy(140, yF1 - 6, 140, yP0 + 4, C.uv, 1, 3, 9, 1.6, 0.85);
+    txt('369.5 nm', 100, 290, { size: 11.5, color: C.uv, mono: true, align: 'center' });
+    // D states
+    const yD = 212, yB = 100;
+    level(330, 410, yD, C.ink, 2.2, 0.8); level(330, 410, yB, C.ink, 2.2, 0.8);
+    txt('²D₃/₂', 418, yD + 4, { size: 13, w: 700 });
+    txt('³D[3/2]₁/₂', 418, yB + 4, { size: 13, w: 700 });
+    line(204, yP0, 330, yD, C.muted, 1.2, [4, 4], 0.8);
+    txt('0.5%', 262, 205, { size: 10.5, color: C.muted, mono: true });
+    wavy(372, yD - 4, 372, yB + 4, C.ir, 1, 3, 5, 1.6);
+    txt('935 nm', 380, 160, { size: 11.5, color: C.ir, mono: true });
+    line(340, yB + 2, 204, yF1 - 30, C.muted, 1, [4, 4], 0.6);
+    // phase 0: electron
+    if (ph === 0) {
+      const ex = 160 + Math.sin(t * 1.3) * 30;
+      glow(ex, yF1 - 2, 18, C.mw, 0.7); dot(ex, yF1 - 2, 4, C.mw);
+      txt('外殻電子 1個（6s）', ex + 14, yF1 - 22, { size: 12, color: C.mw });
+    }
+    // Bloch sphere + readouts
+    const th = 1.15 + 0.85 * Math.sin(t * 0.45), phi = t * 0.8;
+    bloch(640, 200, 110, th, phi);
+    const a0 = Math.cos(th / 2), a1 = Math.sin(th / 2);
+    txt(`|ψ⟩ = ${a0.toFixed(2)}|0⟩ + ${a1.toFixed(2)}e^{i${(phi % (2 * Math.PI)).toFixed(1)}}|1⟩`, 640, 364, { align: 'center', mono: true, size: 12 });
+    const zx = 500, zy = 380;
+    rect(zx, zy, 280, 96, C.panel, ph === 3 ? C.uv : C.line, 8);
+    txt(`B = ${B.toFixed(1)} G のとき`, zx + 12, zy + 22, { size: 12, w: 700 });
+    txt('m_F=±1 準位のずれ', zx + 12, zy + 46, { size: 12, color: C.muted });
+    txt(`±${(1.4 * B).toFixed(2)} MHz`, zx + 268, zy + 46, { align: 'right', size: 13, mono: true, color: C.ink });
+    txt('|0⟩↔|1⟩ 周波数のずれ', zx + 12, zy + 70, { size: 12, color: C.muted });
+    const dq = 310.8 * B * B;
+    txt(dq < 1000 ? `${dq.toFixed(0)} Hz` : `${(dq / 1000).toFixed(2)} kHz`, zx + 268, zy + 70, { align: 'right', size: 13, mono: true, color: C.ok });
+    txt('→ 時計遷移はほぼ動かない', zx + 12, zy + 88, { size: 10.5, color: C.ok });
+  }
+};
+
+/* =========================================================
+   Scene 3 — optical pumping
+   ========================================================= */
+const S3 = {
+  key: 'init', name: '初期化', t: 0,
+  e: { lev: 1, m: -1 }, st: 'idle', st_t: 0, n: 0, mp: 0, dst: null,
+  phases: [
+    { title: '最初はバラバラ', text: '捕獲・冷却直後の電子は、F=1 の3つの準位と F=0 のどこにいるかわかりません。このままでは計算を始められないので、全部を |0⟩ に揃えます。' },
+    { title: 'F=1 だけを励起する', text: '369 nm 光に EOM で 2.105 GHz のサイドバンドを付け、F=1 → F′=1 に共鳴させます。F=0 から見ると 12.6 GHz 以上ずれているので、F=0 にいる電子は光を吸収しません。' },
+    { title: '自然放出でランダムに落ちる', text: 'F′=1 は 8 ns で光子を出して基底状態に戻ります。行き先はランダムで、約 1/3 の確率で F=0 に落ちます（F′=1,m=0 → F=1,m=0 は禁制）。' },
+    { title: 'F=0 に落ちたら終わり＝|0⟩', text: 'F=0 は光と共鳴しない暗状態なので、一度落ちるともう出られません。散乱 n 回後に F=1 に残る確率は (2/3)ⁿ。約 20 回、実時間で数 µs で 99.9% 以上が |0⟩ になります。' }
+  ],
+  phaseIndex() { if (this.st === 'dark') return 3; if (this.n === 0 && this.st === 'idle') return 0; if (this.st === 'down') return 2; return 1; },
+  reset() { this.e = { lev: 1, m: pick([-1, 0, 1]) }; this.st = 'idle'; this.st_t = 0; this.n = 0; },
+  jump(i) { if (i === 0) this.reset(); },
+  update(dt) {
+    this.st_t += dt;
+    const s = this.st;
+    if (s === 'idle' && this.st_t > (this.n === 0 ? 1.4 : 0.35)) {
+      this.st = 'up'; this.st_t = 0;
+      const ch = this.e.m === 0 ? [-1, 1] : [-1, 0, 1];
+      this.mp = clamp(this.e.m + pick(ch), -1, 1);
+      if (this.e.m === 0 && this.mp === 0) this.mp = 1;
+    } else if (s === 'up' && this.st_t > 0.55) { this.st = 'hold'; this.st_t = 0; }
+    else if (s === 'hold' && this.st_t > 0.18) {
+      this.st = 'down'; this.st_t = 0;
+      if (Math.random() < 1 / 3) this.dst = { lev: 0, m: 0 };
+      else {
+        let ms = [this.mp - 1, this.mp, this.mp + 1].filter(m => m >= -1 && m <= 1 && !(this.mp === 0 && m === 0));
+        this.dst = { lev: 1, m: pick(ms) };
+      }
+    } else if (s === 'down' && this.st_t > 0.6) {
+      this.e = this.dst; this.n++; this.st_t = 0;
+      this.st = this.e.lev === 0 ? 'dark' : 'idle';
+    } else if (s === 'dark' && this.st_t > 3.4) this.reset();
+  },
+  draw() {
+    heading('光ポンピング：電子を |0⟩ に追い込む');
+    const X = { '-1': 250, '0': 330, '1': 410 };
+    const yF1 = 360, yF0 = 438, yP1 = 120, yP0 = 150;
+    const pos = (lev, m) => lev === 0 ? [330, yF0] : lev === 1 ? [X[m], yF1] : lev === 2 ? [X[m], yP1] : [330, yP0];
+    [-1, 0, 1].forEach(m => { level(X[m] - 26, X[m] + 26, yF1, m === 0 ? C.uv : C.muted, 2.5); level(X[m] - 26, X[m] + 26, yP1, C.ink, 2.2, 0.85); });
+    level(300, 360, yP0, C.ink, 2, 0.5);
+    level(300, 360, yF0, C.cyan, 3);
+    txt('²P₁/₂ F′=1', 450, yP1 + 4, { size: 12, color: C.muted });
+    txt('F′=0（使わない）', 370, yP0 + 16, { size: 10.5, color: C.dark });
+    txt('²S₁/₂ F=1', 450, yF1 + 4, { size: 12, color: C.muted });
+    txt('F=0 = |0⟩', 372, yF0 + 5, { size: 13, color: C.cyan, w: 700 });
+    [-1, 0, 1].forEach(m => txt(`m=${m > 0 ? '+1' : m}`, X[m], yF1 + 18, { align: 'center', size: 10, color: C.muted, mono: true }));
+    // pump beam
+    const on = this.st !== 'dark';
+    rect(24, 210, 150, 92, C.panel, C.line, 8);
+    txt('369 nm + EOM', 36, 232, { size: 12, w: 700, color: C.uv });
+    const sx = 99;
+    line(sx, 288, sx, 254, C.uv, 2, null, 0.4);
+    line(sx + 34, 288, sx + 34, 262, C.uv, 2.5, null, on ? 1 : 0.4);
+    line(sx - 34, 288, sx - 34, 262, C.uv, 2, null, 0.4);
+    line(40, 288, 160, 288, C.muted, 1);
+    txt('+2.1 GHz', sx + 34, 300, { align: 'center', size: 9, mono: true, color: C.uv });
+    arrow(174, 256, 214, 256, C.uv, 2, null, on ? 0.9 : 0.3);
+    // electron animation
+    let ep;
+    const e = this.e;
+    if (this.st === 'idle' || this.st === 'dark') ep = pos(e.lev, e.m);
+    else if (this.st === 'up') {
+      const u = ease(clamp(this.st_t / 0.55, 0, 1));
+      const a = pos(1, e.m), b = pos(2, this.mp);
+      wavy(a[0] - 10, a[1] - 6, b[0] - 10, b[1] + 6, C.uv, this.st_t / 0.45, 3.5, 8);
+      ep = [lerp(a[0], b[0], u), lerp(a[1], b[1], u)];
+    } else if (this.st === 'hold') ep = pos(2, this.mp);
+    else {
+      const u = ease(clamp(this.st_t / 0.6, 0, 1));
+      const a = pos(2, this.mp), b = pos(this.dst.lev, this.dst.m);
+      line(a[0] + 8, a[1] + 6, b[0] + 8, b[1] - 6, C.muted, 1.2, [4, 4], 0.7);
+      ep = [lerp(a[0], b[0], u), lerp(a[1], b[1], u)];
+      const pu = this.st_t / 0.6;
+      const ang = -0.6 + (this.n % 5) * 0.5;
+      wavy(a[0] + 20, a[1], a[0] + 20 + Math.cos(ang) * 90 * pu, a[1] + Math.sin(ang) * 90 * pu, C.uv, 1, 3, 4, 1.4, 1 - pu * 0.7);
+    }
+    const isDark = this.st === 'dark';
+    glow(ep[0], ep[1] - 4, 18, isDark ? C.cyan : C.mw, 0.8); dot(ep[0], ep[1] - 4, 5, isDark ? C.cyan : C.mw);
+    if (isDark) {
+      txt('暗状態：もう光を吸収しない', 330, yF0 + 34, { align: 'center', size: 13, color: C.cyan, w: 700 });
+      line(330 - 50, yF0 - 10, 330 - 50, yP1 + 20, C.uv, 1.5, [3, 5], 0.5);
+      txt('×', 330 - 50, (yF0 + yP1) / 2, { align: 'center', size: 20, color: C.bad });
+      txt('12.6 GHz 以上ずれ', 330 - 58, (yF0 + yP1) / 2 + 24, { align: 'right', size: 11, color: C.muted });
+    }
+    // plot
+    const px = 540, py = 150, pw = 230, ph = 180;
+    rect(px - 16, py - 50, pw + 32, ph + 110, C.panel, C.line, 8);
+    txt('|0⟩ にいる確率 vs 散乱回数 n', px - 4, py - 26, { size: 12, w: 700 });
+    line(px, py + ph, px + pw, py + ph, C.muted, 1); line(px, py, px, py + ph, C.muted, 1);
+    const nmax = 25, sxp = n => px + n / nmax * pw, syp = p => py + ph - p * ph;
+    line(px, syp(0.999), px + pw, syp(0.999), C.ok, 1, [3, 3], 0.7);
+    txt('99.9%', px + pw, syp(0.999) - 4, { align: 'right', size: 10, mono: true, color: C.ok });
+    ctx.strokeStyle = C.cyan; ctx.lineWidth = 2; ctx.beginPath();
+    for (let n = 0; n <= nmax; n += 0.25) { const x = sxp(n), y = syp(1 - Math.pow(2 / 3, n)); n ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+    [0, 5, 10, 15, 20, 25].forEach(n => txt(n, sxp(n), py + ph + 14, { align: 'center', size: 10, mono: true, color: C.muted }));
+    ['0', '0.5', '1'].forEach((s, i) => txt(s, px - 6, syp(i / 2) + 4, { align: 'right', size: 10, mono: true, color: C.muted }));
+    const nn = Math.min(this.n, nmax);
+    dot(sxp(nn), syp(1 - Math.pow(2 / 3, nn)), 5, C.mw);
+    txt(`この電子の散乱回数 n = ${this.n}`, px - 4, py + ph + 38, { size: 12, mono: true });
+    txt('1回ごとに F=0 へ落ちる確率 ≈ 1/3', px - 4, py + ph + 56, { size: 11, color: C.muted });
+  }
+};
+
+/* =========================================================
+   Scene 4 — single-qubit rotation
+   ========================================================= */
+const S4 = {
+  key: 'gate', name: '重ね合わせ', t: 0, mode: 'mw', target: Math.PI / 2, theta: 0, st: 'reset', st_t: 0,
+  phases: [
+    { title: '|0⟩ からスタート', text: '初期化を終えた量子ビットはブロッホ球の北極（|0⟩）を指しています。' },
+    { title: '共鳴パルスを照射', text: '12.642 GHz のマイクロ波、または周波数差を 12.642 GHz に合わせた 355 nm レーザー2本（誘導ラマン遷移）を当てると、|0⟩ と |1⟩ の間で振動（ラビ振動）が起こり、ベクトルが回転します。' },
+    { title: '回転角＝パルス面積', text: '回転角 θ は「結合の強さ（ラビ周波数 Ω）× 照射時間」で決まります。照射を止めた位置で状態が止まります。典型的な π パルスはマイクロ波で数十 µs、ラマンで数 µs。' },
+    { title: '結果：重ね合わせ状態', text: 'θ = π/2 なら |0⟩ と |1⟩ が半々の重ね合わせ、θ = π なら完全に |1⟩。この状態を次の場面で測ると、|1⟩ の確率 sin²(θ/2) で「光る」結果が出ます。' }
+  ],
+  phaseIndex() {
+    if (this.st === 'reset') return 0;
+    if (this.st === 'pulse') return this.st_t < this.pulseDur() / 2 ? 1 : 2;
+    return 3;
+  },
+  pulseDur() { return this.target / Math.PI * 1.8; },
+  jump(i) { if (i === 0) { this.st = 'reset'; this.st_t = 0; this.theta = 0; } if (i === 1) { this.st = 'pulse'; this.st_t = 0; } },
+  controls() {
+    const t = [['π/2', 0.5], ['π', 1], ['3π/2', 1.5], ['2π', 2]];
+    return `<div class="row"><span class="note" style="width:100%">パルス面積（回転角 θ）</span>${t.map(([s, v]) => `<button class="btn" type="button" data-th="${v}" aria-pressed="${v === 0.5}">${s}</button>`).join('')}</div>
+    <div class="row"><span class="note" style="width:100%">駆動方法</span><button class="btn" type="button" data-mode="mw" aria-pressed="true">マイクロ波</button><button class="btn" type="button" data-mode="raman" aria-pressed="false">ラマン（355 nm）</button></div>`;
+  },
+  bind() {
+    document.querySelectorAll('[data-th]').forEach(b => {
+      b.setAttribute('aria-pressed', +b.dataset.th * Math.PI === this.target);
+      b.addEventListener('click', () => {
+        this.target = +b.dataset.th * Math.PI; this.st = 'reset'; this.st_t = 0; this.theta = 0;
+        document.querySelectorAll('[data-th]').forEach(x => x.setAttribute('aria-pressed', x === b));
+      });
+    });
+    document.querySelectorAll('[data-mode]').forEach(b => {
+      b.setAttribute('aria-pressed', b.dataset.mode === this.mode);
+      b.addEventListener('click', () => { this.mode = b.dataset.mode; document.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    });
+  },
+  update(dt) {
+    this.st_t += dt;
+    if (this.st === 'reset') { this.theta = 0; if (this.st_t > 1.0) { this.st = 'pulse'; this.st_t = 0; } }
+    else if (this.st === 'pulse') { const d = this.pulseDur(); this.theta = this.target * clamp(this.st_t / d, 0, 1); if (this.st_t >= d) { this.st = 'hold'; this.st_t = 0; } }
+    else if (this.st === 'hold' && this.st_t > 2.6) { this.st = 'reset'; this.st_t = 0; }
+  },
+  draw() {
+    heading('ラビ振動：状態をブロッホ球上で回す');
+    const th = this.theta, P1 = Math.sin(th / 2) ** 2, P0 = 1 - P1, on = this.st === 'pulse';
+    const y1 = 120, y0 = 280;
+    level(70, 200, y1, C.uv, 3); level(70, 200, y0, C.cyan, 3);
+    txt('|1⟩', 60, y1 + 5, { align: 'right', size: 15, mono: true, w: 600, color: C.uv });
+    txt('|0⟩', 60, y0 + 5, { align: 'right', size: 15, mono: true, w: 600, color: C.cyan });
+    rect(70, y1 - 22, 130 * P1, 14, rgba(C.uv, 0.5)); rect(70, y0 - 22, 130 * P0, 14, rgba(C.cyan, 0.5));
+    txt(`${(P1 * 100).toFixed(0)}%`, 206, y1 - 10, { size: 11, mono: true, color: C.muted });
+    txt(`${(P0 * 100).toFixed(0)}%`, 206, y0 - 10, { size: 11, mono: true, color: C.muted });
+    if (this.mode === 'mw') {
+      rect(296, 176, 46, 30, C.panel, C.mw, 4);
+      txt('ホーン', 319, 222, { align: 'center', size: 10.5, color: C.mw });
+      for (let i = 0; i < 4; i++) {
+        const r = ((this.t * 50 + i * 18) % 72);
+        ctx.strokeStyle = rgba(C.mw, on ? (1 - r / 72) * 0.9 : 0.12); ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(296, 191, r + 6, Math.PI * 0.75, Math.PI * 1.25); ctx.stroke();
+      }
+      dbl(140, y1 + 6, 140, y0 - 6, rgba(C.mw, on ? 1 : 0.4));
+      txt('12.642 GHz', 150, 205, { size: 12, mono: true, color: C.mw, a: on ? 1 : 0.5 });
+    } else {
+      const yv = 52;
+      level(110, 230, yv, C.muted, 1.4, 0.8);
+      ctx.setLineDash([]);
+      txt('仮想準位（²P から Δ ≈ 数 THz 離調）', 236, yv + 4, { size: 10.5, color: C.muted });
+      arrow(100, y0 - 4, 150, yv + 4, rgba(C.raman, on ? 1 : 0.35), 2);
+      arrow(180, yv + 4, 200, y1 - 4, rgba(C.raman, on ? 1 : 0.35), 2);
+      txt('ω₁', 108, 170, { size: 12, mono: true, color: C.raman });
+      txt('ω₂', 200, 88, { size: 12, mono: true, color: C.raman });
+      txt('ω₁ − ω₂ = 12.642 GHz', 230, 200, { size: 11.5, mono: true, color: C.raman, a: on ? 1 : 0.5 });
+      txt('355 nm パルスレーザー 2本', 230, 218, { size: 10.5, color: C.muted });
+    }
+    bloch(570, 210, 125, th, -Math.PI / 2, { trail: true });
+    const a = Math.cos(th / 2), b = Math.sin(th / 2);
+    txt(`θ = ${(th / Math.PI).toFixed(2)} π`, 570, 392, { align: 'center', size: 14, mono: true, w: 600, color: C.mw });
+    txt(`|ψ⟩ = ${a.toFixed(3)}|0⟩ − ${b.toFixed(3)} i|1⟩`, 570, 414, { align: 'center', size: 12.5, mono: true });
+    // Rabi plot
+    const px = 50, py = 340, pw = 360, ph = 110;
+    txt('P(|1⟩) = sin²(θ/2)', px, py - 8, { size: 12, mono: true, color: C.muted });
+    line(px, py + ph, px + pw, py + ph, C.muted, 1); line(px, py, px, py + ph, C.muted, 1);
+    ctx.strokeStyle = rgba(C.uv, 0.85); ctx.lineWidth = 2; ctx.beginPath();
+    for (let i = 0; i <= 100; i++) { const x = i / 100 * 2 * Math.PI; const X = px + x / (2 * Math.PI) * pw, Y = py + ph - Math.sin(x / 2) ** 2 * ph; i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
+    ctx.stroke();
+    ['0', 'π/2', 'π', '3π/2', '2π'].forEach((s, i) => txt(s, px + i / 4 * pw, py + ph + 15, { align: 'center', size: 10.5, mono: true, color: C.muted }));
+    const mx = px + th / (2 * Math.PI) * pw, my = py + ph - P1 * ph;
+    line(mx, py, mx, py + ph, C.mw, 1, [2, 3], 0.6);
+    dot(mx, my, 5, C.mw);
+  }
+};
+
+/* =========================================================
+   Scene 5 — measurement (the core)
+   ========================================================= */
+const RB = 0.06;      // 明状態の検出カウント率 [1/µs]（200 µs で平均 12）
+const RBG = 0.0002;   // 迷光・暗計数 [1/µs]
+const RBD = 1e-5;     // |1⟩→|0⟩ 非共鳴ポンピング率 [1/µs]
+const RDB = 2e-6;     // |0⟩→|1⟩ 非共鳴ポンピング率 [1/µs]
+const RD = 1 / 50;    // リポンプ無しで D3/2 に落ちる率 [1/µs]
+const ION = [170, 300], LENS = [170, 196], PMT = [170, 76];
+const S5 = {
+  key: 'measure', name: '測定', t: 0,
+  theta: Math.PI / 2, Tw: 200, thr: 2, repump: true, auto: true,
+  st: 'prep', st_t: 0, shot: null, photons: [], deco: [], decoAcc: 0, count: 0, spawned: 0, lastResult: null,
+  h0: new Array(31).fill(0), h1: new Array(31).fill(0), flash: 0,
+  phases: [
+    { title: '状態を準備する', text: '前の場面のパルスで cos(θ/2)|0⟩ + sin(θ/2)|1⟩ を作ります。右下のブロッホ球が準備した状態です。この時点ではまだ 0 とも 1 とも決まっていません。' },
+    { title: '検出光オン＝射影', text: '369.5 nm の検出光を F=1 → F′=0 に共鳴させて当てます。光と相互作用した瞬間に、状態は確率 cos²(θ/2) で |0⟩、sin²(θ/2) で |1⟩ に射影されます（ブロッホ球のベクトルが極に飛ぶ）。' },
+    { title: '光子を数える', text: '|1⟩ なら電子は F=1 ⇄ F′=0 の閉じたサイクルを回り続け、全方向に光子をばらまきます。レンズに入った数 % だけが PMT に届き、1個ずつカウントされます。|0⟩ なら 14.7 GHz ずれているので光らず、届くのは迷光だけです。' },
+    { title: 'しきい値で判定する', text: '検出窓が終わったらカウント数をしきい値と比べ、しきい値以上なら 1、未満なら 0 と判定します。右のヒストグラムのように、明状態と暗状態の分布はほとんど重なりません。' },
+    { title: '繰り返して確率を得る', text: '1回の測定で得られるのは 1 ビットだけです。同じ準備と測定を何百回も繰り返すと、「1」の割合が sin²(θ/2) に近づきます。誤判定率から読み出し忠実度もわかります。' }
+  ],
+  phaseIndex() {
+    return { prep: 0, collapse: 1, count: 2, idle: 4 }[this.st] ?? (this.st_t < 0.9 ? 3 : 4);
+  },
+  jump(i) { if (i <= 1) this.startShot(); },
+  sample() {
+    const p1 = Math.sin(this.theta / 2) ** 2;
+    const truth = Math.random() < p1 ? 1 : 0;
+    const Tw = this.Tw, ev = [];
+    const add = (rate, a, b, kind) => { const n = poisson(rate * (b - a)); for (let i = 0; i < n; i++) ev.push({ t: a + Math.random() * (b - a), kind }); };
+    let bOn = 0, bOff = 0, leak = null;
+    if (truth === 1) {
+      bOff = Tw;
+      const tl = expo(RBD); if (tl < bOff) { bOff = tl; leak = 'offres'; }
+      if (!this.repump) { const td = expo(RD); if (td < bOff) { bOff = td; leak = 'D'; } }
+    } else {
+      const tu = expo(RDB); if (tu < Tw) { bOn = tu; bOff = Tw; leak = 'up'; }
+    }
+    if (bOff > bOn) add(RB, bOn, bOff, 'sig');
+    add(RBG, 0, Tw, 'bg');
+    ev.sort((a, b) => a.t - b.t);
+    return { truth, ev, bOn, bOff, leak };
+  },
+  record(shot) {
+    const c = Math.min(30, shot.ev.length);
+    (shot.truth ? this.h1 : this.h0)[c]++;
+  },
+  fill(n) { for (let i = 0; i < n; i++) this.record(this.sample()); },
+  refill() { this.h0.fill(0); this.h1.fill(0); this.fill(300); },
+  stats() {
+    const n0 = this.h0.reduce((a, b) => a + b, 0), n1 = this.h1.reduce((a, b) => a + b, 0);
+    let w0 = 0, w1 = 0, r1 = 0;
+    for (let c = 0; c <= 30; c++) {
+      if (c >= this.thr) { w0 += this.h0[c]; r1 += this.h0[c] + this.h1[c]; } else w1 += this.h1[c];
+    }
+    return { N: n0 + n1, n0, n1, e0: n0 ? w0 / n0 : 0, e1: n1 ? w1 / n1 : 0, r1: (n0 + n1) ? r1 / (n0 + n1) : 0 };
+  },
+  startShot() { this.st = 'prep'; this.st_t = 0; this.photons = []; this.deco = []; this.count = 0; this.spawned = 0; this.shot = null; this.lastResult = null; },
+  controls() {
+    return `<label for="m-theta">準備する状態 θ <span class="v" id="m-thv"></span><input type="range" id="m-theta" min="0" max="1" step="0.05"></label>
+    <label for="m-tw">検出窓 <span class="v" id="m-twv"></span><input type="range" id="m-tw" min="40" max="500" step="10"></label>
+    <label for="m-thr">しきい値（この数以上で 1） <span class="v" id="m-thrv"></span><input type="range" id="m-thr" min="1" max="10" step="1"></label>
+    <label class="chk" for="m-rep"><input type="checkbox" id="m-rep"> 935 nm リポンプ光をオン</label>
+    <div class="row">
+      <button class="btn" type="button" id="m-one">1ショット測定</button>
+      <button class="btn" type="button" id="m-auto"></button>
+      <button class="btn" type="button" id="m-300">+300ショット（瞬時）</button>
+    </div>
+    <p class="note">θ・検出窓・リポンプを変えると、その条件で 300 ショット分をすぐに計算し直してヒストグラムを描き直します。</p>`;
+  },
+  bind() {
+    const $ = id => document.getElementById(id);
+    const th = $('m-theta'), tw = $('m-tw'), thr = $('m-thr'), rep = $('m-rep'), au = $('m-auto');
+    const show = () => {
+      $('m-thv').textContent = `${(this.theta / Math.PI).toFixed(2)} π  （P(1) = ${(Math.sin(this.theta / 2) ** 2).toFixed(3)}）`;
+      $('m-twv').textContent = `${this.Tw} µs`;
+      $('m-thrv').textContent = `${this.thr} カウント`;
+      au.textContent = this.auto ? '自動測定：オン' : '自動測定：オフ';
+      au.setAttribute('aria-pressed', this.auto);
+    };
+    th.value = this.theta / Math.PI; tw.value = this.Tw; thr.value = this.thr; rep.checked = this.repump; show();
+    th.addEventListener('input', () => { this.theta = +th.value * Math.PI; show(); this.refill(); });
+    tw.addEventListener('input', () => { this.Tw = +tw.value; show(); this.refill(); });
+    thr.addEventListener('input', () => { this.thr = +thr.value; show(); });
+    rep.addEventListener('change', () => { this.repump = rep.checked; this.refill(); });
+    au.addEventListener('click', () => { this.auto = !this.auto; show(); if (this.auto && this.st === 'idle') this.startShot(); });
+    $('m-one').addEventListener('click', () => this.startShot());
+    $('m-300').addEventListener('click', () => this.fill(300));
+  },
+  brightAt(tau) { const s = this.shot; return s && tau >= s.bOn && tau < s.bOff; },
+  update(dt) {
+    this.st_t += dt; this.flash = Math.max(0, this.flash - dt * 2);
+    const CW = 3.2;
+    if (this.st === 'prep' && this.st_t > 1.1) { this.st = 'collapse'; this.st_t = 0; this.shot = this.sample(); this.flash = 1; }
+    else if (this.st === 'collapse' && this.st_t > 0.55) { this.st = 'count'; this.st_t = 0; }
+    else if (this.st === 'count') {
+      const tau = clamp(this.st_t / CW, 0, 1) * this.Tw;
+      const ev = this.shot.ev;
+      while (this.spawned < ev.length && ev[this.spawned].t <= tau) {
+        const e = ev[this.spawned++];
+        if (e.kind === 'sig') {
+          const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.1;
+          this.photons.push({ x0: ION[0], y0: ION[1], lx: ION[0] + Math.tan(a + Math.PI / 2) * (ION[1] - LENS[1]), u: 0, kind: 'sig' });
+        } else {
+          const sx = 40 + Math.random() * 260;
+          this.photons.push({ x0: sx, y0: ION[1], lx: LENS[0] + (Math.random() - 0.5) * 120, u: 0, kind: 'bg' });
+        }
+      }
+      if (this.brightAt(tau)) {
+        this.decoAcc += dt * 34;
+        while (this.decoAcc > 1) {
+          this.decoAcc--;
+          let a; do { a = Math.random() * Math.PI * 2; } while (Math.abs(((a + Math.PI / 2 + Math.PI) % (2 * Math.PI)) - Math.PI) < 0.7);
+          this.deco.push({ a, u: 0 });
+        }
+      }
+      if (this.st_t >= CW && this.photons.length === 0) {
+        this.st = 'result'; this.st_t = 0; this.record(this.shot);
+        this.lastResult = { r: this.count >= this.thr ? 1 : 0, truth: this.shot.truth, leak: this.shot.leak, c: this.count };
+      }
+    } else if (this.st === 'result' && this.st_t > 2.0) {
+      if (this.auto) this.startShot(); else { this.st = 'idle'; this.st_t = 0; }
+    }
+    this.photons.forEach(p => { p.u += dt / 0.55; if (p.u >= 1 && !p.done) { p.done = true; this.count++; } });
+    this.photons = this.photons.filter(p => !p.done);
+    this.deco.forEach(d => d.u += dt / 0.6);
+    this.deco = this.deco.filter(d => d.u < 1);
+  },
+  draw() {
+    heading('状態依存蛍光：光るか光らないかで読む');
+    const st = this.st, CW = 3.2;
+    const laser = st === 'collapse' ? clamp(this.st_t / 0.3, 0, 1) : st === 'count' ? 1 : st === 'result' ? clamp(1 - this.st_t / 0.4, 0, 1) : 0;
+    const tau = st === 'count' ? clamp(this.st_t / CW, 0, 1) * this.Tw : 0;
+    const bright = st === 'count' && this.brightAt(tau);
+    // beam
+    const g = ctx.createLinearGradient(0, 0, 330, 0);
+    g.addColorStop(0, rgba(C.uv, 0.08 + 0.45 * laser)); g.addColorStop(1, rgba(C.uv, 0.03 + 0.2 * laser));
+    ctx.fillStyle = g; ctx.fillRect(0, ION[1] - 5, 330, 10);
+    txt('検出光 369.5 nm（F=1 ↔ F′=0 に共鳴）', 14, ION[1] + 26, { size: 11, color: C.uv, a: 0.4 + 0.6 * laser });
+    // optics
+    line(ION[0], ION[1], LENS[0] - 78, LENS[1], C.cyan, 1, [3, 4], 0.35);
+    line(ION[0], ION[1], LENS[0] + 78, LENS[1], C.cyan, 1, [3, 4], 0.35);
+    line(LENS[0] - 78, LENS[1], PMT[0], PMT[1] + 2, C.cyan, 1, [3, 4], 0.25);
+    line(LENS[0] + 78, LENS[1], PMT[0], PMT[1] + 2, C.cyan, 1, [3, 4], 0.25);
+    ctx.save(); ctx.strokeStyle = rgba(C.cyan, 0.8); ctx.fillStyle = rgba(C.cyan, 0.08); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(LENS[0], LENS[1], 80, 9, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
+    txt('対物レンズ NA≈0.6', LENS[0] + 88, LENS[1] + 4, { size: 11, color: C.muted });
+    txt('（全光子の数 % を集める）', LENS[0] + 88, LENS[1] + 19, { size: 10, color: C.dark });
+    rect(PMT[0] - 46, PMT[1] - 36, 92, 36, C.panel, C.cyan, 4);
+    txt('PMT', PMT[0], PMT[1] - 13, { align: 'center', size: 12, w: 700, mono: true });
+    txt('光子カウント', 232, 46, { size: 11, color: C.muted });
+    txt(String(this.count), 232, 82, { size: 32, mono: true, w: 600, color: this.count >= this.thr ? C.uv : C.ink });
+    // decorative emission
+    this.deco.forEach(d => {
+      const r = 10 + d.u * 120;
+      wavy(ION[0] + Math.cos(d.a) * (r - 18), ION[1] + Math.sin(d.a) * (r - 18), ION[0] + Math.cos(d.a) * r, ION[1] + Math.sin(d.a) * r, C.uv, 1, 2, 2, 1.3, 1 - d.u);
+    });
+    // counted photons
+    this.photons.forEach(p => {
+      const col = p.kind === 'sig' ? C.uv : C.muted;
+      let x, y;
+      if (p.u < 0.55) { const u = p.u / 0.55; x = lerp(p.x0, p.lx, u); y = lerp(p.y0, LENS[1], u); }
+      else { const u = (p.u - 0.55) / 0.45; x = lerp(p.lx, PMT[0], u); y = lerp(LENS[1], PMT[1], u); }
+      glow(x, y, 9, col, 0.9); dot(x, y, 2.4, C.ink);
+    });
+    // ion
+    glow(ION[0], ION[1], 46, C.uv, bright ? 0.95 : 0.03);
+    dot(ION[0], ION[1], 4.5, C.ink);
+    txt('¹⁷¹Yb⁺', ION[0], ION[1] + 46, { align: 'center', size: 12, color: C.muted });
+    if (this.flash > 0) { ctx.strokeStyle = rgba(C.ink, this.flash); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(ION[0], ION[1], 14 + (1 - this.flash) * 50, 0, Math.PI * 2); ctx.stroke(); }
+    // window bar
+    const bx = 24, by = 436, bw = 300;
+    txt(`検出窓 ${this.Tw} µs`, bx, by - 8, { size: 11.5, color: C.muted });
+    txt(`t = ${tau.toFixed(0)} µs`, bx + bw, by - 8, { align: 'right', size: 11.5, mono: true, color: C.ink });
+    rect(bx, by, bw, 12, C.panel, C.line, 3);
+    if (st === 'count' || st === 'result') rect(bx, by, bw * (st === 'result' ? 1 : tau / this.Tw), 12, rgba(C.uv, 0.35), null, 3);
+    if (this.shot && (st === 'count' || st === 'result')) {
+      this.shot.ev.forEach((e, i) => { if (i < this.spawned || st === 'result') line(bx + e.t / this.Tw * bw, by - 2, bx + e.t / this.Tw * bw, by + 14, e.kind === 'sig' ? C.uv : C.muted, 1.5); });
+    }
+    // mini level diagram
+    const lx = 350, yP1 = 94, yP0 = 116, yS1 = 226, yS0 = 258;
+    level(lx + 20, lx + 110, yP1, C.ink, 2, 0.6); level(lx + 20, lx + 110, yP0, C.ink, 2.4);
+    level(lx + 20, lx + 70, yS1, C.uv, 2.6); level(lx + 76, lx + 120, yS0, C.cyan, 2.6);
+    txt('F′=1', lx + 116, yP1 + 4, { size: 10, mono: true, color: C.muted });
+    txt('F′=0', lx + 116, yP0 + 4, { size: 10, mono: true, color: C.muted });
+    txt('|1⟩', lx + 14, yS1 + 4, { align: 'right', size: 12, mono: true, color: C.uv, w: 600 });
+    txt('|0⟩', lx + 126, yS0 + 4, { size: 12, mono: true, color: C.cyan, w: 600 });
+    arrow(lx + 38, yS1 - 4, lx + 38, yP0 + 4, C.uv, 2, null, 0.25 + 0.75 * laser);
+    line(lx + 54, yP0 + 4, lx + 54, yS1 - 4, C.uv, 1.2, [3, 3], 0.25 + 0.6 * laser);
+    line(lx + 98, yS0 - 4, lx + 98, yP1 + 22, C.muted, 1.2, [2, 4], 0.6);
+    txt('×', lx + 98, (yS0 + yP1) / 2 + 20, { align: 'center', size: 16, color: C.bad, a: laser });
+    txt('14.7 GHz', lx + 104, 170, { size: 9.5, mono: true, color: C.muted });
+    txt('ずれ', lx + 104, 182, { size: 9.5, color: C.muted });
+    txt('F′=0→F=0 は禁制 → 閉じたサイクル', lx + 70, yS0 + 26, { align: 'center', size: 10, color: C.muted });
+    let ex, ey, ec = C.mw, ea = 1;
+    if (st === 'prep' || st === 'idle' || !this.shot) {
+      const p1 = Math.sin(this.theta / 2) ** 2;
+      if (p1 > 0.01) { glow(lx + 45, yS1 - 4, 12, C.mw, 0.8 * p1); dot(lx + 45, yS1 - 4, 4, C.mw, p1); }
+      if (p1 < 0.99) { glow(lx + 98, yS0 - 4, 12, C.mw, 0.8 * (1 - p1)); dot(lx + 98, yS0 - 4, 4, C.mw, 1 - p1); }
+      if (st === 'prep') txt('まだ両方の可能性', lx + 70, yS0 + 44, { align: 'center', size: 10.5, color: C.mw });
+    } else {
+      const s = this.shot;
+      const isB = st === 'count' ? bright : (s.truth === 1 && !s.leak) || s.leak === 'up';
+      if (isB && st === 'count') { const u = 0.5 + 0.5 * Math.sin(this.t * 40); ex = lx + 38; ey = lerp(yS1 - 4, yP0 + 2, u); }
+      else if (s.leak === 'D' && st !== 'collapse' && !isB) { ex = lx + 70; ey = 170; ec = C.ir; }
+      else if (s.truth === 1 && !(st === 'count' && !bright)) { ex = lx + 45; ey = yS1 - 4; }
+      else { ex = lx + 98; ey = yS0 - 4; }
+      glow(ex, ey, 14, ec, 0.9); dot(ex, ey, 4, ec, ea);
+      if (s.leak === 'D' && !bright && st !== 'collapse') txt('²D₃/₂ に落ちて暗転', lx + 70, 160, { align: 'center', size: 10, color: C.ir });
+    }
+    // Bloch
+    let bth = 0;
+    if (st === 'prep') bth = this.theta * ease(clamp(this.st_t / 0.9, 0, 1));
+    else if (st === 'idle') bth = this.theta;
+    else if (this.shot) { const tgt = this.shot.truth ? Math.PI : 0; bth = st === 'collapse' ? lerp(this.theta, tgt, ease(clamp(this.st_t / 0.25, 0, 1))) : tgt; }
+    bloch(410, 392, 52, bth, -Math.PI / 2, { small: true });
+    txt(st === 'prep' || st === 'idle' ? '準備した状態' : '射影後', 410, 480, { align: 'center', size: 10.5, color: C.muted });
+    // result
+    if (st === 'result' && this.lastResult) {
+      const R = this.lastResult, ok = R.r === R.truth;
+      rect(236, 112, 96, 64, C.panel, ok ? C.ok : C.bad, 8);
+      txt('判定', 284, 132, { align: 'center', size: 11, color: C.muted });
+      txt(String(R.r), 284, 166, { align: 'center', size: 30, mono: true, w: 600, color: R.r ? C.uv : C.cyan });
+      if (!ok) txt(`誤判定（本当は ${R.truth}）`, 284, 194, { align: 'center', size: 11, color: C.bad });
+    }
+    // histogram
+    const hx = 530, hy = 70, hw = 250, hh = 200;
+    txt('カウント数のヒストグラム', hx, hy - 20, { size: 12.5, w: 700 });
+    const mx = Math.max(1, ...this.h0.map((v, i) => v + this.h1[i]));
+    const bwid = hw / 31;
+    for (let c = 0; c <= 30; c++) {
+      const v0 = this.h0[c], v1 = this.h1[c];
+      const y0 = hh * Math.sqrt(v0 / mx), y1 = hh * Math.sqrt((v0 + v1) / mx);
+      ctx.fillStyle = rgba(C.uv, 0.8); ctx.fillRect(hx + c * bwid + 0.5, hy + hh - y1, bwid - 1, y1 - y0);
+      ctx.fillStyle = rgba(C.cyan, 0.8); ctx.fillRect(hx + c * bwid + 0.5, hy + hh - y0, bwid - 1, y0);
+    }
+    line(hx, hy + hh, hx + hw, hy + hh, C.muted, 1);
+    [0, 5, 10, 15, 20, 25].forEach(c => txt(c, hx + (c + 0.5) * bwid, hy + hh + 14, { align: 'center', size: 10, mono: true, color: C.muted }));
+    txt('30+', hx + 30.5 * bwid, hy + hh + 14, { align: 'center', size: 10, mono: true, color: C.muted });
+    txt('縦軸は √(回数)', hx + hw, hy - 6, { align: 'right', size: 9.5, color: C.dark });
+    const tx = hx + this.thr * bwid;
+    line(tx, hy - 2, tx, hy + hh, C.mw, 1.5, [4, 3]);
+    txt(`≥${this.thr} → 1`, tx + 4, hy + 10, { size: 10.5, mono: true, color: C.mw });
+    if (this.thr > 2) txt('← 0', tx - 4, hy + 10, { align: 'right', size: 10.5, mono: true, color: C.mw });
+    rect(hx, hy + hh + 26, 10, 10, C.cyan, null, 2); txt('本当は |0⟩', hx + 14, hy + hh + 35, { size: 11, color: C.muted });
+    rect(hx + 100, hy + hh + 26, 10, 10, C.uv, null, 2); txt('本当は |1⟩', hx + 114, hy + hh + 35, { size: 11, color: C.muted });
+    // stats
+    const S = this.stats(), sx = 530, sy = 340;
+    rect(sx - 8, sy - 6, 266, 150, C.panel, C.line, 8);
+    const row = (k, v, y, col) => { txt(k, sx + 4, y, { size: 11.5, color: C.muted }); txt(v, sx + 250, y, { align: 'right', size: 12, mono: true, color: col || C.ink }); };
+    row('ショット数', String(S.N), sy + 16);
+    row('「1」と判定された割合', S.r1.toFixed(3), sy + 38, C.uv);
+    row('理論値 sin²(θ/2)', (Math.sin(this.theta / 2) ** 2).toFixed(3), sy + 58);
+    row('誤判定 |0⟩→「1」', (S.e0 * 100).toFixed(2) + ' %', sy + 82);
+    row('誤判定 |1⟩→「0」', (S.e1 * 100).toFixed(2) + ' %', sy + 102);
+    const F = 1 - ((S.n0 ? S.e0 : 0) + (S.n1 ? S.e1 : 0)) / ((S.n0 ? 1 : 0) + (S.n1 ? 1 : 0) || 1);
+    row('読み出し忠実度', (F * 100).toFixed(2) + ' %', sy + 128, F > 0.99 ? C.ok : C.bad);
+  }
+};
+
+/* =========================================================
+   Scene 6 — many ions at once
+   ========================================================= */
+const EQ7 = [-2.2870, -1.4342, -0.6973, 0, 0.6973, 1.4342, 2.2870];
+const S6 = {
+  key: 'array', name: 'まとめて読む', dur: 12, t: 0, cache: {},
+  phases: [
+    { t: 0, title: '全イオンを同時に照らす', text: '検出光をイオン列全体に当てます。|1⟩ のイオンだけが光り、|0⟩ のイオンは暗いままです。' },
+    { t: 1, title: 'イオンごとに光子を数える', text: '結像レンズでイオン列の像を作り、1個ずつ PMT アレイの別チャンネル（またはファイバ、EMCCD の画素領域）に対応させて独立に数えます。隣のイオンの光の漏れ込み（クロストーク）は小さく抑えられています。' },
+    { t: 3, title: 'ビット列として出力', text: '各チャンネルをしきい値で判定すると、1回の測定結果は 0110100 のようなビット列になります。量子計算の結果はこれを何千回も繰り返した分布として得られます。Quantinuum の QCCD 型装置では、測定するイオンを専用領域へ運んで、他のイオンに散乱光が当たらないようにしています。' }
+  ],
+  phaseIndex() { const u = this.t % 4; return u < 1 ? 0 : u < 3 ? 1 : 2; },
+  jump(i) { this.t = Math.floor(this.t / 4) * 4 + [0, 1, 3][i]; },
+  bits(slot) {
+    if (!this.cache[slot]) {
+      const ghz = slot % 2 === 0;
+      const b = ghz ? (Math.random() < 0.5 ? '0000000' : '1111111') : Array.from({ length: 7 }, () => Math.random() < 0.5 ? '1' : '0').join('');
+      const counts = b.split('').map(c => c === '1' ? poisson(12) : poisson(0.15));
+      this.cache = { [slot]: { b, counts, ghz } };
+    }
+    return this.cache[slot];
+  },
+  draw() {
+    heading('複数量子ビットの同時読み出し');
+    const slot = Math.floor(this.t / 4), u = this.t % 4, D = this.bits(slot);
+    const cx = 300, cy = 360, sp = 52;
+    const laser = clamp(u / 0.4, 0, 1);
+    const g = ctx.createLinearGradient(0, 0, 600, 0);
+    g.addColorStop(0, rgba(C.uv, 0.5 * laser)); g.addColorStop(1, rgba(C.uv, 0.15 * laser));
+    ctx.fillStyle = g; ctx.fillRect(0, cy - 4, 600, 8);
+    txt('検出光', 10, cy - 10, { size: 11, color: C.uv });
+    rect(60, cy - 46, 480, 12, rgba(C.muted, 0.2), rgba(C.muted, 0.4), 3);
+    rect(60, cy + 34, 480, 12, rgba(C.muted, 0.2), rgba(C.muted, 0.4), 3);
+    ctx.save(); ctx.strokeStyle = rgba(C.cyan, 0.8); ctx.fillStyle = rgba(C.cyan, 0.08); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(cx, 250, 220, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
+    txt('結像レンズ', cx + 228, 254, { size: 11, color: C.muted });
+    const fill = clamp((u - 1) / 2, 0, 1);
+    for (let i = 0; i < 7; i++) {
+      const x = cx + EQ7[i] * sp * 0.95, on = D.b[i] === '1';
+      glow(x, cy, 26, C.uv, on ? laser * 0.95 : 0);
+      dot(x, cy, 4, C.ink);
+      const dx = cx + (i - 3) * 62;
+      line(x, cy - 8, dx, 120, on ? C.uv : C.dark, 1, [2, 4], on ? 0.5 * laser : 0.25);
+      rect(dx - 24, 80, 48, 40, C.panel, C.line, 4);
+      const c = Math.round(D.counts[i] * fill);
+      const bh = Math.min(34, c * 1.6);
+      rect(dx - 18, 116 - bh, 36, bh, rgba(on ? C.uv : C.cyan, 0.7), null, 2);
+      txt(String(c), dx, 72, { align: 'center', size: 12, mono: true, color: C.ink });
+      txt(`ch${i + 1}`, dx, 134, { align: 'center', size: 9.5, mono: true, color: C.muted });
+      if (u >= 3) txt(on ? '1' : '0', dx, 186, { align: 'center', size: 26, mono: true, w: 600, color: on ? C.uv : C.cyan, a: clamp((u - 3) / 0.3, 0, 1) });
+    }
+    txt('PMT アレイ', 24, 104, { size: 11, color: C.muted });
+    if (u >= 3) {
+      txt(`測定結果 |${D.b}⟩`, 600, 470, { align: 'right', size: 15, mono: true, w: 600, color: C.ink });
+      txt(D.ghz ? '（GHZ 状態を測ると 0000000 か 1111111 だけが出る）' : '（各ビットがそれぞれ 0/1 に射影される）', 600, 490, { align: 'right', size: 10.5, color: C.muted });
+    }
+    txt('しきい値 ≥2 カウント → 1', 24, 470, { size: 11, color: C.muted, mono: true });
+  }
+};
+
+/* ---------- controller ---------- */
+const scenes = [S1, S2, S3, S4, S5, S6];
+let cur = 0, playing = !reduce, speed = 1, last = performance.now(), lastPh = -1;
+const tabs = document.getElementById('tabs'), phEl = document.getElementById('phases'), ctl = document.getElementById('controls'), titleEl = document.getElementById('sceneTitle');
+scenes.forEach((s, i) => {
+  if (!s.phaseIndex) s.phaseIndex = function () { let k = 0; this.phases.forEach((p, j) => { if (this.t >= p.t) k = j; }); return k; };
+  const b = document.createElement('button');
+  b.type = 'button'; b.setAttribute('role', 'tab'); b.innerHTML = `<span class="n">${i + 1}</span>${s.name}`;
+  b.addEventListener('click', () => show(i));
+  tabs.appendChild(b);
+});
+function show(i) {
+  cur = i; const s = scenes[i];
+  [...tabs.children].forEach((b, j) => b.setAttribute('aria-selected', j === i));
+  titleEl.textContent = `${i + 1}. ${s.name}`;
+  phEl.innerHTML = s.phases.map((p, j) => `<li data-i="${j}"><span class="t">${p.title}</span><span class="d">${p.text}</span></li>`).join('');
+  [...phEl.children].forEach(li => li.addEventListener('click', () => {
+    const j = +li.dataset.i;
+    if (s.jump) s.jump(j); else s.t = s.phases[j].t + 0.01;
+  }));
+  ctl.innerHTML = s.controls ? s.controls() : '';
+  if (s.bind) s.bind();
+  lastPh = -1;
+  try { localStorage.setItem('ion-scene', i); } catch (e) {}
+}
+function restart() {
+  const s = scenes[cur];
+  s.t = 0;
+  if (s === S3) s.reset();
+  if (s === S4) { s.st = 'reset'; s.st_t = 0; s.theta = 0; }
+  if (s === S5) s.startShot();
+}
+document.getElementById('restart').addEventListener('click', restart);
+const playBtn = document.getElementById('play');
+function syncPlay() { playBtn.textContent = playing ? '一時停止' : '再生'; }
+playBtn.addEventListener('click', () => { playing = !playing; syncPlay(); });
+document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+  speed = +b.dataset.speed; document.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', x === b));
+}));
+function resize() {
+  const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  cv.width = Math.round(r.width * d); cv.height = Math.round(r.width * d * H / W);
+  scale = cv.width / W;
+}
+new ResizeObserver(resize).observe(cv);
+resize();
+function frame(now) {
+  let dt = Math.min(0.05, (now - last) / 1000); last = now;
+  dt = playing ? dt * speed : 0;
+  const s = scenes[cur];
+  if (s.update) s.update(dt);
+  s.t += dt; if (s.dur) s.t %= s.dur;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  s.draw();
+  const ph = s.phaseIndex();
+  if (ph !== lastPh) { [...phEl.children].forEach((li, j) => li.classList.toggle('on', j === ph)); lastPh = ph; }
+  requestAnimationFrame(frame);
+}
+S5.refill();
+if (reduce) { S1.t = 12; }
+let start = 0;
+try { const v = localStorage.getItem('ion-scene'); if (v !== null && scenes[+v]) start = +v; } catch (e) {}
+show(start); syncPlay();
+requestAnimationFrame(frame);
+})();
+</script>
