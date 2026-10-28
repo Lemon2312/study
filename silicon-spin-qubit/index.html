@@ -1,0 +1,631 @@
+<title>シリコン・スピン量子ビット</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: 縦に流れる5つの「シーン」。各シーンは アニメーション画面 + 手順リスト + 詳しい解説 */
+:root{
+  --bg:#EEF2F5; --surface:#FFFFFF; --fg:#121A22; --muted:#56636F; --line:#D3DBE2;
+  --up:#D2491A; --down:#0A7C8C; --accent:#3346C2; --gate:#B5862A; --si:#C7D8E6; --sige:#E3E9EE;
+  --electron:#1B2631; --fermi:#A9C3DE; --magnet:#4A3F5C; --soft:#F5F8FA;
+  --f-display:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1116; --surface:#141B22; --fg:#E3E9EF; --muted:#94A2AF; --line:#2A3641;
+  --up:#FF8E5E; --down:#45C9D8; --accent:#93A5FF; --gate:#D8AE54; --si:#22394C; --sige:#19232D;
+  --electron:#E3E9EF; --fermi:#2A4A6C; --magnet:#8D7FB0; --soft:#10161C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1116; --surface:#141B22; --fg:#E3E9EF; --muted:#94A2AF; --line:#2A3641;
+  --up:#FF8E5E; --down:#45C9D8; --accent:#93A5FF; --gate:#D8AE54; --si:#22394C; --sige:#19232D;
+  --electron:#E3E9EF; --fermi:#2A4A6C; --magnet:#8D7FB0; --soft:#10161C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.8;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1120px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:clamp(30px,5vw,52px);font-weight:900;letter-spacing:-.01em}
+h2{font-size:clamp(22px,3vw,30px);font-weight:900}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+header.hero{padding-block:56px 32px;display:grid;gap:20px}
+.hero .lead{max-width:68ch;font-size:17px;color:var(--muted)}
+.keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.key{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px;align-content:start}
+.key .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.key b{font-family:var(--f-display);font-size:17px}
+.key p{font-size:14px;color:var(--muted);line-height:1.7}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+nav.toc a{font-size:13px;color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--surface)}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+section.scene{padding-block:44px 8px;border-top:1px solid var(--line);display:grid;gap:18px}
+.scene>header{display:grid;gap:8px;max-width:76ch}
+.scene>header p{color:var(--muted)}
+.stage-row{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
+.stage canvas{display:block;width:100%}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:var(--soft)}
+.bar button,.chips button{font:inherit;font-size:14px;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer;line-height:1.5}
+.bar button:hover,.chips button:hover{border-color:var(--accent)}
+.bar button[data-act=play]{background:var(--accent);border-color:var(--accent);color:var(--surface);min-width:96px;font-weight:700}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.prog{flex:1 1 120px;height:4px;background:var(--line);border-radius:2px;overflow:hidden;min-width:80px}
+.prog i{display:block;height:100%;width:0;background:var(--accent)}
+.stepno{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.now{display:none;padding:12px 14px;border-top:1px solid var(--line);font-size:14.5px;line-height:1.75}
+.now b{display:block;font-family:var(--f-display);font-size:15px;margin-bottom:2px}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:st}
+ol.steps li{counter-increment:st}
+ol.steps button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:28px 1fr;gap:2px 8px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid transparent;cursor:pointer;font-size:14px;line-height:1.7;color:var(--muted)}
+ol.steps button::before{content:counter(st);grid-row:span 2;font-family:var(--f-mono);font-size:12px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;margin-top:1px}
+ol.steps b{font-family:var(--f-display);font-size:15px;color:var(--fg)}
+ol.steps li.on button{background:var(--surface);border-color:var(--line);color:var(--fg)}
+ol.steps li.on button::before{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+ol.steps button:focus-visible{outline:2px solid var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.chips button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tally{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px;max-width:100%}
+.notes>div{display:grid;gap:6px;align-content:start;min-width:0}
+.notes p,.notes li{font-size:15px;color:var(--fg)}
+.notes ul{margin:0;padding-left:1.2em}
+.notes h3{font-size:15.5px}
+.eq{font-family:var(--f-mono);font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;overflow-x:auto;white-space:nowrap}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--muted);font-size:13px}
+td.mono{white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.refs{font-size:13.5px;color:var(--muted);display:grid;gap:4px;padding-left:1.2em;margin:0}
+footer{margin-top:40px;font-size:13px;color:var(--muted)}
+@media (max-width:900px){
+  .stage-row{grid-template-columns:minmax(0,1fr)}
+  .now{display:block}
+  .notes{grid-template-columns:minmax(0,1fr)}
+  .keys{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <span class="eyebrow">Semiconductor qubit · Silicon spin</span>
+  <h1>シリコン・スピン量子ビット<br>1ビットの作り方と読み方</h1>
+  <p class="lead">半導体量子コンピュータで現在いちばん主流なのは、<b>シリコンの量子ドットに電子を1個だけ閉じ込め、その電子の「スピン」を量子ビットにする方式</b>です（Loss–DiVincenzo 方式。Intel、QuTech、理研、Diraq などが採用）。下の各シーンは再生ボタンで順に動きます。手順の番号を押すと、その場面へ飛べます。</p>
+  <div class="keys">
+    <div class="key"><span class="n">表現 1</span><b>電子1個を箱に入れる</b><p>ゲート電極の電圧で、シリコン中に直径50〜100 nmほどの「量子ドット」を作り、電子をちょうど1個だけ残す。</p></div>
+    <div class="key"><span class="n">表現 2</span><b>磁場で ↓=0、↑=1</b><p>磁場をかけるとスピンの向きでエネルギーが分かれる。低い ↓ が |0⟩、高い ↑ が |1⟩。マイクロ波で回して重ね合わせを作る。</p></div>
+    <div class="key"><span class="n">測定</span><b>スピンを電荷に置き換える</b><p>スピンそのものは小さすぎて直接見えない。「↑なら電子が動く」仕掛けを作り、その電荷の変化を高感度センサで見る。</p></div>
+  </div>
+  <nav class="toc" aria-label="目次">
+    <a href="#dot">1 量子ドットを作る</a><a href="#zeeman">2 0と1を決める</a><a href="#bloch">3 重ね合わせと操作</a><a href="#elzerman">4 測定①エルツァーマン</a><a href="#psb">5 測定②パウリ閉塞</a><a href="#numbers">数値まとめ</a>
+  </nav>
+</header>
+
+<section class="scene" id="dot" data-h="420">
+  <header><span class="eyebrow">Scene 1 · 器</span><h2>量子ドット：電子を1個だけ閉じ込める箱</h2>
+  <p>量子ビットの「器」は、シリコン結晶の中に電圧だけで作る小さな箱です。上が素子の断面、下がそのSi層に沿った電子のポテンシャルエネルギー（電子にとっての地形）です。</p></header>
+  <div class="stage-row">
+    <div class="stage"><canvas aria-label="量子ドット形成のアニメーション"></canvas>
+      <div class="bar"><button type="button" data-act="prev">◀ 前へ</button><button type="button" data-act="play">再生</button><button type="button" data-act="next">次へ ▶</button><div class="prog"><i></i></div><span class="stepno"></span></div>
+      <div class="now"></div></div>
+    <ol class="steps"></ol>
+  </div>
+  <div class="notes">
+    <div><h3>なぜシリコン/シリコンゲルマニウムなのか</h3><p>SiGe に挟まれた薄い Si 層は、電子にとってエネルギーの低い「溝」になり、電子は深さ方向に閉じ込められて平面内だけを動く（2次元電子ガス）。残り2方向はゲート電圧で閉じ込めるので、3方向すべてが閉じた0次元の箱＝量子ドットになる。Si と SiGe の代わりに Si と酸化膜（SiO₂）の界面を使う <b>Si-MOS 型</b>もあり、こちらは通常のトランジスタ製造ラインとの相性が良い。</p></div>
+    <div><h3>電子数を1個に合わせる仕組み</h3><p>箱が小さいと、(1) 中のエネルギー準位が飛び飛びになり、(2) 電子を1個足すごとに静電反発の分（帯電エネルギー、数 meV）だけ余計にエネルギーが要る。これをクーロン・ブロッケードと呼ぶ。プランジャー電圧を少しずつ変えると電子は1個ずつ出入りするので、0個から数えて「ちょうど1個」の状態に設定できる。</p></div>
+    <div><h3>同位体を選ぶ理由</h3><p>天然シリコンの約4.7%は核スピンを持つ ²⁹Si。核スピンは電子スピンにとって揺らぐ磁場ノイズになる。そこで ²⁸Si を99.9%以上に濃縮した材料を使うと、量子状態の寿命（コヒーレンス時間）が桁違いに伸びる。これがシリコン方式の大きな強み。</p></div>
+    <div><h3>微小磁石の役割</h3><p>ゲートの上に置いたコバルトの微小磁石は、場所ごとに強さが変わる磁場（傾斜磁場）を作る。これにより (a) 隣のドットの電子と共鳴周波数がずれて個別に狙い撃ちでき、(b) 電子を電場で揺らすだけでスピンを回せる（Scene 3）。</p></div>
+  </div>
+</section>
+
+<section class="scene" id="zeeman" data-h="360">
+  <header><span class="eyebrow">Scene 2 · 0 と 1</span><h2>ゼーマン分裂：磁場がスピンの向きにエネルギー差をつける</h2>
+  <p>電子は小さな磁石（スピン）を持っています。磁場の中では、向きによってエネルギーが違います。この2つの状態が量子ビットの 0 と 1 です。</p></header>
+  <div class="stage-row">
+    <div class="stage"><canvas aria-label="ゼーマン分裂のアニメーション"></canvas>
+      <div class="bar"><button type="button" data-act="prev">◀ 前へ</button><button type="button" data-act="play">再生</button><button type="button" data-act="next">次へ ▶</button><div class="prog"><i></i></div><span class="stepno"></span></div>
+      <div class="now"></div></div>
+    <ol class="steps"></ol>
+  </div>
+  <div class="notes">
+    <div><h3>エネルギー差と周波数</h3><div class="eq">E_Z = g μ_B B ≈ 2 × 57.9 µeV/T × 0.5 T ≈ 58 µeV</div><div class="eq">f = E_Z / h ≈ 28 GHz/T × 0.5 T ≈ 14 GHz</div><p>この周波数（電子スピン共鳴周波数、ラーモア周波数）のマイクロ波で状態を操作する。磁場の向きは通常チップ面に平行。図の「↑/↓」は「磁場に対してどちら向きか」を表す記号で、紙面の上下ではない。</p></div>
+    <div><h3>温度が低くなければならない理由</h3><p>0 と 1 の差 58 µeV は温度にすると約 0.67 K。0.1 K の熱エネルギー k_BT ≈ 8.6 µeV と比べて十分大きいので、放っておけば電子はほぼ ↓ に落ち着き、きれいに初期化できる。逆に温度が上がると熱で勝手に ↑ になったり、Scene 4 の読み出しで誤判定が増える。このため希釈冷凍機（〜10–100 mK）で動かす。</p></div>
+    <div><h3>シリコン特有の注意点：バレー</h3><p>シリコンの伝導帯には「バレー」と呼ばれる似たエネルギーの状態が複数あり、界面で 0.05〜0.3 meV 程度に分裂する。この分裂がスピンの分裂 E_Z より小さいと、量子ビットがバレー状態へ漏れてしまう。そのため材料・界面の品質管理が重要な研究テーマになっている。</p></div>
+    <div><h3>1ビットの中身</h3><p>量子ビットの一般状態は α|0⟩ + β|1⟩（|α|²+|β|²=1）。測定すると確率 |α|² で 0、|β|² で 1 が出る。この α, β の比と位相を自在に作るのが Scene 3 の操作。</p></div>
+  </div>
+</section>
+
+<section class="scene" id="bloch" data-h="500">
+  <header><span class="eyebrow">Scene 3 · 操作</span><h2>重ね合わせを作る：マイクロ波で電子を揺らす（EDSR）</h2>
+  <p>状態はブロッホ球の上の矢印で表せます。北極が |0⟩、南極が |1⟩、赤道上が半々の重ね合わせです。上段は、ゲートにかけるマイクロ波と、それによって揺れる電子の様子です。</p></header>
+  <div class="stage-row">
+    <div class="stage"><canvas aria-label="ブロッホ球とラビ振動のアニメーション"></canvas>
+      <div class="bar"><button type="button" data-act="prev">◀ 前へ</button><button type="button" data-act="play">再生</button><button type="button" data-act="next">次へ ▶</button><div class="prog"><i></i></div><span class="stepno"></span></div>
+      <div class="now"></div></div>
+    <ol class="steps"></ol>
+  </div>
+  <div class="notes">
+    <div><h3>EDSR（電気双極子スピン共鳴）</h3><p>スピンを回すには本来、共鳴周波数で振動する<b>磁場</b>が要る。しかし狭いチップ上で局所的な交流磁場を作るのは難しい。そこで、微小磁石の傾斜磁場の中で電子を<b>電場</b>で数 nm 程度ゆらす。電子から見ると、横向きの磁場 B_x が 14 GHz で振動しているのと同じになり、スピンが回る。交流磁場をアンテナで直接かける ESR 方式（Si-MOS で多い）もある。</p></div>
+    <div><h3>回転座標系で見る</h3><p>実際の矢印は 14 GHz で z 軸周りを高速回転（ラーモア歳差）している。マイクロ波と同じ速さで回るカメラから見ると歳差が止まって見え、マイクロ波の効果だけが「x 軸周りのゆっくりした回転」として残る。回転の速さ（ラビ周波数）は数 MHz 程度で、π パルス（0→1 反転）に 100 ns 〜 1 µs ほどかかる。</p></div>
+    <div><h3>パルスの長さ＝回転角</h3><ul><li>π/2 パルス：|0⟩ → (|0⟩ + e^{iφ}|1⟩)/√2（赤道）</li><li>π パルス：|0⟩ → |1⟩（NOT ゲート）</li><li>マイクロ波の位相を変えると回転軸が x から y に変わる → 任意の1量子ビットゲート</li></ul></div>
+    <div><h3>2量子ビットゲート</h3><p>隣のドットとの間のバリアゲートを開けると、電子の波動関数が重なり、交換相互作用 J が生じる。J を数 MHz 程度オンにする時間で CZ ゲートや SWAP ゲートを作る。2量子ビットゲート忠実度は 2022 年に 99% を超えた（QuTech、理研など）。</p></div>
+  </div>
+</section>
+
+<section class="scene" id="elzerman" data-h="550">
+  <header><span class="eyebrow">Scene 4 · 測定 ①</span><h2>エルツァーマン読み出し：↑ の電子だけが外へ逃げる</h2>
+  <p>1個の電子スピンの磁気は小さすぎて直接は測れません。そこで「エネルギーの高い ↑ だけがトンネルして出ていける」ように準位を合わせ、電子がいるかいないか（電荷）を隣の電荷センサで見ます。左上が電子のエネルギー図、右上が電荷センサ、下段が実験で見る時系列の信号です。</p></header>
+  <div class="chips" role="group" aria-label="測定する状態">
+    <span>測定前に用意する状態：</span>
+    <button type="button" data-state="0" aria-pressed="false">|0⟩ (↓)</button>
+    <button type="button" data-state="1" aria-pressed="false">|1⟩ (↑)</button>
+    <button type="button" data-state="+" aria-pressed="true">(|0⟩+|1⟩)/√2 重ね合わせ</button>
+    <span class="tally" id="tally">測定結果　0: 0回　1: 0回</span>
+  </div>
+  <div class="stage-row">
+    <div class="stage"><canvas aria-label="エルツァーマン読み出しのアニメーション"></canvas>
+      <div class="bar"><button type="button" data-act="prev">◀ 前へ</button><button type="button" data-act="play">再生</button><button type="button" data-act="next">次へ ▶</button><div class="prog"><i></i></div><span class="stepno"></span></div>
+      <div class="now"></div></div>
+    <ol class="steps"></ol>
+  </div>
+  <div class="notes">
+    <div><h3>スピン→電荷変換の条件</h3><p>読み出し位置では、<span class="up">E↑ がフェルミ準位 E_F より上</span>、<span class="down">E↓ が E_F より下</span>になるようにプランジャー電圧を合わせる。リザーバの E_F より上には空席があるので ↑ の電子はそこへトンネルできるが、↓ の電子の行き先（E_F より下）は満席なので出られない。E_Z ≫ k_BT が必要なのはこの区別をはっきりさせるため。</p></div>
+    <div><h3>電荷センサ（SET）</h3><p>ドットのすぐ隣に、もう1つの量子ドットでできた単電子トランジスタ（SET）を置く。SET の電流はクーロンピークの斜面で動かすと、近くの電荷に極めて敏感になる。ドットから電子が1個抜けるとピークの位置がずれ、電流が目に見えて跳ね上がる。↑ のときはこの「ブリップ（一瞬の跳ね上がり）」が出て、すぐに ↓ の電子が入り直して元に戻る。</p></div>
+    <div><h3>典型的な時間スケール</h3><ul><li>トンネル時間：数 µs〜数百 µs（障壁ゲートで調整）</li><li>読み出し窓：数十 µs〜1 ms</li><li>センサの帯域：DC 測定で〜100 kHz、RF 反射測定で〜MHz 以上</li><li>スピン緩和時間 T₁：シリコンでは ms〜s と長い</li></ul></div>
+    <div><h3>誤判定の原因</h3><ul><li>↑ がトンネル前に ↓ へ緩和する（T₁）→ 0 と誤判定</li><li>熱で ↓ の電子が飛び出す → 1 と誤判定</li><li>ブリップが短すぎてセンサが追えない</li></ul><p>これらを抑えて単発（シングルショット）読み出し忠実度 97〜99% 以上が報告されている。測定後に電子は必ず ↓ に入れ替わるので、この方式は<b>初期化も兼ねる</b>。</p></div>
+  </div>
+</section>
+
+<section class="scene" id="psb" data-h="480">
+  <header><span class="eyebrow">Scene 5 · 測定 ②</span><h2>パウリ・スピン閉塞：2つの電子が「同じ部屋に入れるか」を見る</h2>
+  <p>多数の量子ビットを並べた最近のデバイスでは、隣の量子ビット（アンシラ）と組にして読む方式が主流になりつつあります。リザーバが要らず、高い磁場や低い電子温度にも依存しにくいためです。左は反平行、右は平行の場合を並べています。</p></header>
+  <div class="stage-row">
+    <div class="stage"><canvas aria-label="パウリスピン閉塞のアニメーション"></canvas>
+      <div class="bar"><button type="button" data-act="prev">◀ 前へ</button><button type="button" data-act="play">再生</button><button type="button" data-act="next">次へ ▶</button><div class="prog"><i></i></div><span class="stepno"></span></div>
+      <div class="now"></div></div>
+    <ol class="steps"></ol>
+  </div>
+  <div class="notes">
+    <div><h3>なぜ平行だと入れないのか</h3><p>パウリの排他律により、同じ軌道（と同じバレー）に2個の電子が入るには、スピンが反対向き（一重項 S）でなければならない。平行（三重項 T）のまま右ドットに入るには、1個を高い励起準位に上げる必要がある。離調 ε をその手前で止めておけば、三重項は左右に1個ずつの (1,1) に閉じ込められたままになる。</p></div>
+    <div><h3>反平行の扱い</h3><p>↑↓ と ↓↑ はそれぞれ一重項と三重項 T₀ の混ざった状態。微小磁石で2つのドットのゼーマンエネルギーに差をつけておくと、ε をゆっくり動かしたときに片方だけが (0,2) の一重項につながり、もう片方は閉塞される。アンシラを ↓ に用意しておけば、通過か閉塞かで相手のスピンが決まる。</p></div>
+    <div><h3>ゲートRF反射測定（分散読み出し）</h3><p>ゲートに数百 MHz の LC 共振回路をつなぎ、反射波の位相を測る。電子が2つのドットの間を行き来できると「量子キャパシタンス」が生じて位相がずれ、閉塞されていると変化しない。センサ用の別ドットが不要で配線を減らせるため、大規模化に向く。読み出し時間は数 µs、忠実度は 99% 超が報告されている。</p></div>
+    <div><h3>2つの方式の比較</h3><ul><li><b>エルツァーマン</b>：1量子ビット単独で読める。リザーバが隣に必要で、E_Z ≫ k_BT のため 1 T 前後の磁場と低い電子温度が要る。</li><li><b>パウリ閉塞</b>：アンシラが必要。リザーバ不要で、1 K 前後の「高温」動作も実証されている。量子誤り訂正のパリティ測定とも相性が良い。</li></ul></div>
+  </div>
+</section>
+
+<section class="scene" id="numbers">
+  <header><span class="eyebrow">Summary</span><h2>数値まとめ</h2><p>代表的な値です。デバイスや研究グループによって幅があります。</p></header>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>典型値</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td>量子ドットの大きさ</td><td class="mono">50–100 nm</td><td>ゲート電極の間隔で決まる</td></tr>
+      <tr><td>Si 量子井戸の厚さ</td><td class="mono">≈10 nm</td><td>電子を深さ方向に閉じ込める層</td></tr>
+      <tr><td>動作温度</td><td class="mono">10–100 mK</td><td>希釈冷凍機（1 K 前後の実証もある）</td></tr>
+      <tr><td>外部磁場 B₀</td><td class="mono">0.2–1 T</td><td>↑/↓ のエネルギー差を作る</td></tr>
+      <tr><td>ゼーマン分裂 E_Z（0.5 T）</td><td class="mono">≈58 µeV ≈ 0.67 K</td><td>0 と 1 のエネルギー差</td></tr>
+      <tr><td>共鳴周波数（0.5 T）</td><td class="mono">≈14 GHz</td><td>操作に使うマイクロ波の周波数</td></tr>
+      <tr><td>ラビ周波数</td><td class="mono">1–10 MHz</td><td>π パルス 50 ns–500 ns</td></tr>
+      <tr><td>T₂*（²⁸Si）</td><td class="mono">≈10–30 µs</td><td>放置したときの位相の寿命</td></tr>
+      <tr><td>T₂（エコー/動的デカップリング）</td><td class="mono">≈0.1–数 ms</td><td>ノイズを打ち消したときの寿命</td></tr>
+      <tr><td>T₁</td><td class="mono">ms–s</td><td>↑ が ↓ に落ちるまでの寿命</td></tr>
+      <tr><td>1量子ビットゲート忠実度</td><td class="mono">&gt;99.9%</td><td>理研（2018）など</td></tr>
+      <tr><td>2量子ビットゲート忠実度</td><td class="mono">&gt;99%</td><td>QuTech、理研、UNSW など（2022–）</td></tr>
+      <tr><td>読み出し忠実度</td><td class="mono">97–99.9%</td><td>エルツァーマン / パウリ閉塞＋RF</td></tr>
+    </tbody>
+  </table></div>
+  <div class="notes">
+    <div><h3>1サイクルの流れ</h3><p><b>初期化</b>（↓ だけを入れる、または読み出し後の状態を利用）→ <b>操作</b>（マイクロ波パルスと交換相互作用 J のパルス列）→ <b>読み出し</b>（スピン→電荷変換＋電荷検出）。これを数千回くり返し、0 と 1 の出現頻度から確率 |α|², |β|² を求める。</p></div>
+    <div><h3>主要な論文</h3><ol class="refs"><li>D. Loss &amp; D. P. DiVincenzo, Phys. Rev. A 57, 120 (1998)：方式の提案</li><li>J. M. Elzerman et al., Nature 430, 431 (2004)：単発スピン読み出し</li><li>J. Yoneda et al., Nat. Nanotechnol. 13, 102 (2018)：忠実度 99.9% の1量子ビット操作</li><li>X. Xue et al., Nature 601, 343 (2022)／A. Noiri et al., Nature 601, 338 (2022)：2量子ビット忠実度 99% 超</li></ol></div>
+  </div>
+</section>
+
+<footer>図は原理を見せるための模式図で、縦横の縮尺や時間の速さは実際と異なります。</footer>
+</div>
+
+<script>
+(()=>{
+const $=(s,r=document)=>r.querySelector(s);
+const PI=Math.PI, lerp=(a,b,t)=>a+(b-a)*t, clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const ease=t=>{t=clamp(t,0,1);return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2};
+const seg=(p,a,b)=>clamp((p-a)/(b-a),0,1);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*PI*v)};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let C={};
+function readColors(){const s=getComputedStyle(document.documentElement);
+  ['bg','surface','fg','muted','line','up','down','accent','gate','si','sige','electron','fermi','magnet','soft'].forEach(k=>C[k]=s.getPropertyValue('--'+k).trim());}
+readColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readColors);
+new MutationObserver(readColors).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+const FONT=(s,w=500)=>`${w} ${s}px "Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif`;
+const MONO=s=>`500 ${s}px "JetBrains Mono",ui-monospace,Menlo,monospace`;
+function txt(x,s,px,py,o={}){x.font=o.mono?MONO(o.size||11):FONT(o.size||12.5,o.w||500);x.fillStyle=o.color||C.fg;
+  x.textAlign=o.align||'left';x.textBaseline=o.base||'alphabetic';x.globalAlpha=o.alpha??1;x.fillText(s,px,py);x.globalAlpha=1;}
+function ln(x,x1,y1,x2,y2,col,lw=1,dash){x.beginPath();x.setLineDash(dash||[]);x.moveTo(x1,y1);x.lineTo(x2,y2);x.strokeStyle=col;x.lineWidth=lw;x.stroke();x.setLineDash([]);}
+function arrow(x,x1,y1,x2,y2,col,lw=2,h=7){ln(x,x1,y1,x2,y2,col,lw);const a=Math.atan2(y2-y1,x2-x1);
+  x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-h*Math.cos(a-.45),y2-h*Math.sin(a-.45));x.lineTo(x2-h*Math.cos(a+.45),y2-h*Math.sin(a+.45));x.closePath();x.fillStyle=col;x.fill();}
+function rr(x,px,py,w,h,r){x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();}
+function spinCol(a){if(a==null)return C.muted;const c=Math.cos(a);return c>.5?C.up:c<-.5?C.down:C.accent;}
+// electron: ang 0 = ↑, PI = ↓, null = no spin arrow
+function electron(x,px,py,r,ang,alpha=1,ghost=false){x.globalAlpha=alpha;const col=spinCol(ang);
+  x.beginPath();x.arc(px,py,r,0,2*PI);x.fillStyle=C.surface;x.fill();x.lineWidth=1.6;x.strokeStyle=col;x.setLineDash(ghost?[3,3]:[]);x.stroke();x.setLineDash([]);
+  if(!ghost){x.beginPath();x.arc(px,py,r,0,2*PI);x.fillStyle=col;x.globalAlpha=alpha*.18;x.fill();x.globalAlpha=alpha;}
+  if(ang!=null){const L=r*1.7,dx=Math.sin(ang)*L,dy=-Math.cos(ang)*L;arrow(x,px-dx*.75,py-dy*.75,px+dx,py+dy,col,1.8,Math.max(5,r*.6));}
+  x.globalAlpha=1;}
+function bg(x,W,H){x.fillStyle=C.surface;x.fillRect(0,0,W,H);}
+
+/* ---------- scene engine ---------- */
+const scenes=[];
+function scene(id,{steps,draw,loop=false,onStep}){
+  const root=document.getElementById(id),cv=$('canvas',root),x=cv.getContext('2d'),H=+root.dataset.h;
+  const list=$('.steps',root),now=$('.now',root),bar=$('.prog i',root),no=$('.stepno',root),play=$('[data-act=play]',root);
+  steps.forEach((s,k)=>{const li=document.createElement('li');li.innerHTML=`<button type="button"><b>${s.t}</b><span>${s.d}</span></button>`;
+    li.firstChild.addEventListener('click',()=>{go(k);setPlay(false);});list.appendChild(li);});
+  const st={i:0,t:0,playing:false,visible:false,auto:false,T:0,W:800,scale:1};
+  function resize(){const cw=cv.clientWidth||800;st.W=clamp(cw,560,900);st.scale=cw/st.W;const d=devicePixelRatio||1;
+    cv.style.height=Math.round(H*st.scale)+'px';cv.width=Math.round(cw*d);cv.height=Math.round(H*st.scale*d);render();}
+  function mark(){[...list.children].forEach((li,k)=>li.classList.toggle('on',k===st.i));
+    now.innerHTML=`<b>${st.i+1}. ${steps[st.i].t}</b>${steps[st.i].d}`;no.textContent=`${st.i+1} / ${steps.length}`;}
+  function go(k){st.i=(k+steps.length)%steps.length;st.t=0;onStep&&onStep(st.i);mark();render();}
+  function setPlay(v){st.playing=v;play.textContent=v?'一時停止':'再生';play.setAttribute('aria-pressed',v);}
+  play.addEventListener('click',()=>{if(!st.playing&&!loop&&st.i===steps.length-1&&st.t>=steps[st.i].dur)go(0);setPlay(!st.playing);});
+  $('[data-act=prev]',root).addEventListener('click',()=>{go(st.i-1);});
+  $('[data-act=next]',root).addEventListener('click',()=>{go(st.i+1);});
+  function render(){const d=devicePixelRatio||1;x.setTransform(d*st.scale,0,0,d*st.scale,0,0);
+    const p=clamp(st.t/steps[st.i].dur,0,1);draw(x,st.W,H,st.i,p,st.T,st);bar.style.width=(p*100)+'%';}
+  function frame(dt){if(!st.visible)return;
+    if(st.playing){st.t+=dt;const d=steps[st.i].dur;
+      if(st.t>=d){if(st.i<steps.length-1)go(st.i+1);else if(loop)go(0);else{st.t=d;setPlay(false);}}}
+    if(st.playing||!reduce)st.T+=dt;render();}
+  new ResizeObserver(resize).observe(cv);
+  new IntersectionObserver(es=>es.forEach(e=>{st.visible=e.isIntersecting;
+    if(st.visible&&!st.auto&&!reduce){st.auto=true;setPlay(true);}}),{threshold:.35}).observe(cv);
+  mark();resize();
+  const api={frame,render,go,st};scenes.push(api);return api;}
+
+/* ---------- Scene 1: quantum dot ---------- */
+const PTS=Array.from({length:90},()=>({f:Math.random(),ph:Math.random()*6.3,dy:Math.random()}));
+function drawDot(x,W,H,i,p,T){
+  bg(x,W,H);
+  const L=30,R=W-178,sp=R-L,yG=48,yOx=66,ySp=73,yW=128,yWb=150,yBuf=190;
+  const fade=(a,b)=>i===0?ease(seg(p,a,b)):1;
+  const lab=(s,y,col)=>txt(x,s,R+10,y+4,{size:11.5,color:col||C.muted});
+  x.globalAlpha=fade(0,.25);x.fillStyle=C.sige;x.fillRect(L,yWb,sp,yBuf-yWb);lab('SiGe バッファ層',(yWb+yBuf)/2);
+  x.globalAlpha=fade(.15,.4);x.fillStyle=C.si;x.fillRect(L,yW,sp,yWb-yW);lab('歪み Si 量子井戸 ≈10 nm',(yW+yWb)/2,C.fg);
+  x.globalAlpha=fade(.3,.55);x.fillStyle=C.sige;x.fillRect(L,ySp,sp,yW-ySp);lab('SiGe スペーサ ≈30 nm',(ySp+yW)/2);
+  x.globalAlpha=fade(.45,.7);x.fillStyle=C.line;x.fillRect(L,yOx,sp,ySp-yOx);lab('絶縁膜',(yOx+ySp)/2+2);
+  x.globalAlpha=fade(.6,.9);
+  const gates=[{f:.13,w:.22,n:'リザーバ'},{f:.4,w:.065,n:'B₁'},{f:.5,w:.1,n:'P'},{f:.6,w:.065,n:'B₂'},{f:.87,w:.22,n:'リザーバ'}];
+  gates.forEach(g=>{const gx=L+g.f*sp-g.w*sp/2;x.fillStyle=C.gate;x.fillRect(gx,yG,g.w*sp,yOx-yG);
+    txt(x,g.n,gx+g.w*sp/2,yG-6,{size:11.5,align:'center',w:700});});
+  lab('金属ゲート',yG+10,C.gate);x.globalAlpha=1;
+
+  const acc=i>=1?(i===1?ease(seg(p,0,.6)):1):0, bar=i>=2?(i===2?ease(seg(p,0,.7)):1):0, up=i>=3?(i===3?ease(seg(p,.05,.85)):1):0;
+  const xB1=L+.4*sp,xP=L+.5*sp,xB2=L+.6*sp,gw=.03*sp,pw=.075*sp,g=(d,w)=>Math.exp(-d*d/(2*w*w));
+  const V=X=>(1-2*acc)+bar*1.9*(g(X-xB1,gw)+g(X-xB2,gw))+up*.78*g(X-xP,pw);
+  const dotMode=bar>.5,inDot=X=>X>xB1&&X<xB2,yWell=(yW+yWb)/2;
+
+  // bottom panel
+  const yF=322,k=48,Y=v=>yF-v*k;
+  txt(x,'Si 井戸に沿ったポテンシャルエネルギー（電子にとっての地形）',L,232,{size:12,color:C.muted});
+  if(acc>0){x.fillStyle=C.fermi;for(let X=L;X<R;X+=2){const v=V(X);if(v<0&&!(dotMode&&inDot(X)))x.fillRect(X,yF,2.2,Y(v)-yF);}}
+  ln(x,L,yF,R,yF,C.muted,1,[5,4]);txt(x,'フェルミ準位 E_F',R+10,yF+4,{size:11.5,color:C.muted});
+  x.beginPath();for(let X=L;X<=R;X+=2){const y=Y(V(X));X===L?x.moveTo(X,y):x.lineTo(X,y);}x.strokeStyle=C.fg;x.lineWidth=2;x.stroke();
+  let N=0;
+  if(dotMode){const Vb=V(xP);
+    for(let n=0;n<6;n++){const E=Vb+.21*(n+.55);if(E>.75)break;let a=xP,b=xP;while(a>L&&V(a)<E)a--;while(b<R&&V(b)<E)b++;
+      x.globalAlpha=bar;ln(x,a+3,Y(E),b-3,Y(E),C.accent,1.4);x.globalAlpha=1;
+      if(E<0){N++;electron(x,xP,Y(E)-1,4.5,null,clamp(-E*12,0,1));}}
+    txt(x,'飛び飛びの準位',xB2+14,Y(Vb+.4),{size:11,color:C.accent});}
+  txt(x,dotMode?`ドット内の電子数 N = ${N}`:acc>0?'電子の海（2次元電子ガス）':'電子はまだいない',R+10,262,{size:12,w:700,color:dotMode?C.accent:C.fg});
+  if(acc>0)txt(x,'E < E_F の場所に電子が入る',R+10,282,{size:11,color:C.muted});
+
+  // cross-section electrons
+  PTS.forEach(pt=>{const X=L+pt.f*sp;if(dotMode&&inDot(X))return;const a=clamp(-V(X)*1.5,0,1);if(a<.03)return;
+    x.globalAlpha=a*.85;x.beginPath();x.arc(X+Math.sin(T*1.7+pt.ph)*2,yWell+(pt.dy-.5)*12,2.8,0,2*PI);x.fillStyle=C.electron;x.fill();x.globalAlpha=1;});
+  if(dotMode){if(i===4){electron(x,xP,yWell,8,Math.sin(T*2.4)*.25);}
+    else for(let n=0;n<N;n++)electron(x,xP+(n-(N-1)/2)*13,yWell,4.5,null);}
+  if(dotMode&&i>=2){x.globalAlpha=bar*.8;rr(x,xB1+4,yW-3,xB2-xB1-8,yWb-yW+6,8);x.strokeStyle=C.accent;x.setLineDash([4,3]);x.lineWidth=1.3;x.stroke();x.setLineDash([]);x.globalAlpha=1;
+    txt(x,'量子ドット',xP,yWb+16,{size:11.5,align:'center',color:C.accent,w:700,alpha:bar});}
+
+  if(i===4){const a=ease(seg(p,0,.3));x.globalAlpha=a;
+    x.fillStyle=C.magnet;x.fillRect(xB1-.14*sp,10,.1*sp,22);x.fillRect(xB2+.04*sp,10,.1*sp,22);
+    txt(x,'Co 微小磁石',xB2+.15*sp,26,{size:11.5,color:C.magnet,w:700});
+    arrow(x,L,20,L+56,20,C.fg,2);txt(x,'B₀ ≈ 0.5 T',L+62,24,{size:12,w:700});
+    rr(x,xP+16,yWell-38,170,22,5);x.fillStyle=C.surface;x.fill();x.strokeStyle=C.line;x.lineWidth=1;x.stroke();
+    txt(x,'この1個のスピン = 1量子ビット',xP+24,yWell-23,{size:11.5,w:700,color:C.fg});x.globalAlpha=1;}
+}
+scene('dot',{draw:drawDot,steps:[
+ {t:'積層構造',d:'Si/SiGe ヘテロ構造。厚さ約10 nmの歪み Si 層が電子の通り道（量子井戸）になる。表面には幅数十 nm の金属ゲート電極が並ぶ。',dur:4},
+ {t:'電子の海を呼び込む',d:'ゲートに正の電圧をかけると、Si 井戸のポテンシャルがフェルミ準位より下がり、電子が集まって2次元の「電子の海」ができる。',dur:4},
+ {t:'壁を立てる',d:'バリアゲート B₁・B₂ の電圧を下げると、その真下のポテンシャルが盛り上がって壁になる。2枚の壁の間に、直径50〜100 nmほどの箱（量子ドット）ができる。',dur:4.5},
+ {t:'電子を1個だけ残す',d:'プランジャーゲート P の電圧を下げてドットの底を持ち上げる。箱が小さいので準位は飛び飛び。フェルミ準位より下の準位が1つになると、電子はちょうど1個になる。',dur:5.5},
+ {t:'磁場をかける',d:'外部磁場 B₀（0.5 T程度）とチップ上の Co 微小磁石の磁場を加える。閉じ込めた電子1個のスピン（↑ か ↓）が量子ビットになる。',dur:5}]});
+
+/* ---------- Scene 2: Zeeman ---------- */
+function drawZee(x,W,H,i,p,T){
+  bg(x,W,H);
+  const B=i===0?0:i===1?.5*ease(seg(p,.1,.9)):.5, EZ=2*57.88*B, f=27.99*B;
+  const x0=64,x1=Math.round(W*.5),y0=40,y1=318,yc=(y0+y1)/2,bx=b=>x0+b*(x1-x0),ey=e=>yc-e*(y1-y0)/2/70;
+  txt(x,'エネルギー [µeV]',x0-50,y0-16,{size:11.5,color:C.muted});
+  ln(x,x0,y0,x0,y1,C.muted,1);ln(x,x0,y1,x1,y1,C.muted,1);ln(x,x0,yc,x1,yc,C.line,1,[3,4]);
+  [-60,-30,0,30,60].forEach(e=>{ln(x,x0-4,ey(e),x0,ey(e),C.muted);txt(x,String(e),x0-8,ey(e)+4,{mono:1,size:10,align:'right',color:C.muted});});
+  [0,.25,.5,.75,1].forEach(b=>{ln(x,bx(b),y1,bx(b),y1+4,C.muted);txt(x,String(b),bx(b),y1+16,{mono:1,size:10,align:'center',color:C.muted});});
+  txt(x,'磁場 B [T]',(x0+x1)/2,y1+34,{size:11.5,align:'center',color:C.muted});
+  x.globalAlpha=.35;ln(x,bx(B),ey(EZ/2),bx(1),ey(57.88),C.up,1.5,[4,4]);ln(x,bx(B),ey(-EZ/2),bx(1),ey(-57.88),C.down,1.5,[4,4]);x.globalAlpha=1;
+  ln(x,bx(0),yc,bx(B),ey(EZ/2),C.up,2.5);ln(x,bx(0),yc,bx(B),ey(-EZ/2),C.down,2.5);
+  txt(x,'↑',bx(1)+6,ey(57.88)+4,{size:13,w:700,color:C.up});txt(x,'↓',bx(1)+6,ey(-57.88)+4,{size:13,w:700,color:C.down});
+  [[EZ/2,C.up],[-EZ/2,C.down]].forEach(([e,c])=>{x.beginPath();x.arc(bx(B),ey(e),4.5,0,2*PI);x.fillStyle=c;x.fill();});
+  if(B>.04){const gx=bx(B)+12;ln(x,gx,ey(EZ/2),gx,ey(-EZ/2),C.fg,1);ln(x,gx-3,ey(EZ/2),gx+3,ey(EZ/2),C.fg);ln(x,gx-3,ey(-EZ/2),gx+3,ey(-EZ/2),C.fg);txt(x,'E_Z',gx+6,yc+4,{size:12,w:700});}
+  // right: level diagram
+  const rx0=Math.round(W*.58),rx1=W-24,lx0=rx0+40,lx1=rx1-46,cy=176,gap=EZ*1.4,yu=cy-gap/2,yd=cy+gap/2;
+  txt(x,`B   = ${B.toFixed(2)} T`,rx0,38,{mono:1,size:12.5});
+  txt(x,`E_Z = ${EZ.toFixed(1)} µeV`,rx0,58,{mono:1,size:12.5});
+  txt(x,`f   = ${f.toFixed(1)} GHz`,rx0,78,{mono:1,size:12.5,color:C.accent});
+  if(i>=2){const a=i===2?ease(seg(p,0,.3)):1,kt=8.6*1.4;x.globalAlpha=a*.22;x.fillStyle=C.accent;x.fillRect(lx0,yd-kt,lx1-lx0,kt);x.globalAlpha=1;
+    txt(x,'k_BT (0.1 K) ≈ 8.6 µeV',lx0,yd-kt-4,{size:10.5,color:C.accent,alpha:a});}
+  ln(x,lx0,yu,lx1,yu,C.up,2.5);ln(x,lx0,yd,lx1,yd,C.down,2.5);
+  if(B<.02)txt(x,'縮退（同じエネルギー）',lx1+4,cy+4,{size:11,color:C.muted});
+  else{txt(x,'↑',lx1+8,yu+5,{size:14,w:700,color:C.up});txt(x,'↓',lx1+8,yd+5,{size:14,w:700,color:C.down});}
+  const ex=(lx0+lx1)/2;
+  if(i===0)electron(x,ex,cy-12,9,T*1.6);
+  else if(i===1){const r=ease(seg(p,.2,.95));electron(x,ex,lerp(cy-12,yd-12,r),9,lerp(T*1.6%(2*PI),PI,r));}
+  else{electron(x,ex,yd-12,9,PI+Math.sin(T*2)*.12);
+    if(i===3){const a=ease(seg(p,0,.4));electron(x,ex,yu-12,9,0,a*.6,true);
+      txt(x,'|0⟩',lx0-8,yd+6,{size:17,w:900,align:'right',color:C.down,alpha:a});txt(x,'|1⟩',lx0-8,yu+6,{size:17,w:900,align:'right',color:C.up,alpha:a});
+      txt(x,'α|0⟩ + β|1⟩ も可能',ex,yu-36,{size:12,align:'center',w:700,color:C.accent,alpha:a});}}
+  if(i>=2){const a=i===2?ease(seg(p,.3,.6)):1,by=268,bw=lx1-lx0;x.globalAlpha=a;
+    txt(x,'0.1 K での占有確率',rx0,by-8,{size:11.5,color:C.muted});
+    [['↓',.9988,C.down,'99.9%'],['↑',.0012,C.up,'0.1%']].forEach(([s,v,c,l],n)=>{const yy=by+n*22;
+      txt(x,s,rx0+8,yy+12,{size:13,w:700,color:c});x.fillStyle=C.line;x.fillRect(lx0,yy+2,bw,12);x.fillStyle=c;x.fillRect(lx0,yy+2,Math.max(2,bw*v),12);
+      txt(x,l,lx1+8,yy+12,{mono:1,size:11});});x.globalAlpha=1;}
+}
+scene('zeeman',{draw:drawZee,steps:[
+ {t:'磁場ゼロ',d:'磁場がないと、↑ と ↓ のエネルギーは等しい（縮退）。スピンの向きは定まらず、0 と 1 を区別できない。',dur:3},
+ {t:'磁場を上げる',d:'B₀ をかけるとゼーマン効果でエネルギーが E_Z = gμ_B B だけ分かれる。シリコンでは g ≈ 2 なので 0.5 T で E_Z ≈ 58 µeV、周波数にすると約 14 GHz。',dur:5},
+ {t:'熱に負けない差',d:'0.1 K の熱エネルギー k_BT ≈ 8.6 µeV に対し、E_Z はその約7倍。待つだけで電子はほぼ確実（≈99.9%）に低い ↓ 状態に落ち着く。',dur:5},
+ {t:'0 と 1 の定義',d:'エネルギーの低い ↓ を |0⟩、高い ↑ を |1⟩ とする。量子ビットは両方を同時に含む重ね合わせ α|0⟩ + β|1⟩ もとれる。',dur:5}]});
+
+/* ---------- Scene 3: Bloch / EDSR ---------- */
+const trail=[];let trailKey='';
+const DEL=[-1.73,-1.28,-.97,-.73,-.52,-.34,-.17,0,.17,.34,.52,.73,.97,1.28,1.73];
+function drawBloch(x,W,H,i,p,T){
+  bg(x,W,H);
+  const Om=2*PI; // 1 MHz → rad/µs
+  let v=[0,0,1],drive=0,det=false,t=0,ens=null,lab='';
+  if(i===1){const th=1.1,ph=p<.6?p*40:24;v=[Math.sin(th)*Math.cos(ph),Math.sin(th)*Math.sin(ph),Math.cos(th)];lab=p<.6?'実験室系：14 GHz で歳差（超スロー再生）':'回転座標系：歳差が止まって見える';}
+  else if(i===2){t=seg(p,.05,.9)*.5;drive=p>.05&&p<.9?1:0;}
+  else if(i===3){t=.5+seg(p,0,.95)*2;drive=p<.95?1:0;}
+  else if(i===4){t=seg(p,.05,.95)*2.5;drive=p>.05&&p<.95?1:0;det=true;}
+  if(i>=2&&i<=3){const th=Om*t;v=[0,-Math.sin(th),Math.cos(th)];}
+  if(i===4){const a=Om*Math.SQRT2*t;v=[.5*(1-Math.cos(a)),-Math.sin(a)/Math.SQRT2,(1+Math.cos(a))/2];}
+  if(i===5){t=seg(p,.05,.95)*40;const s=Math.SQRT2/20;ens=DEL.map(d=>{const f=d*s*t;return[Math.sin(f),-Math.cos(f),0];});
+    v=ens.reduce((m,e)=>[m[0]+e[0]/15,m[1]+e[1]/15,0],[0,0,0]);}
+  // top strip: MW waveform
+  const hw=W/2;
+  txt(x,'P ゲートに加えるマイクロ波電圧',24,22,{size:12,w:700});
+  const wy=78,wx0=24,wx1=hw-20;ln(x,wx0,wy,wx1,wy,C.line,1);
+  x.beginPath();for(let X=wx0;X<=wx1;X++){const a=drive*24*Math.min(1,(X-wx0)/20,(wx1-X)/20),k=det?.32:.26;const y=wy-a*Math.sin(X*k-T*14);X===wx0?x.moveTo(X,y):x.lineTo(X,y);}
+  x.strokeStyle=drive?C.accent:C.muted;x.lineWidth=1.6;x.stroke();
+  txt(x,drive?(det?'f = f_L + Δ（共鳴から少しずらす）':'f = f_L ≈ 14 GHz（共鳴）'):'OFF',wx0,124,{size:11.5,color:drive?C.accent:C.muted,mono:!drive});
+  // top strip: device
+  const dx0=hw+16,dx1=W-24,mid=(dx0+dx1)/2;
+  txt(x,'電子の位置と、電子が感じる横磁場 B_x',dx0,22,{size:12,w:700});
+  x.fillStyle=C.gate;x.fillRect(mid-34,32,68,12);txt(x,'P',mid,41,{size:10,w:700,align:'center',color:C.surface});
+  const gr=x.createLinearGradient(dx0,0,dx1,0);gr.addColorStop(0,C.down);gr.addColorStop(.5,C.surface);gr.addColorStop(1,C.up);
+  x.globalAlpha=.55;x.fillStyle=gr;x.fillRect(dx0,86,dx1-dx0,14);x.globalAlpha=1;x.strokeStyle=C.line;x.strokeRect(dx0,86,dx1-dx0,14);
+  txt(x,'B_x < 0',dx0,116,{size:10.5,color:C.down});txt(x,'0',mid,116,{size:10.5,align:'center',color:C.muted});txt(x,'B_x > 0',dx1,116,{size:10.5,align:'right',color:C.up});
+  txt(x,'微小磁石の傾斜磁場',mid,132,{size:10.5,align:'center',color:C.muted});
+  const A=(dx1-dx0)*.17,ex=mid+drive*A*Math.sin(T*14);
+  if(drive){arrow(x,mid,66,mid+(ex-mid)*.9+(ex>mid?.01:-.01),66,C.accent,2,6);txt(x,'B_x(t)',mid+A+10,70,{size:11,color:C.accent});}
+  electron(x,ex,93,8,null);
+  // Bloch sphere
+  const cx=Math.round(W*.25),cy=338,R=Math.min(112,W*.19),az=.5,el=.32;
+  const P3=(a,b,c)=>{const X=-a*Math.sin(az)+b*Math.cos(az),D=a*Math.cos(az)+b*Math.sin(az);return[cx+R*X,cy-R*(c*Math.cos(el)-D*Math.sin(el)),D];};
+  x.beginPath();x.arc(cx,cy,R,0,2*PI);x.fillStyle=C.soft;x.fill();x.strokeStyle=C.muted;x.lineWidth=1.2;x.stroke();
+  for(const back of [true,false]){x.beginPath();let first=true;for(let k=0;k<=120;k++){const a=k/120*2*PI,q=P3(Math.cos(a),Math.sin(a),0);
+      if((q[2]<0)===back){first?x.moveTo(q[0],q[1]):x.lineTo(q[0],q[1]);first=false;}else first=true;}
+    x.setLineDash(back?[3,4]:[]);x.strokeStyle=C.muted;x.lineWidth=1;x.stroke();x.setLineDash([]);}
+  const ax=[[0,0,1.18,'|0⟩',C.down],[0,0,-1.18,'|1⟩',C.up],[1.3,0,0,'x',C.muted],[0,1.25,0,'y',C.muted]];
+  ln(x,...P3(0,0,-1).slice(0,2),...P3(0,0,1).slice(0,2),C.line,1);
+  ax.forEach(([a,b,c,s,col])=>{const q=P3(a,b,c);txt(x,s,q[0],q[1]+5,{size:s.length>1?14:11.5,w:s.length>1?900:500,align:'center',color:col});});
+  if(cx+R+150<Math.round(W*.55))txt(x,'赤道 = 半々の重ね合わせ',cx+R+10,cy+4,{size:10.5,color:C.muted});
+  if(i===4){const n=P3(.75,0,.75);ln(x,cx,cy,n[0],n[1],C.accent,1.2,[4,3]);txt(x,'回転軸',n[0]+6,n[1],{size:10.5,color:C.accent});}
+  const key=i+'';if(key!==trailKey){trail.length=0;trailKey=key;}
+  if(ens){ens.forEach(e=>{const q=P3(...e);x.globalAlpha=.35;ln(x,cx,cy,q[0],q[1],C.accent,1.2);x.globalAlpha=1;});}
+  else if(i>=2){const q=P3(...v);trail.push([q[0],q[1]]);if(trail.length>400)trail.shift();
+    x.beginPath();trail.forEach((q,k)=>k?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.strokeStyle=C.accent;x.globalAlpha=.45;x.lineWidth=1.5;x.stroke();x.globalAlpha=1;}
+  const tip=P3(...v),z=v[2],len=Math.hypot(...v);const col=z>.5?C.down:z<-.5?C.up:C.accent;
+  arrow(x,cx,cy,tip[0],tip[1],col,3,10);x.beginPath();x.arc(cx,cy,3,0,2*PI);x.fillStyle=C.fg;x.fill();
+  if(lab)txt(x,lab,cx,cy+R+34,{size:11.5,align:'center',w:700,color:C.accent});
+  if(i===5)txt(x,`平均ベクトルの長さ ${len.toFixed(2)}`,cx,cy+R+34,{size:11.5,align:'center',mono:1,color:C.accent});
+  // plot
+  const px0=Math.round(W*.55)+20,px1=W-24,py0=196,py1=448;
+  const T2=i===5,tmax=T2?40:2.5,X=tt=>px0+tt/tmax*(px1-px0),Yp=q=>py1-q*(py1-py0);
+  txt(x,T2?'コヒーレンス（平均ベクトルの長さ）':'P(|1⟩)：測ったら 1 が出る確率',px0-30,py0-16,{size:12,w:700});
+  ln(x,px0,py0,px0,py1,C.muted);ln(x,px0,py1,px1,py1,C.muted);
+  [0,.5,1].forEach(q=>{ln(x,px0-4,Yp(q),px0,Yp(q),C.muted);txt(x,String(q),px0-8,Yp(q)+4,{mono:1,size:10,align:'right',color:C.muted});if(q)ln(x,px0,Yp(q),px1,Yp(q),C.line,1,[2,4]);});
+  (T2?[0,10,20,30,40]:[0,.5,1,1.5,2,2.5]).forEach(tt=>{ln(x,X(tt),py1,X(tt),py1+4,C.muted);txt(x,T2?String(tt):(tt*1000|0)+'',X(tt),py1+16,{mono:1,size:9.5,align:'center',color:C.muted});});
+  txt(x,T2?'待ち時間 τ [µs]':'マイクロ波を当てた時間 [ns]（ラビ周波数 1 MHz）',(px0+px1)/2,py1+34,{size:11,align:'center',color:C.muted});
+  const curve=(fn,t1,col,lw=2,a=1)=>{x.beginPath();for(let k=0;k<=200;k++){const tt=t1*k/200;const y=Yp(fn(tt));k?x.lineTo(X(tt),y):x.moveTo(X(tt),y);}x.globalAlpha=a;x.strokeStyle=col;x.lineWidth=lw;x.stroke();x.globalAlpha=1;};
+  const res=tt=>Math.sin(Om*tt/2)**2,dtn=tt=>.5*Math.sin(Om*Math.SQRT2*tt/2)**2;
+  if(i<2)txt(x,'まだマイクロ波を当てていない → P(|1⟩) = 0',(px0+px1)/2,(py0+py1)/2,{size:11.5,align:'center',color:C.muted});
+  if(i===2||i===3){curve(res,t,C.accent,2.2);const q=res(t);x.beginPath();x.arc(X(t),Yp(q),4.5,0,2*PI);x.fillStyle=C.accent;x.fill();
+    if(t>=.25){txt(x,'π/2',X(.25),Yp(.5)-10,{size:11,align:'center',w:700,color:C.accent});}
+    if(t>=.5){txt(x,'π → |1⟩',X(.5),Yp(1)-8,{size:11,align:'center',w:700,color:C.up});}}
+  if(i===4){curve(res,2.5,C.muted,1.4,.5);curve(dtn,t,C.accent,2.2);txt(x,'共鳴（灰）',px1,py0-2,{size:10.5,align:'right',color:C.muted});txt(x,'Δ = Ω のとき：最大 50%',px1,Yp(.5)-6,{size:10.5,align:'right',color:C.accent});}
+  if(i===5){curve(tt=>Math.exp(-((tt/20)**2)),t,C.accent,2.2);ln(x,X(20),py0,X(20),py1,C.muted,1,[3,3]);txt(x,'T₂* ≈ 20 µs',X(20)+6,py0+14,{size:11,color:C.muted});}
+}
+scene('bloch',{draw:drawBloch,steps:[
+ {t:'初期状態 |0⟩',d:'測定または冷却で ↓ に初期化した状態。ブロッホ球の矢印は北極（|0⟩）を指す。',dur:3},
+ {t:'ラーモア歳差',d:'重ね合わせ状態の矢印は、磁場の周りを共鳴周波数 14 GHz でこまのように回っている。マイクロ波と同じ速さで回る「回転座標系」から見ると、この回転は止まって見える。',dur:5},
+ {t:'πパルスで 0→1',d:'14 GHz のマイクロ波電圧を P ゲートにかけると、電子が傾斜磁場の中で揺れ、横向きの交流磁場を感じる。矢印は x 軸周りに回り、π/2 で赤道（重ね合わせ）、π で南極（|1⟩）に着く。',dur:6},
+ {t:'ラビ振動',d:'当て続けると 0 と 1 を周期的に行き来する。マイクロ波を当てる時間で、好きな回転角（好きな重ね合わせ）を作れる。',dur:6},
+ {t:'共鳴を外すと',d:'周波数が共鳴からずれると回転軸が傾き、|1⟩ に届かなくなる。隣の量子ビットは共鳴周波数が違うので、狙った1個だけを操作できる。',dur:6},
+ {t:'デコヒーレンス (T₂*)',d:'重ね合わせのまま放置すると、磁場の小さな揺らぎで回る速さが毎回少しずつ違い、矢印が扇状に広がって平均が縮む。²⁸Si では T₂* ≈ 20 µs 程度。',dur:6}]});
+
+/* ---------- Scene 4: Elzerman ---------- */
+const EZS={state:'+',run:null,tally:[0,0],op:1};
+function newRun(){const s=EZS.state,out=s==='0'?0:s==='1'?1:(Math.random()<.5?1:0),tOut=.26+Math.random()*.2;
+  EZS.run={out,tOut,tIn:tOut+.12+Math.random()*.16,noise:Float32Array.from({length:520},()=>gauss()*.045)};}
+newRun();
+const SEGW=[.14,.2,.2,.46],SEGS=[0,.14,.34,.54],ELV=[.6,-.25,-1.1,-.25];
+function occ(k,q,r){if(k===0)return q<.42;if(k===1)return q>=.5;if(k===2)return true;return!(r.out===1&&q>=r.tOut+.03&&q<r.tIn+.03);}
+function drawElz(x,W,H,i,p,T){
+  bg(x,W,H);const r=EZS.run,s=EZS.state;
+  const kk=Math.min(i,3),Ed=i===4?-.25:lerp(ELV[(kk+3)%4],ELV[kk],ease(seg(p,0,.15))),Eu=Ed+.5;
+  const ex0=20,ex1=Math.round(W*.56),yF=160,Ey=e=>yF-e*58,top=40,bot=288;
+  const rx=ex0+(ex1-ex0)*.4,bw=14,dl=rx+bw,dr=ex1-8,lx0=dl+16,lx1=dr-36,xd=(lx0+lx1)/2,xr=(ex0+10+rx)/2;
+  txt(x,'電子のエネルギー図',ex0,22,{size:12,w:700});
+  x.fillStyle=C.fermi;x.fillRect(ex0+10,yF,rx-ex0-10,bot-yF);
+  txt(x,'リザーバ',xr,bot-30,{size:12,align:'center',w:700});txt(x,'（電子で満席の海）',xr,bot-12,{size:10.5,align:'center',color:C.fg});
+  txt(x,'空席',xr,yF-34,{size:11,align:'center',color:C.muted});
+  x.fillStyle=C.line;x.fillRect(rx,top,bw,bot-top);txt(x,'トンネル障壁',rx+bw/2,bot+14,{size:10.5,align:'center',color:C.muted});
+  ln(x,dr,top,dr,bot,C.muted,2);ln(x,dl,bot,dr,bot,C.muted,2);txt(x,'量子ドット',(dl+dr)/2,bot+14,{size:10.5,align:'center',color:C.muted});
+  ln(x,ex0+10,yF,rx,yF,C.fg,1.5);ln(x,dl,yF,dr,yF,C.muted,1,[4,4]);txt(x,'E_F',ex0+12,yF-5,{size:11,w:700});
+  ln(x,lx0,Ey(Eu),lx1,Ey(Eu),C.up,2.2);ln(x,lx0,Ey(Ed),lx1,Ey(Ed),C.down,2.2);
+  txt(x,'E↑',lx1+5,Ey(Eu)+4,{size:11.5,w:700,color:C.up});txt(x,'E↓',lx1+5,Ey(Ed)+4,{size:11.5,w:700,color:C.down});
+  const yU=Ey(Eu)-11,yD=Ey(Ed)-11,yS=Ey(-.3)-11;
+  const E=(px,py,a,al=1)=>electron(x,px,py,8,a,al);
+  let verdict=null;
+  if(i===0){const q=seg(p,.3,.42),f=seg(p,.42,.58);
+    if(q<=0)E(xd,yD,PI);else if(q<1)E(lerp(xd,xr,ease(q)),yD,PI);else if(f<1)E(xr,lerp(yD,yS+20,f),PI,1-f);
+    if(p>.15&&p<.42)txt(x,'両方の準位が E_F より上 → 電子が出ていく',(ex0+ex1)/2,top-4,{size:11,align:'center',color:C.accent});}
+  if(i===1){const q=seg(p,.4,.55);if(q>0)E(lerp(xr,xd,ease(q)),Ey(-.25)-11,PI);
+    const a=ease(seg(p,.2,.35));x.globalAlpha=a;ln(x,xd-7,yU-7+11,xd+7,yU+7+11,C.up,2.2);ln(x,xd+7,yU-7+11,xd-7,yU+7+11,C.up,2.2);x.globalAlpha=1;
+    txt(x,'↑ の行き先は E_F より上 → 入れない。↓ だけが入る',(ex0+ex1)/2,top-4,{size:11,align:'center',color:C.accent,alpha:a});}
+  const prep=(f)=>{if(s==='0')return[yD,PI];if(s==='1')return[lerp(yD,yU,f),lerp(PI,0,f)];return[lerp(yD,(yD+yU)/2,f),lerp(PI,PI/2,f)];};
+  if(i===2){const f=ease(seg(p,.3,.75)),[py,a]=prep(f);E(xd,py,a);
+    if(s==='+'&&f>0){electron(x,xd,yU,8,0,f*.55,true);electron(x,xd,yD,8,PI,f*.55,true);}
+    if(p>.3&&p<.75){x.beginPath();for(let X=lx0;X<=lx1;X++){const y=top+6-6*Math.sin(X*.5-T*20);X===lx0?x.moveTo(X,y):x.lineTo(X,y);}x.strokeStyle=C.accent;x.lineWidth=1.4;x.stroke();}
+    txt(x,'深く沈めて、マイクロ波で状態を作る',(ex0+ex1)/2,top-14,{size:11,align:'center',color:C.accent,alpha:ease(seg(p,.2,.3))});}
+  if(i===3){const o=r.out,col=seg(p,.1,.16);
+    if(s==='+'&&col<1){const[py,a]=prep(1);E(xd,lerp(py,o?yU:yD,col),lerp(a,o?0:PI,col));if(col===0){electron(x,xd,yU,8,0,.55,true);electron(x,xd,yD,8,PI,.55,true);}}
+    else if(o===0)E(xd,yD,PI);
+    else{const q=seg(p,r.tOut,r.tOut+.05),f=seg(p,r.tOut+.05,r.tOut+.12),qi=seg(p,r.tIn,r.tIn+.05);
+      if(q<=0)E(xd,yU,0);else if(q<1)E(lerp(xd,xr,ease(q)),yU,0);else if(f<1)E(xr,lerp(yU,yS+20,f),0,1-f);
+      if(qi>0)E(lerp(xr,xd,ease(qi)),yD,PI);}
+    if(s==='+'&&p>.1&&p<.24){const rr2=8+seg(p,.1,.24)*30;x.globalAlpha=1-seg(p,.1,.24);x.beginPath();x.arc(xd,o?yU:yD,rr2,0,2*PI);x.strokeStyle=C.accent;x.lineWidth=2;x.stroke();x.globalAlpha=1;}
+    const msg=o?(p<r.tOut?'↑：E_F より上にいる → 空席へトンネルできる':p<r.tIn?'↑ の電子が出た → ドットが空に（電荷が変化）':'↓ の電子が入り直す → 元に戻る'):'↓：行き先が満席 → 出られない';
+    txt(x,msg,(ex0+ex1)/2,top-4,{size:11,align:'center',color:o?C.up:C.down,alpha:ease(seg(p,.16,.22))});
+    if(s==='+'&&p>=.1&&p<.3)txt(x,'ここで ↑ か ↓ かが確率的に決まる',(ex0+ex1)/2,top-18,{size:11,align:'center',color:C.accent});}
+  if(i===4){E(xd,yD,PI);verdict=r.out;}
+  // sensor
+  const sx0=Math.round(W*.6),sx1=W-24,smid=(sx0+sx1)/2;
+  txt(x,'電荷センサ（単電子トランジスタ）',sx0,22,{size:12,w:700});
+  const g=Math.min(sx0+(sx1-sx0)*.22,smid-36);
+  x.fillStyle=C.line;x.fillRect(sx0,42,g-sx0,20);x.fillRect(sx1-(g-sx0),42,g-sx0,20);
+  x.beginPath();x.arc(smid,52,14,0,2*PI);x.fillStyle=C.soft;x.fill();x.strokeStyle=C.muted;x.stroke();
+  txt(x,'S',sx0+8,57,{size:10.5,w:700});txt(x,'D',sx1-14,57,{size:10.5,w:700});txt(x,'島',smid,56,{size:10,align:'center'});
+  const gNow=i<4?SEGS[i]+p*SEGW[i]:1;let K=0;for(let k=0;k<4;k++)if(gNow>=SEGS[k])K=k;
+  const oNow=i===4?1:occ(K,clamp((gNow-SEGS[K])/SEGW[K],0,1),r)?1:0;EZS.op=lerp(EZS.op,oNow,.25);
+  const ccx=v=>sx0+10+(v+.6)/1.2*(sx1-sx0-20),py0=96,py1=272,Iy=q=>py1-q*(py1-py0-16);
+  const peak=(c0)=>{x.beginPath();for(let k=0;k<=120;k++){const v=-.6+1.2*k/120,q=Math.exp(-((v-c0)**2)/(2*.18*.18));k?x.lineTo(ccx(v),Iy(q)):x.moveTo(ccx(v),Iy(q));}};
+  const c0=lerp(-.142,0,EZS.op);
+  peak(0);x.strokeStyle=C.line;x.lineWidth=1.2;x.stroke();peak(-.142);x.stroke();
+  peak(c0);x.strokeStyle=C.fg;x.lineWidth=2;x.stroke();
+  ln(x,ccx(-.6),py1,ccx(.6),py1,C.muted);ln(x,ccx(-.279),py0,ccx(-.279),py1,C.muted,1,[3,3]);
+  const Iop=Math.exp(-((-.279-c0)**2)/(2*.18*.18));x.beginPath();x.arc(ccx(-.279),Iy(Iop),6,0,2*PI);x.fillStyle=C.accent;x.fill();
+  txt(x,'動作点（ピークの斜面）',ccx(-.279)-4,py1+14,{size:10.5,align:'center',color:C.muted});
+  txt(x,'センサ電流',sx0,py0-4,{size:10.5,color:C.muted});
+  txt(x,oNow?'ドットに電子あり → 電流 小':'ドットが空 → ピークがずれて電流 大',smid,py1+30,{size:11,w:700,align:'center',color:oNow?C.fg:C.up});
+  // traces
+  const tx0=78,tx1=W-24,X=gg=>tx0+gg*(tx1-tx0),ty0=342,ty1=540;
+  ['空にする','初期化','操作','読み出し'].forEach((n,k)=>{const a=X(SEGS[k]),b=X(SEGS[k]+SEGW[k]);if(k)ln(x,a,ty0-12,a,ty1,C.line,1,[2,3]);
+    txt(x,n,(a+b)/2,ty0-14,{size:11,align:'center',w:700,color:k===Math.min(i,3)?C.accent:C.muted});});
+  txt(x,'V_P',tx0-10,378,{size:11.5,align:'right',w:700});txt(x,'I_SET',tx0-10,464,{size:11.5,align:'right',w:700});
+  const vY=v=>374-v*18;x.beginPath();ELV.forEach((e,k)=>{const y=vY(-e);k?x.lineTo(X(SEGS[k]),y):x.moveTo(X(0),y);x.lineTo(X(SEGS[k]+SEGW[k]),y);});
+  x.strokeStyle=C.muted;x.lineWidth=1.6;x.stroke();
+  const iY=q=>530-q*104,th=.52;ln(x,tx0,iY(th),tx1,iY(th),C.up,1,[5,4]);txt(x,'しきい値',tx1,iY(th)-5,{size:10.5,align:'right',color:C.up});
+  const n=r.noise.length;let hit=false;x.beginPath();
+  for(let k=0;k<n;k++){const gg=k/(n-1);if(gg>gNow)break;let K2=0;for(let j=0;j<4;j++)if(gg>=SEGS[j])K2=j;
+    const q=(gg-SEGS[K2])/SEGW[K2],I=(occ(K2,q,r)?.3:.75)+r.noise[k];if(K2===3&&I>th)hit=true;k?x.lineTo(X(gg),iY(I)):x.moveTo(X(gg),iY(I));}
+  x.strokeStyle=C.fg;x.lineWidth=1.2;x.stroke();
+  if(r.out===1&&gNow>SEGS[3]+(r.tOut+.03)*SEGW[3]){const a=X(SEGS[3]+(r.tOut+.03)*SEGW[3]),b=X(Math.min(gNow,SEGS[3]+(r.tIn+.03)*SEGW[3]));
+    x.globalAlpha=.15;x.fillStyle=C.up;x.fillRect(a-2,ty0+20,b-a+4,ty1-ty0-24);x.globalAlpha=1;txt(x,'ブリップ',(a+b)/2,iY(.9),{size:11,align:'center',w:700,color:C.up});}
+  ln(x,X(gNow),ty0-4,X(gNow),ty1,C.accent,1.5);
+  if(verdict!=null){const a=ease(seg(p,0,.25)),vx=X(SEGS[3]+SEGW[3]*.72);
+    rr(x,vx-86,356,172,46,8);x.globalAlpha=a;x.fillStyle=C.surface;x.fill();x.strokeStyle=verdict?C.up:C.down;x.lineWidth=1.5;x.stroke();
+    txt(x,verdict?'判定：1（↑）':'判定：0（↓）',vx,376,{size:14,w:900,align:'center',color:verdict?C.up:C.down});
+    txt(x,verdict?'しきい値を超えた':'しきい値を超えなかった',vx,394,{size:10.5,align:'center',color:C.muted});x.globalAlpha=1;}
+}
+const elz=scene('elzerman',{draw:drawElz,loop:true,onStep:k=>{if(k===0)newRun();if(k===4){EZS.tally[EZS.run.out]++;tallyOut();}},steps:[
+ {t:'ドットを空にする',d:'プランジャー電圧を下げてドットの準位を E_F より上に持ち上げる。前の電子はリザーバへ出ていき、ドットは空になる。',dur:3},
+ {t:'↓ だけを入れて初期化',d:'準位を「E↓ は E_F より下、E↑ は上」に合わせる。リザーバから入れるのは ↓ の電子だけなので、自動的に |0⟩ に初期化される。センサ電流が下がり「電子が入った」と分かる。',dur:4},
+ {t:'操作',d:'準位を深く沈めて電子が出入りしないようにし、マイクロ波パルス（Scene 3）で測りたい状態を作る。上のボタンで用意する状態を選べる。',dur:4},
+ {t:'読み出し',d:'再び「E↑ だけが E_F より上」の位置に戻す。↑ なら電子がリザーバの空席へトンネルしてドットが一瞬空になり、すぐ ↓ の電子が入り直す。センサ電流にブリップが出る。↓ なら何も起きない。',dur:6.5},
+ {t:'判定',d:'読み出し窓の中で電流がしきい値を超えたら 1、超えなければ 0。重ね合わせを何度も測ると 0 と 1 がほぼ半々で出る（上の集計）。',dur:3.5}]});
+const tallyEl=$('#tally');function tallyOut(){tallyEl.textContent=`測定結果　0: ${EZS.tally[0]}回　1: ${EZS.tally[1]}回`;}
+document.querySelectorAll('[data-state]').forEach(b=>b.addEventListener('click',()=>{EZS.state=b.dataset.state;EZS.tally=[0,0];tallyOut();
+  document.querySelectorAll('[data-state]').forEach(o=>o.setAttribute('aria-pressed',o===b));elz.go(0);}));
+
+/* ---------- Scene 5: Pauli spin blockade ---------- */
+const PS={pts:[],nS:Float32Array.from({length:300},()=>gauss()*.05),nT:Float32Array.from({length:300},()=>gauss()*.05)};
+const addPt=sing=>PS.pts.push({s:sing,i:(sing?.66:.3)+gauss()*.06,q:(sing?.34:.64)+gauss()*.06});
+for(let k=0;k<36;k++)addPt(k%2===0);
+function drawPSB(x,W,H,i,p,T){
+  bg(x,W,H);
+  const eps=i===0?0:i===1?ease(seg(p,.1,.9)):1;
+  [[16,W/2-8,true],[W/2+8,W-16,false]].forEach(([x0,x1,sing])=>{
+    rr(x,x0,8,x1-x0,252,10);x.strokeStyle=C.line;x.lineWidth=1;x.stroke();
+    txt(x,sing?'反平行（Q=↑, アンシラ=↓）':'平行（Q=↓, アンシラ=↓）',x0+12,28,{size:12.5,w:700,color:sing?C.up:C.down});
+    txt(x,sing?'→ 一重項 S につながる':'→ 三重項 T',x0+12,46,{size:11,color:C.muted});
+    const Sx=s=>x0+18+(s+1.55)/3.1*(x1-x0-36),V=s=>(s*s-1)**2-.8*eps*s,Yv=v=>222-v*44;
+    x.beginPath();for(let k=0;k<=140;k++){const s=-1.55+3.1*k/140,y=Math.max(60,Yv(V(s)));k?x.lineTo(Sx(s),y):x.moveTo(Sx(s),y);}x.strokeStyle=C.fg;x.lineWidth=2;x.stroke();
+    const yL=Yv(V(-1)),yR=Yv(V(1)),yX=Yv(V(1)+1.75);
+    ln(x,Sx(.55),yR,Sx(1.45),yR,C.accent,1.4);ln(x,Sx(.55),yX,Sx(1.45),yX,C.muted,1.2,[4,3]);
+    txt(x,'励起準位',Sx(1.45),yX-5,{size:10,align:'right',color:C.muted});
+    txt(x,'左ドット',Sx(-1),100,{size:10.5,align:'center',color:C.muted});txt(x,'右ドット',Sx(1),100,{size:10.5,align:'center',color:C.muted});
+    let qs=-1,qy=yL-10,as=1;
+    if(sing&&i>=2){const q=i===2?ease(seg(p,.2,.6)):1;qs=lerp(-1,.84,q);qy=lerp(yL-10,yR-10,q);as=lerp(1,1.16,q);}
+    if(!sing&&i===2){const q=seg(p,.2,.55);qs=-1+.7*Math.sin(q*PI);}
+    electron(x,Sx(as),yR-10,8,PI);txt(x,'アンシラ',Sx(as)+12,yR+14,{size:10,color:C.muted});
+    electron(x,Sx(qs),qy,8,sing?0:PI);txt(x,'Q',Sx(qs)-14,qy-10,{size:11,w:700});
+    if(!sing&&i>=2){const a=i===2?ease(seg(p,.45,.6)):1,bx=Sx(0),by=Yv(V(0))+16;x.globalAlpha=a;
+      ln(x,bx-8,by-8,bx+8,by+8,C.up,2.5);ln(x,bx+8,by-8,bx-8,by+8,C.up,2.5);x.globalAlpha=1;
+      txt(x,'パウリ排他律で閉塞',bx,by+24,{size:11,align:'center',w:700,color:C.up,alpha:a});}
+    if(sing&&i>=2)txt(x,'(0,2) 一重項：同じ準位に2個',Sx(1)-6,yR+30,{size:10.5,align:'right',color:C.accent,alpha:i===2?ease(seg(p,.55,.7)):1});
+    if(i===4){const a=ease(seg(p,0,.3));rr(x,x0+12,56,x1-x0-24,26,6);x.globalAlpha=a;x.fillStyle=C.surface;x.fill();x.strokeStyle=sing?C.up:C.down;x.stroke();
+      txt(x,sing?'通過 → Q は ↑ → 結果 1':'閉塞 → Q は ↓ → 結果 0',(x0+x1)/2,74,{size:12.5,w:900,align:'center',color:sing?C.up:C.down});x.globalAlpha=1;}
+  });
+  txt(x,`離調 ε = ${eps.toFixed(2)}`,W/2,286,{mono:1,size:11.5,align:'center',color:C.accent});
+  // traces
+  const tx0=96,tx1=Math.round(W*.62),X=g=>tx0+g*(tx1-tx0),gNow=i<4?(i+p)/4:1,tS=(2+.45)/4;
+  txt(x,'RF反射の位相 Δφ（電荷センサ信号）',tx0-80,312,{size:12,w:700});
+  [['一重項 S',338,true],['三重項 T',408,false]].forEach(([l,y0,sing])=>{txt(x,l,tx0-10,y0+30,{size:11,align:'right',w:700,color:sing?C.up:C.down});
+    ln(x,tx0,y0+50,tx1,y0+50,C.line);const nz=sing?PS.nS:PS.nT;x.beginPath();
+    for(let k=0;k<nz.length;k++){const g=k/(nz.length-1);if(g>gNow)break;const v=(sing&&g>tS?.8:.2)+nz[k],y=y0+50-v*48;k?x.lineTo(X(g),y):x.moveTo(X(g),y);}
+    x.strokeStyle=sing?C.up:C.down;x.lineWidth=1.3;x.stroke();});
+  ln(x,X(gNow),322,X(gNow),462,C.accent,1.4);
+  txt(x,'時間 →',tx1,476,{size:10.5,align:'right',color:C.muted});
+  // IQ plane
+  const s=Math.min(138,W-24-(tx1+40)),qx0=W-24-s,qy0=318;
+  txt(x,'1回ごとの測定値（IQ 平面）',qx0,312,{size:12,w:700});
+  x.fillStyle=C.soft;x.fillRect(qx0,qy0,s,s);x.strokeStyle=C.line;x.strokeRect(qx0,qy0,s,s);
+  txt(x,'I',qx0+s-4,qy0+s+14,{size:10.5,align:'right',color:C.muted});txt(x,'Q',qx0-10,qy0+10,{size:10.5,color:C.muted});
+  if(i>=3&&Math.random()<.18){addPt(Math.random()<.5);if(PS.pts.length>400)PS.pts.splice(0,1);}
+  PS.pts.forEach(o=>{x.beginPath();x.arc(qx0+o.i*s,qy0+o.q*s,2.2,0,2*PI);x.fillStyle=o.s?C.up:C.down;x.globalAlpha=.7;x.fill();x.globalAlpha=1;});
+  txt(x,'S',qx0+.66*s+16,qy0+.34*s-12,{size:11,w:700,color:C.up});txt(x,'T',qx0+.3*s-20,qy0+.64*s+20,{size:11,w:700,color:C.down});
+}
+scene('psb',{draw:drawPSB,steps:[
+ {t:'(1,1)：左右に1個ずつ',d:'隣り合う2つのドットに電子が1個ずつ。左が読みたい量子ビット Q、右は ↓ に初期化しておいたアンシラ（補助量子ビット）。',dur:3},
+ {t:'傾ける（離調 ε）',d:'ゲート電圧で右ドットを深くし、左の電子が右へ移りたくなるように傾ける。',dur:3.5},
+ {t:'パウリ閉塞',d:'反平行なら2個とも右ドットの一番低い準位に入れる（一重項）。平行だとパウリの排他律で同じ準位に入れず、励起準位は高すぎて届かないので左に留まる（三重項ブロッケード）。',dur:5},
+ {t:'電荷を見る',d:'(0,2) に移ったか (1,1) のままかを、ゲートRF反射の位相や電荷センサで見分ける。スピンの違いが電荷配置の違いに置き換わった。1回ごとの測定値は IQ 平面上で2つの塊に分かれる。',dur:5},
+ {t:'結果',d:'アンシラが ↓ なので、通過なら Q は ↑（1）、閉塞なら Q は ↓（0）。測定後は ε を戻して (1,1) に戻す。',dur:4}]});
+
+/* ---------- loop ---------- */
+let last=performance.now();
+function tick(t){const dt=Math.min(.05,(t-last)/1000);last=t;scenes.forEach(s=>s.frame(dt));requestAnimationFrame(tick);}
+requestAnimationFrame(tick);
+(document.fonts&&document.fonts.ready||Promise.resolve()).then(()=>scenes.forEach(s=>s.render()));
+})();
+</script>
