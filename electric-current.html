@@ -1,0 +1,890 @@
+<title>電流のしくみ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: one reading column; each step = text, then a live "inside the wire" stage with its own controls and readouts. */
+:root{
+  --bg:#edf0f3; --surface:#ffffff; --ink:#15202b; --muted:#566475; --line:#d1d8e0;
+  --copper:#b0532a; --ion:#c2703f; --metal:#f8f1eb;
+  --electron:#1c6dd4; --current:#cc2f3b; --field:#d39a00; --heat:#ea6a1a;
+  --f-display:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1318; --surface:#151c24; --ink:#e5ebf1; --muted:#95a3b2; --line:#2a3541;
+  --copper:#e08655; --ion:#c9774a; --metal:#1d1915;
+  --electron:#5aa6ff; --current:#ff6b70; --field:#f2c14e; --heat:#ff8a3d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1318; --surface:#151c24; --ink:#e5ebf1; --muted:#95a3b2; --line:#2a3541;
+  --copper:#e08655; --ion:#c9774a; --metal:#1d1915;
+  --electron:#5aa6ff; --current:#ff6b70; --field:#f2c14e; --heat:#ff8a3d; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.85;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 72px}
+.wrap{max-width:880px;margin:0 auto}
+a{color:var(--electron)}
+.hero{padding-block:56px 28px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--copper);text-transform:uppercase}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(44px,9vw,80px);line-height:1.08;margin:10px 0 18px;letter-spacing:.03em}
+.lead{font-size:17px;max-width:38em;margin:0}
+.hero-strip{margin-top:28px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.hero-strip canvas{display:block;width:100%}
+.toc{margin-top:28px}
+.toc ol{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 24px}
+.toc a{display:flex;gap:10px;text-decoration:none;color:var(--ink);font-size:15px;padding:4px 0}
+.toc a span{font-family:var(--f-mono);color:var(--copper);font-size:13px;padding-top:2px}
+.toc a:hover b{text-decoration:underline}
+.toc b{font-weight:500}
+
+section.step{padding-block:52px 12px;border-top:1px solid var(--line);margin-top:28px}
+.step-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.num{font-family:var(--f-mono);font-size:14px;color:var(--copper);letter-spacing:.06em}
+h2{font-family:var(--f-display);font-weight:400;font-size:clamp(25px,4.6vw,36px);line-height:1.3;margin:0;text-wrap:balance;letter-spacing:.02em}
+h3{font-size:17px;margin:28px 0 4px;font-weight:700}
+.prose p,.prose ul{max-width:40em}
+.prose ul{padding-left:1.2em}
+.prose li{margin:4px 0}
+strong{font-weight:700}
+.em-e{color:var(--electron);font-weight:700}
+.em-c{color:var(--current);font-weight:700}
+.em-h{color:var(--heat);font-weight:700}
+
+.stage{margin:26px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage canvas{display:block;width:100%;touch-action:manipulation}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 16px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.hud{display:flex;flex-wrap:wrap;gap:8px 28px;padding:10px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.hud div{display:flex;gap:8px;align-items:baseline}
+.hud b{font-family:var(--f-mono);color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;font-size:14px}
+.meter{display:inline-block;width:110px;height:8px;border-radius:4px;background:var(--bg);position:relative;overflow:hidden;align-self:center}
+.meter>span{position:absolute;inset:0 auto 0 0;width:0;border-radius:4px}
+.controls{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg)}
+button{font:inherit;font-size:14px;line-height:1.4;padding:6px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--electron);outline-offset:2px}
+.ctl{display:flex;align-items:center;gap:8px;font-size:14px}
+.ctl output{font-family:var(--f-mono);font-size:13px;min-width:5.5em;font-variant-numeric:tabular-nums}
+input[type=range]{accent-color:var(--copper);width:140px}
+select,input[type=number]{font:inherit;font-size:14px;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+input[type=number]{width:6.5em;font-family:var(--f-mono)}
+
+.look{margin:22px 0;max-width:40em}
+.look .tag{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.look ul{margin:4px 0 0;padding-left:1.2em}
+.note{font-size:14px;color:var(--muted);max-width:44em}
+.formula{font-family:var(--f-mono);font-size:clamp(18px,3.4vw,22px);margin:18px 0;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto;white-space:nowrap}
+.formula small{font-family:var(--f-body);font-size:13px;color:var(--muted);margin-left:12px;white-space:normal}
+
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:24px 0}
+.calc-in{display:flex;flex-direction:column;gap:14px;padding:18px;background:var(--bg);border-right:1px solid var(--line)}
+.calc-in label{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.calc-in .row{display:flex;align-items:center;gap:8px}
+.calc-in .hint{font-size:12px;color:var(--muted);line-height:1.5}
+.calc-out{margin:0;padding:8px 18px;display:flex;flex-direction:column}
+.calc-out div{padding:10px 0;border-bottom:1px solid var(--line);min-width:0}
+.calc-out div:last-child{border-bottom:0}
+.calc-out dt{font-size:13px;color:var(--muted)}
+.calc-out dd{margin:0;font-family:var(--f-mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.calc-out dd small{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--muted);display:block}
+@media (max-width:640px){.calc{grid-template-columns:1fr}.calc-in{border-right:0;border-bottom:1px solid var(--line)}}
+
+.table-wrap{overflow-x:auto;margin:20px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:500}
+td.v{font-family:var(--f-mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sum{counter-reset:s;list-style:none;padding:0;max-width:42em}
+.sum li{counter-increment:s;display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:4px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sum li::before{content:counter(s);font-family:var(--f-display);color:var(--copper);font-size:20px;line-height:1.5}
+footer{margin-top:48px;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">動かして学ぶ物理 ／ 電気の基礎</div>
+  <h1>電流のしくみ</h1>
+  <p class="lead">スイッチを入れると、なぜ電球は一瞬で光るのか。導線の中で電子は実際にどう動いているのか。金属の内部をのぞき込むところから始めて、電圧・電流の向き・抵抗と発熱・信号の速さ・電池の役割まで、動くモデルを操作しながら順番に見ていきます。</p>
+  <div class="hero-strip"><canvas id="cHero" role="img" aria-label="銅線の内部。並んだ銅イオンの間を、たくさんの自由電子が飛び回りながら少しずつ左へ流れていくアニメーション"></canvas></div>
+  <nav class="toc" aria-label="目次">
+    <ol>
+      <li><a href="#metal"><span>01</span><b>金属の中は電子の海</b></a></li>
+      <li><a href="#drift"><span>02</span><b>電圧をかけると流される</b></a></li>
+      <li><a href="#count"><span>03</span><b>電流は「数」で決まる</b></a></li>
+      <li><a href="#resist"><span>04</span><b>抵抗と発熱</b></a></li>
+      <li><a href="#switch"><span>05</span><b>スイッチを入れた瞬間</b></a></li>
+      <li><a href="#hill"><span>06</span><b>電圧は高さ、電池はポンプ</b></a></li>
+      <li><a href="#calc"><span>07</span><b>本物の速さを計算する</b></a></li>
+      <li><a href="#summary"><span>08</span><b>まとめ</b></a></li>
+    </ol>
+  </nav>
+</header>
+
+<!-- 01 -->
+<section class="step" id="metal">
+  <div class="step-head"><span class="num">STEP 01</span><h2>金属の中は「電子の海」</h2></div>
+  <div class="prose">
+    <p>銅や鉄などの金属では、原子がいちばん外側の電子を手放し、<strong>＋の電気を帯びたイオン</strong>になって規則正しく並んでいます。これを<strong>結晶格子</strong>と呼びます。手放された電子は特定の原子に属さず、金属全体を自由に動き回ります。これが<span class="em-e">自由電子</span>です。</p>
+    <p>その数は膨大で、銅なら1 cm³（角砂糖くらい）の中に約 8.5×10²² 個、つまり8.5兆の100億倍もあります。そして電圧をかけていない状態でも、自由電子は<strong>秒速約1,600 km</strong>という猛スピードで飛び回っています。</p>
+    <p>それでも電流は流れていません。電子の向きがてんでバラバラなので、右へ行く電子と左へ行く電子が打ち消しあい、<strong>平均すると移動はゼロ</strong>だからです。</p>
+  </div>
+  <figure class="stage">
+    <canvas id="c1" role="img" aria-label="電圧がかかっていない銅線の内部。電子はバラバラの向きに飛び回り、黄色い1個の電子がジグザグの軌跡を描く"></canvas>
+    <div class="legend">
+      <span><i style="background:var(--ion)"></i>銅イオン（＋）</span>
+      <span><i style="background:var(--electron)"></i>自由電子（−）</span>
+      <span><i style="background:var(--field)"></i>追跡中の電子とその軌跡</span>
+    </div>
+    <div class="hud" id="h1">
+      <div>電子1個ずつの速さ（平均）<b data-k="therm">—</b></div>
+      <div>全員の平均の流れ<b data-k="drift">—</b></div>
+    </div>
+    <div class="controls">
+      <button class="primary" data-play>一時停止</button>
+      <label class="ctl"><input type="checkbox" id="t1" checked> 軌跡を表示</label>
+      <button data-reset>並べ直す</button>
+    </div>
+  </figure>
+  <div class="look">
+    <div class="tag">見るところ</div>
+    <ul>
+      <li>黄色い電子はイオンにぶつかるたびに向きを変え、ジグザグに進みます。しばらく見ていても、右か左かどちらか一方へ進み続けることはありません。</li>
+      <li>「全員の平均の流れ」はゼロの付近をふらふらするだけです。これが「電流ゼロ」の正体です。</li>
+    </ul>
+  </div>
+  <p class="note">実際の電子は量子力学に従う波で、整列したイオンにはほとんど邪魔されず、格子の振動や不純物によって散乱されます。ここでは考え方の筋道が見やすいように、電子を小さな粒として描く古典的なモデル（ドルーデ模型）を使っています。</p>
+</section>
+
+<!-- 02 -->
+<section class="step" id="drift">
+  <div class="step-head"><span class="num">STEP 02</span><h2>電圧をかけると、全員が少しずつ流される</h2></div>
+  <div class="prose">
+    <p>導線の両端を電池につなぐと、導線の中に<strong>電場（電界）</strong>ができます。電子は−の電気を持っているので、電場から<strong>＋極の方向へ引っぱる力</strong>を受けます。</p>
+    <p>引っぱられた電子は加速しますが、すぐにイオンにぶつかって向きが乱されます。「引っぱられて加速する → ぶつかって乱される」の繰り返しです。その結果、バラバラな飛び回りはそのままに、その上に<strong>ゆっくりした一方向の流れ</strong>が重なります。この平均の流れを<span class="em-e">ドリフト</span>と呼び、その速さをドリフト速度と言います。</p>
+    <p>下のスライダーで電圧を上げてみてください。電圧が大きいほど引っぱる力が強くなり、平均の流れも速くなります。</p>
+  </div>
+  <figure class="stage">
+    <canvas id="c2" role="img" aria-label="電圧をかけた銅線の内部。電子はジグザグに動きながら全体として左の＋極側へ流れ、電流の矢印は右向きに表示される"></canvas>
+    <div class="hud" id="h2">
+      <div>電子1個ずつの速さ<b data-k="therm">—</b><span class="meter"><span data-m="therm" style="background:var(--electron)"></span></span></div>
+      <div>平均の流れ（ドリフト）<b data-k="drift">—</b><span class="meter"><span data-m="drift" style="background:var(--field)"></span></span></div>
+    </div>
+    <div class="controls">
+      <button class="primary" data-play>一時停止</button>
+      <label class="ctl">電圧 <input type="range" id="v2" min="0" max="10" step="0.5" value="5"><output id="v2o">5.0 V</output></label>
+      <label class="ctl">電源 <select id="m2"><option value="dc">直流（電池）</option><option value="ac">交流（コンセント）</option></select></label>
+      <label class="ctl"><input type="checkbox" id="t2" checked> 軌跡を表示</label>
+    </div>
+  </figure>
+  <div class="look">
+    <div class="tag">見るところ</div>
+    <ul>
+      <li>黄色い電子の軌跡は相変わらずジグザグですが、少しずつ左へずれていきます。</li>
+      <li>「電子1個ずつの速さ」に比べて「平均の流れ」はずっと小さい値です。電流とは、この小さな平均の流れのことです。</li>
+      <li>交流に切り替えると、＋と−が周期的に入れ替わり、電子は行ったり来たりするだけになります。</li>
+    </ul>
+  </div>
+  <h3>電流の向きと電子の向きは逆</h3>
+  <div class="prose">
+    <p>図の下の矢印を見ると、<span class="em-e">電子は左（＋極側）へ</span>動いているのに、<span class="em-c">電流は右向き</span>と表示されています。これは歴史のいたずらです。18世紀にフランクリンらが「＋の何かが＋極から−極へ流れる」と約束して電流の向きを決めました。電流の正体である電子が見つかったのは1897年で、そのときには約束がすっかり定着していたため、向きはそのまま残りました。<strong>電流は＋極から−極へ、電子はその逆へ</strong>と覚えておきましょう。</p>
+  </div>
+  <h3>家のコンセントは交流</h3>
+  <div class="prose">
+    <p>コンセントの電気は＋と−が1秒間に東日本では50回、西日本では60回入れ替わる交流です。電子はほとんど前進せず、その場で前後に揺れているだけです。家庭の配線（銅線）に1 Aを流した場合、電子が揺れる幅は0.3マイクロメートル程度で、髪の毛の太さの数百分の一にすぎません。それでも電気製品が動くのは、エネルギーを運んでいるのが電子の移動ではなく、導線に沿って伝わる電場だからです（STEP 05で詳しく見ます）。</p>
+  </div>
+</section>
+
+<!-- 03 -->
+<section class="step" id="count">
+  <div class="step-head"><span class="num">STEP 03</span><h2>電流の大きさは「1秒間に通る数」</h2></div>
+  <div class="prose">
+    <p>電流の大きさは、導線のある断面を<strong>1秒間にどれだけの電気（電荷）が通り抜けたか</strong>で決まります。電荷の単位はクーロン（C）、電流の単位はアンペア（A）です。</p>
+  </div>
+  <div class="formula">I = Q ÷ t<small>電流 I [A] ＝ 通った電荷 Q [C] ÷ 時間 t [s]</small></div>
+  <div class="prose">
+    <p>電子1個の電荷はわずか 1.602×10⁻¹⁹ C です。そのため 1 A の電流では、<strong>毎秒 約6.24×10¹⁸ 個（624京個）</strong>もの電子が断面を通り抜けています。下のモデルでは、点線の断面を通る電子を1個ずつ数えています。</p>
+  </div>
+  <figure class="stage">
+    <canvas id="c3" role="img" aria-label="導線の中央に点線の断面があり、そこを左右に通過する電子の数を数えるモデル"></canvas>
+    <div class="hud" id="h3">
+      <div>右→左に通過<b data-k="rl">0</b></div>
+      <div>左→右に通過<b data-k="lr">0</b></div>
+      <div>正味（直近4秒の平均）<b data-k="net">—</b></div>
+    </div>
+    <div class="controls">
+      <button class="primary" data-play>一時停止</button>
+      <label class="ctl">電圧 <input type="range" id="v3" min="0" max="10" step="0.5" value="4"><output id="v3o">4.0 V</output></label>
+      <button data-reset>カウントをリセット</button>
+    </div>
+  </figure>
+  <div class="look">
+    <div class="tag">見るところ</div>
+    <ul>
+      <li>電圧をかけていても、逆向き（左→右）に通る電子はいます。熱運動でバラバラに動いているからです。</li>
+      <li>電流になるのは差し引きの<strong>正味の数</strong>です。電圧を0にすると、両方向の数がほぼ等しくなり、正味はゼロに近づきます。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 04 -->
+<section class="step" id="resist">
+  <div class="step-head"><span class="num">STEP 04</span><h2>抵抗と発熱：ぶつかるたびに熱が生まれる</h2></div>
+  <div class="prose">
+    <p>電場に引っぱられて加速した電子は、イオンにぶつかるたびに受け取ったエネルギーをイオンに渡します。エネルギーをもらったイオンは激しく振動し、その振動が<span class="em-h">熱</span>として感じられます。これが<strong>ジュール熱</strong>です。電気ストーブ、ドライヤー、トースターはこの熱を利用しています。</p>
+    <p>電子の流れを妨げるこの働きが<strong>抵抗</strong>です。温度が上がるとイオンの振動が大きくなり、電子がぶつかりやすくなるので、抵抗は大きくなります。銅の抵抗は、温度が1 ℃上がるごとに約0.4 %ずつ増えます。</p>
+  </div>
+  <figure class="stage">
+    <canvas id="c4" role="img" aria-label="電子がイオンにぶつかるとイオンがオレンジ色に光る。温度を上げるとイオンの振動が大きくなる"></canvas>
+    <div class="hud" id="h4">
+      <div>電流の大きさ<span class="meter"><span data-m="cur" style="background:var(--current)"></span></span><b data-k="cur">—</b></div>
+      <div>発熱<span class="meter"><span data-m="heat" style="background:var(--heat)"></span></span><b data-k="heat">—</b></div>
+    </div>
+    <div class="controls">
+      <button class="primary" data-play>一時停止</button>
+      <label class="ctl">電圧 <input type="range" id="v4" min="0" max="10" step="0.5" value="6"><output id="v4o">6.0 V</output></label>
+      <label class="ctl">温度 <input type="range" id="T4" min="80" max="700" step="10" value="300"><output id="T4o">300 K</output></label>
+    </div>
+  </figure>
+  <div class="look">
+    <div class="tag">見るところ</div>
+    <ul>
+      <li>イオンがオレンジ色に光る瞬間が、電子がエネルギーを渡して熱が生まれた瞬間です。</li>
+      <li>電圧を上げると衝突が激しくなり、発熱は急に増えます。電流が2倍になると、発熱はおよそ4倍です。</li>
+      <li>温度を上げると、同じ電圧でも電流が小さくなります。これが「抵抗が増えた」状態です。</li>
+    </ul>
+  </div>
+  <div class="formula">V = I × R　　P = I × V = I² × R<small>オームの法則と、1秒あたりの発熱（電力 P [W]）</small></div>
+  <p class="note">逆に冷やしていくと抵抗は小さくなり、ある種の物質ではある温度を境に抵抗が完全にゼロになります（超伝導）。これは電子どうしがペアを組む量子力学的な現象で、ここで使っている粒のモデルでは説明できません。</p>
+</section>
+
+<!-- 05 -->
+<section class="step" id="switch">
+  <div class="step-head"><span class="num">STEP 05</span><h2>スイッチを入れた瞬間に何が起きるか</h2></div>
+  <div class="prose">
+    <p>ここまでで、電子の平均の流れはとても遅いことがわかりました。本物の銅線では1秒に0.1 mmも進みません。それなのに、スイッチを入れると電球はすぐに光ります。なぜでしょうか。</p>
+    <p>理由は、<strong>導線の中は最初から電子でぎっしり満たされている</strong>からです。スイッチを入れると、「動け」という合図（電場の変化）が導線に沿ってほぼ光の速さで広がり、<strong>回路のあらゆる場所の電子がほぼ同時に動き出します</strong>。電球の中にもともといた電子が動き出せば、電球は光ります。電池から出発した電子が電球までたどり着く必要はないのです。</p>
+    <p>水がいっぱいに入ったホースを思い浮かべてください。蛇口をひねるとすぐに先端から水が出ますが、出てくるのはいま蛇口から入った水ではなく、もともとホースの先にあった水です。</p>
+  </div>
+  <figure class="stage">
+    <canvas id="c5" role="img" aria-label="電池、電球、スイッチをつないだ回路。スイッチを入れると黄色い合図の波が導線を伝わり、電球が光る。追跡中の電子はほとんど進まない"></canvas>
+    <div class="legend">
+      <span><i style="background:var(--electron)"></i>自由電子</span>
+      <span><i style="background:var(--field)"></i>「動け」の合図が届いた範囲</span>
+      <span><i style="background:var(--current)"></i>電流の向き</span>
+    </div>
+    <div class="controls">
+      <button class="primary" id="sw5">スイッチを入れる</button>
+      <label class="ctl"><input type="checkbox" id="slow5"> 合図の波をスロー再生</label>
+      <button data-reset>最初に戻す</button>
+      <button data-play>一時停止</button>
+    </div>
+  </figure>
+  <div class="look">
+    <div class="tag">見るところ</div>
+    <ul>
+      <li>スイッチを入れると、黄色い合図の波がスイッチから両方向へ広がり、電球に届いた瞬間に光ります。</li>
+      <li>黄色い電子は−極を出たばかりです。電球にたどり着くまでの残り時間を見てください。電球が光るまでの時間とは比べものになりません。</li>
+      <li>アニメーションでは見やすさのために差を縮めています。本物の差は数兆倍です（STEP 07で計算できます）。</li>
+    </ul>
+  </div>
+  <p class="note">もう一歩踏み込むと、電気のエネルギーを運んでいるのは導線の中の電子ではなく、導線の周りの空間にできる電場と磁場です。導線はその通り道を決めるレールのような役割をしています。送電線や電子回路の設計では、この考え方が欠かせません。</p>
+</section>
+
+<!-- 06 -->
+<section class="step" id="hill">
+  <div class="step-head"><span class="num">STEP 06</span><h2>電圧は「高さ」、電池は「ポンプ」</h2></div>
+  <div class="prose">
+    <p>電圧（電位差）は、電気にとっての<strong>高低差</strong>だと考えるとわかりやすくなります。電池は化学反応のエネルギーを使って、電気を低い所から高い所へ持ち上げるポンプです。1.5 Vの乾電池なら、1 Cの電気を持ち上げるたびに1.5 Jのエネルギーを与えます。</p>
+    <p>持ち上げられた電気は、抵抗がほとんどない導線の上を平らに進み、電球や電熱線などの抵抗の部分で坂を下ります。下るときに失った高さの分だけ、エネルギーが熱や光として出ていきます。1周するとちょうど元の高さに戻ります。</p>
+    <p>この図では、STEP 02の約束どおり「＋の電気」が流れるものとして描いています。本物の電子は、これと逆向きに回っています。</p>
+  </div>
+  <figure class="stage">
+    <canvas id="c6" role="img" aria-label="回路を高さのグラフとして描いた図。電池の部分で＋の電荷が階段を上り、導線で平らに進み、抵抗の坂を下りながら熱を出す"></canvas>
+    <div class="hud" id="h6">
+      <div>電圧 V<b data-k="V">—</b></div>
+      <div>抵抗 R<b data-k="R">—</b></div>
+      <div>電流 I = V ÷ R<b data-k="I">—</b></div>
+      <div>発熱・発光 P = V × I<b data-k="P">—</b></div>
+    </div>
+    <div class="controls">
+      <button class="primary" data-play>一時停止</button>
+      <label class="ctl">電圧 <input type="range" id="v6" min="1.5" max="12" step="1.5" value="6"><output id="v6o">6.0 V</output></label>
+      <label class="ctl">抵抗 <input type="range" id="r6" min="1" max="12" step="1" value="3"><output id="r6o">3 Ω</output></label>
+    </div>
+  </figure>
+  <div class="look">
+    <div class="tag">見るところ</div>
+    <ul>
+      <li>電荷の玉の進む速さは、回路のどこでも同じです。途中で電気が消えたり、たまったりすることはないので、<strong>電流は回路のどこでも等しく</strong>なります。電流が電球で「使われて減る」わけではありません。</li>
+      <li>使われているのは高さ、つまりエネルギーです。電圧を上げると坂が高くなって流れが速くなり、抵抗を大きくすると流れが遅くなります。</li>
+      <li>回路のどこか1か所でも切れると、輪がつながらないので流れは止まります。電流を流し続けるには、<strong>閉じた輪（閉回路）</strong>とポンプ（電源）の両方が必要です。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 07 -->
+<section class="step" id="calc">
+  <div class="step-head"><span class="num">STEP 07</span><h2>本物の電子の速さを計算する</h2></div>
+  <div class="prose">
+    <p>断面積 A の導線の中を、電子が平均の速さ v で流れているとします。1秒間に断面を通り抜けるのは、長さ v、断面積 A の円柱に入っていた電子です。その数は n × v × A 個（n は1 m³あたりの自由電子の数）で、1個の電荷 e をかければ電流になります。</p>
+  </div>
+  <div class="formula">I = n × e × v × A　→　v = I ÷ (n × e × A)</div>
+  <div class="calc">
+    <div class="calc-in">
+      <label for="cI">電流 I
+        <span class="row"><input type="number" id="cI" min="0.001" step="0.5" value="1"> A</span>
+        <span class="hint">スマホの充電は1〜3 A、ドライヤーは約12 A</span>
+      </label>
+      <label for="cA">導線の断面積 A
+        <span class="row"><input type="number" id="cA" min="0.01" step="0.1" value="2.0"> mm²</span>
+        <span class="hint">家の屋内配線（VVF 1.6 mm）の芯線は約2.0 mm²</span>
+      </label>
+      <label for="cM">材料
+        <select id="cM">
+          <option value="8.49e28">銅</option>
+          <option value="18.1e28">アルミニウム</option>
+          <option value="5.86e28">銀</option>
+          <option value="5.90e28">金</option>
+        </select>
+        <span class="hint" id="cMh"></span>
+      </label>
+    </div>
+    <dl class="calc-out">
+      <div><dt>1秒間に断面を通る電子</dt><dd id="oN">—</dd></div>
+      <div><dt>電子の平均の速さ（ドリフト速度）</dt><dd id="oV">—</dd></div>
+      <div><dt>電子が1 m 進むのにかかる時間</dt><dd id="oT">—</dd></div>
+      <div><dt>スイッチの合図が1 m 伝わる時間</dt><dd>約 5 ナノ秒<small>光速の約3分の2（約20万 km/s）で伝わるとした場合</small></dd></div>
+    </dl>
+  </div>
+  <p class="note">自由電子の数 n は、銅・銀・金では原子1個あたり1個、アルミニウムでは3個として求めた値です。</p>
+</section>
+
+<!-- 08 -->
+<section class="step" id="summary">
+  <div class="step-head"><span class="num">STEP 08</span><h2>まとめ</h2></div>
+  <ol class="sum">
+    <li><span>金属の中には自由電子がぎっしり詰まっていて、電圧がなくても高速でバラバラに飛び回っている。</span></li>
+    <li><span>電圧をかけると電場ができ、電子は＋極側へゆっくり流される（ドリフト）。電流の向きは約束で電子と逆向き。</span></li>
+    <li><span>電流の大きさは、1秒間に断面を通る電荷の量。1 A は毎秒約6.24×10¹⁸個の電子。</span></li>
+    <li><span>電子がイオンにぶつかってエネルギーを渡すことが抵抗と発熱の正体。温度が上がると金属の抵抗は増える。</span></li>
+    <li><span>電球がすぐに光るのは、電子が速いからではなく、「動け」の合図がほぼ光速で回路全体に伝わるから。</span></li>
+    <li><span>電池は電気を高い所へ持ち上げるポンプ。電流は回路のどこでも同じで、抵抗の部分で高さ（エネルギー）を失う。</span></li>
+  </ol>
+  <h3>導線の中にある「3つの速さ」</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>何の速さ</th><th>銅線での目安</th><th>たとえると</th></tr></thead>
+      <tbody>
+        <tr><td>電子1個ずつの飛び回る速さ</td><td class="v">約 1,600 km/s</td><td>東京から大阪まで0.3秒。ただし向きはバラバラ</td></tr>
+        <tr><td>電子の平均の流れ（ドリフト）</td><td class="v">約 0.04 mm/s</td><td>カタツムリよりずっと遅い（1 A・2 mm²の場合）</td></tr>
+        <tr><td>「動け」の合図（電場）が伝わる速さ</td><td class="v">約 200,000 km/s</td><td>1秒で地球を5周。スイッチを入れると一瞬で伝わる</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <footer>アニメーションの速さや大きさは見やすさを優先して誇張しています。実際の値は表と STEP 07 の計算を参考にしてください。</footer>
+</section>
+</div>
+
+<script>
+(() => {
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FONT = '"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif';
+const MONO = '"JetBrains Mono",ui-monospace,Menlo,monospace';
+const TAU = Math.PI * 2;
+const TOK = {};
+const KEYS = ['bg','surface','ink','muted','line','copper','ion','metal','electron','current','field','heat'];
+function readTokens(){ const cs = getComputedStyle(document.documentElement); for (const k of KEYS) TOK[k] = cs.getPropertyValue('--' + k).trim(); }
+function alpha(hex, a){
+  let h = hex.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function arrow(x, x1, y1, x2, y2, col, w){
+  const a = Math.atan2(y2 - y1, x2 - x1), hl = 7 + w * 2;
+  x.strokeStyle = col; x.fillStyle = col; x.lineWidth = w; x.lineCap = 'round';
+  x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); x.stroke();
+  x.beginPath(); x.moveTo(x2, y2);
+  x.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45));
+  x.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); x.closePath(); x.fill();
+}
+
+const sims = [];
+class Sim {
+  constructor(canvas, W, H){
+    this.c = canvas; this.ctx = canvas.getContext('2d'); this.W = W; this.H = H;
+    this.running = !REDUCED; this.visible = true; this.t = 0; this.k = 0;
+    canvas.style.aspectRatio = W + ' / ' + H;
+    new ResizeObserver(() => this.resize()).observe(canvas);
+    new IntersectionObserver(es => { this.visible = es[es.length - 1].isIntersecting; }).observe(canvas);
+    sims.push(this);
+  }
+  resize(){
+    const w = this.c.clientWidth; if (!w) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.c.width = Math.round(w * dpr); this.c.height = Math.round(w * this.H / this.W * dpr);
+    this.k = this.c.width / this.W; this.draw();
+  }
+  tick(dt){ if (this.running){ this.t += dt; this.step(dt); } this.draw(); }
+  begin(){ if (!this.k) return null; const x = this.ctx; x.setTransform(this.k, 0, 0, this.k, 0, 0); x.clearRect(0, 0, this.W, this.H); return x; }
+  bind(fig){
+    const play = fig.querySelector('[data-play]');
+    if (play){
+      const upd = () => { play.textContent = this.running ? '一時停止' : '再生'; };
+      play.addEventListener('click', () => { this.running = !this.running; upd(); }); upd();
+    }
+    const reset = fig.querySelector('[data-reset]');
+    if (reset) reset.addEventListener('click', () => { this.reset(); this.draw(); });
+  }
+  logical(ev){ const r = this.c.getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * this.W, (ev.clientY - r.top) / r.height * this.H]; }
+}
+
+/* ---------- 導線の内部（ドルーデ模型） ---------- */
+const HEATREF = 260000;
+class WireSim extends Sim {
+  constructor(canvas, opt){
+    const H = opt.H || 300; super(canvas, 800, H);
+    Object.assign(this, { V: 0, T: 300, trail: false, counter: false, heat: false, arrows: true, ac: false, nE: 70 }, opt);
+    this.top = 16; this.bot = H - (this.arrows ? 66 : 16);
+    this.vth = 90; this.acc = 3.5; this.Vnow = this.V;
+    this.ions = [];
+    const s = 56, rh = s * 0.866;
+    let r = 0;
+    for (let y = this.top + rh * 0.55; y < this.bot - 8; y += rh, r++)
+      for (let x = (r % 2 ? s / 2 : 0) + s / 4; x < this.W; x += s)
+        this.ions.push({ x0: x, y0: y, x, y, p1: Math.random() * TAU, p2: Math.random() * TAU, f: 0 });
+    this.reset();
+  }
+  reset(){
+    this.e = []; let guard = 0;
+    while (this.e.length < this.nE && guard++ < 5000){
+      const x = Math.random() * this.W, y = this.top + 6 + Math.random() * (this.bot - this.top - 12);
+      if (this.ions.some(i => (i.x0 - x) ** 2 + (i.y0 - y) ** 2 < 200)) continue;
+      const a = Math.random() * TAU, sp = this.vth * (0.85 + Math.random() * 0.3);
+      this.e.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp });
+    }
+    this.hist = []; this.histT = 0; this.cross = []; this.nRL = 0; this.nLR = 0;
+    this.drift = 0; this.therm = this.vth; this.heatRate = 0; this.heatAcc = 0; this.hudT = 1;
+    if (this.onHud) this.onHud(this);
+  }
+  scatter(e, vx, vy, ion, random){
+    const before = e.vx * e.vx + e.vy * e.vy;
+    const ang = random ? Math.random() * TAU : Math.atan2(vy, vx) + (Math.random() - 0.5) * 1.2;
+    const sp = this.vth * (0.85 + Math.random() * 0.3);
+    e.vx = Math.cos(ang) * sp; e.vy = Math.sin(ang) * sp;
+    const lost = before - sp * sp, v2 = this.vth * this.vth;
+    this.heatAcc += lost;
+    if (ion && lost > 0.35 * v2) ion.f = Math.min(1, ion.f + (lost - 0.35 * v2) / v2);
+  }
+  sub(h, t){
+    this.Vnow = this.ac ? this.V * Math.sin(TAU * 0.35 * t) : this.V;
+    const a = -this.Vnow * this.acc;
+    const amp = this.T / 300 * 2.4, RR = 3 + this.T / 300 * 5 + 2.6, RR2 = RR * RR, w = 16;
+    for (const i of this.ions){
+      i.x = i.x0 + amp * Math.sin(w * t + i.p1); i.y = i.y0 + amp * Math.sin(w * 1.27 * t + i.p2);
+      if (i.f > 0) i.f = Math.max(0, i.f - h * 2.5);
+    }
+    const cx = this.W / 2, tr = this.e[0];
+    for (const e of this.e){
+      e.vx += a * h; const px = e.x; e.x += e.vx * h; e.y += e.vy * h;
+      if (e.y < this.top + 3){ e.y = this.top + 3; e.vy = Math.abs(e.vy); }
+      else if (e.y > this.bot - 3){ e.y = this.bot - 3; e.vy = -Math.abs(e.vy); }
+      let wrapped = false;
+      if (e.x < 0){ e.x += this.W; wrapped = true; } else if (e.x >= this.W){ e.x -= this.W; wrapped = true; }
+      if (wrapped){ if (e === tr) this.hist.push(null); }
+      else if (px >= cx && e.x < cx){ this.cross.push([t, 1]); this.nRL++; }
+      else if (px < cx && e.x >= cx){ this.cross.push([t, -1]); this.nLR++; }
+      for (const i of this.ions){
+        const dx = e.x - i.x; if (dx > RR || dx < -RR) continue;
+        const dy = e.y - i.y; if (dy > RR || dy < -RR) continue;
+        const d2 = dx * dx + dy * dy; if (d2 >= RR2) continue;
+        const d = Math.sqrt(d2) || 1, nx = dx / d, ny = dy / d, vn = e.vx * nx + e.vy * ny;
+        e.x = i.x + nx * RR; e.y = i.y + ny * RR;
+        if (vn < 0) this.scatter(e, e.vx - 2 * vn * nx, e.vy - 2 * vn * ny, i, false);
+        break;
+      }
+      if (Math.random() < h * 0.25 * this.T / 300) this.scatter(e, 0, 0, null, true);
+    }
+    this.histT += h;
+    if (this.trail && this.histT > 0.03){ this.histT = 0; this.hist.push([tr.x, tr.y]); if (this.hist.length > 450) this.hist.shift(); }
+  }
+  step(dt){
+    const n = Math.ceil(dt / 0.008), h = dt / n, t0 = this.t - dt;
+    for (let k = 0; k < n; k++) this.sub(h, t0 + (k + 1) * h);
+    let sx = 0, ss = 0;
+    for (const e of this.e){ sx += e.vx; ss += Math.hypot(e.vx, e.vy); }
+    const kk = Math.min(1, dt * (this.ac ? 3 : 0.6));
+    this.drift += (-sx / this.e.length - this.drift) * kk;
+    this.therm += (ss / this.e.length - this.therm) * kk;
+    this.heatRate += (this.heatAcc / dt - this.heatRate) * Math.min(1, dt * 0.8); this.heatAcc = 0;
+    const cut = this.t - 4; while (this.cross.length && this.cross[0][0] < cut) this.cross.shift();
+    this.hudT += dt; if (this.hudT > 0.2 && this.onHud){ this.hudT = 0; this.onHud(this); }
+  }
+  get netRate(){ let s = 0; for (const c of this.cross) s += c[1]; return s / Math.min(4, Math.max(0.5, this.t)); }
+  draw(){
+    const x = this.begin(); if (!x) return;
+    const { W, top, bot } = this;
+    x.fillStyle = TOK.metal; x.fillRect(0, top, W, bot - top);
+    if (this.heat){
+      const k = clamp(this.heatRate / HEATREF, 0, 1);
+      if (k > 0.01){ x.fillStyle = alpha(TOK.heat, 0.14 * k); x.fillRect(0, top, W, bot - top); }
+    }
+    x.fillStyle = TOK.copper; x.fillRect(0, top - 3, W, 3); x.fillRect(0, bot, W, 3);
+    for (const i of this.ions){
+      if (i.f > 0.03){ x.fillStyle = alpha(TOK.heat, 0.55 * i.f); x.beginPath(); x.arc(i.x, i.y, 9 + 10 * i.f, 0, TAU); x.fill(); }
+      x.fillStyle = TOK.ion; x.beginPath(); x.arc(i.x, i.y, 8, 0, TAU); x.fill();
+      x.strokeStyle = TOK.surface; x.lineWidth = 1.6; x.beginPath();
+      x.moveTo(i.x - 3.5, i.y); x.lineTo(i.x + 3.5, i.y); x.moveTo(i.x, i.y - 3.5); x.lineTo(i.x, i.y + 3.5); x.stroke();
+    }
+    if (this.counter){
+      const cx = W / 2;
+      x.setLineDash([6, 5]); x.strokeStyle = TOK.ink; x.lineWidth = 1.5;
+      x.beginPath(); x.moveTo(cx, top); x.lineTo(cx, bot); x.stroke(); x.setLineDash([]);
+      x.font = '600 12px ' + FONT; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillStyle = TOK.surface; x.fillRect(cx - 22, top + 6, 44, 20);
+      x.fillStyle = TOK.ink; x.fillText('断面', cx, top + 16.5);
+    }
+    if (this.trail){
+      x.strokeStyle = alpha(TOK.field, 0.8); x.lineWidth = 1.8; x.lineJoin = 'round'; x.beginPath();
+      let pen = false;
+      for (const p of this.hist){ if (!p){ pen = false; continue; } if (!pen){ x.moveTo(p[0], p[1]); pen = true; } else x.lineTo(p[0], p[1]); }
+      x.stroke();
+    }
+    x.fillStyle = TOK.electron;
+    for (const e of this.e){ x.beginPath(); x.arc(e.x, e.y, 3.3, 0, TAU); x.fill(); }
+    if (this.trail){
+      const e = this.e[0];
+      x.fillStyle = TOK.field; x.beginPath(); x.arc(e.x, e.y, 6, 0, TAU); x.fill();
+      x.strokeStyle = TOK.ink; x.lineWidth = 1.5; x.stroke();
+    }
+    if (this.arrows) this.drawBand(x);
+  }
+  drawBand(x){
+    const { W, bot } = this, s = Math.sign(this.Vnow), m = Math.abs(this.Vnow) / 10;
+    const y1 = bot + 22, y2 = bot + 48, cx = 450;
+    x.textBaseline = 'middle';
+    if (m > 0.03){
+      x.font = '700 22px ' + FONT; x.textAlign = 'center';
+      x.fillStyle = TOK.current; x.fillText(s > 0 ? '＋' : '−', 22, y1 + 12);
+      x.fillStyle = TOK.electron; x.fillText(s > 0 ? '−' : '＋', W - 22, y1 + 12);
+      x.font = '500 12px ' + FONT; x.fillStyle = TOK.muted;
+      x.fillText('極側', 22, y2 + 8); x.fillText('極側', W - 22, y2 + 8);
+      const L = 50 + 160 * m;
+      x.font = '600 13px ' + FONT; x.textAlign = 'left';
+      x.fillStyle = TOK.electron; x.fillText('電子の動き', 70, y1);
+      x.fillStyle = TOK.current; x.fillText('電流の向き', 70, y2);
+      if (s > 0){ arrow(x, cx + L / 2, y1, cx - L / 2, y1, TOK.electron, 3); arrow(x, cx - L / 2, y2, cx + L / 2, y2, TOK.current, 3); }
+      else { arrow(x, cx - L / 2, y1, cx + L / 2, y1, TOK.electron, 3); arrow(x, cx + L / 2, y2, cx - L / 2, y2, TOK.current, 3); }
+    } else {
+      x.font = '500 14px ' + FONT; x.textAlign = 'center'; x.fillStyle = TOK.muted;
+      x.fillText(this.ac ? '＋と−が入れ替わる瞬間' : '電圧 0 V：電場がないので、平均の流れは生まれない', W / 2, (y1 + y2) / 2);
+    }
+  }
+}
+
+/* ---------- 回路とスイッチ ---------- */
+class CircuitSim extends Sim {
+  constructor(canvas){
+    super(canvas, 800, 430);
+    this.pts = [[110, 195], [110, 70], [690, 70], [690, 360], [110, 360], [110, 235]];
+    this.seg = []; let L = 0;
+    for (let i = 0; i < this.pts.length - 1; i++){
+      const [ax, ay] = this.pts[i], [bx, by] = this.pts[i + 1], len = Math.hypot(bx - ax, by - ay);
+      this.seg.push({ ax, ay, dx: (bx - ax) / len, dy: (by - ay) / len, s: L, len }); L += len;
+    }
+    this.L = L; this.uLamp = 125 + 290; this.uSw = 125 + 580 + 290 + 290;
+    this.vd = 9; this.cFast = 1100; this.cSlow = 150; this.slow = false;
+    canvas.addEventListener('click', ev => { const [px, py] = this.logical(ev); if (Math.hypot(px - 400, py - 360) < 55) this.toggle(); });
+    this.reset();
+  }
+  reset(){
+    this.e = [];
+    for (let u = 7; u < this.L; u += 12) this.e.push({ u, j: (Math.random() - 0.5) * 6, ph: Math.random() * TAU, v: 0 });
+    this.track = this.e[this.e.length - 1];
+    this.closed = false; this.front = 0; this.tClose = null; this.tLamp = null; this.glow = 0;
+    if (this.onSwitch) this.onSwitch(this);
+  }
+  toggle(){
+    this.closed = !this.closed;
+    if (this.closed){ this.front = 0; this.tClose = this.t; this.tLamp = null; }
+    if (this.onSwitch) this.onSwitch(this);
+    if (!this.running) this.draw();
+  }
+  at(u){
+    const L = this.L; u = ((u % L) + L) % L;
+    for (const s of this.seg) if (u <= s.s + s.len){ const d = u - s.s; return [s.ax + s.dx * d, s.ay + s.dy * d, -s.dy, s.dx, s.dx, s.dy]; }
+    const s = this.seg[this.seg.length - 1]; return [s.ax + s.dx * s.len, s.ay + s.dy * s.len, -s.dy, s.dx, s.dx, s.dy];
+  }
+  circ(a, b){ const L = this.L; let d = Math.abs(a - b) % L; return Math.min(d, L - d); }
+  step(dt){
+    if (this.closed){
+      this.front = Math.min(this.L / 2 + 30, this.front + (this.slow ? this.cSlow : this.cFast) * dt);
+      if (this.tLamp === null && this.circ(this.uLamp, this.uSw) <= this.front) this.tLamp = this.t - this.tClose;
+    }
+    const lit = this.closed && this.tLamp !== null;
+    this.glow += ((lit ? 1 : 0) - this.glow) * Math.min(1, dt * 8);
+    for (const e of this.e){
+      const act = this.closed && this.circ(e.u, this.uSw) <= this.front;
+      e.v += ((act ? this.vd : 0) - e.v) * Math.min(1, dt * 6);
+      e.u -= e.v * dt; if (e.u < 0) e.u += this.L;
+    }
+  }
+  path(x, a, b){
+    // stroke wire from u=a to u=b (a<b, both within [0,L])
+    const p0 = this.at(a); x.moveTo(p0[0], p0[1]);
+    for (let i = 1; i < this.pts.length - 1; i++){ const s = this.seg[i].s; if (s > a && s < b) x.lineTo(this.pts[i][0], this.pts[i][1]); }
+    const p1 = this.at(b); x.lineTo(p1[0], p1[1]);
+  }
+  range(x, a, b){
+    const L = this.L;
+    if (a < 0){ this.path(x, a + L, L); this.path(x, 0, b); }
+    else if (b > L){ this.path(x, a, L); this.path(x, 0, b - L); }
+    else this.path(x, a, b);
+  }
+  draw(){
+    const x = this.begin(); if (!x) return;
+    const L = this.L, sw = this.uSw, gap = 22;
+    x.lineCap = 'round'; x.lineJoin = 'round';
+    for (const [w, col] of [[16, TOK.copper], [11, TOK.metal]]){
+      x.strokeStyle = col; x.lineWidth = w; x.beginPath();
+      if (this.closed) this.path(x, 0, L); else { this.path(x, 0, sw - gap); this.path(x, sw + gap, L); }
+      x.stroke();
+    }
+    if (this.closed && this.front > 0){
+      const f = Math.min(this.front, L / 2);
+      x.strokeStyle = alpha(TOK.field, 0.42); x.lineWidth = 11; x.beginPath(); this.range(x, sw - f, sw + f); x.stroke();
+      if (this.front < L / 2){
+        for (const u of [sw - f, sw + f]){
+          const p = this.at(u); x.fillStyle = alpha(TOK.field, 0.35); x.beginPath(); x.arc(p[0], p[1], 18, 0, TAU); x.fill();
+          x.fillStyle = TOK.field; x.beginPath(); x.arc(p[0], p[1], 8, 0, TAU); x.fill();
+        }
+      }
+    }
+    // battery
+    x.fillStyle = TOK.surface; x.fillRect(84, 196, 52, 38);
+    x.strokeStyle = TOK.ink; x.lineCap = 'butt';
+    x.lineWidth = 3; x.beginPath(); x.moveTo(86, 203); x.lineTo(134, 203); x.stroke();
+    x.lineWidth = 7; x.beginPath(); x.moveTo(98, 226); x.lineTo(122, 226); x.stroke();
+    x.font = '700 18px ' + FONT; x.textBaseline = 'middle'; x.textAlign = 'right';
+    x.fillStyle = TOK.current; x.fillText('＋', 78, 200);
+    x.fillStyle = TOK.electron; x.fillText('−', 78, 230);
+    x.font = '600 13px ' + FONT; x.fillStyle = TOK.muted; x.textAlign = 'left'; x.fillText('電池', 146, 215);
+    // lamp
+    const g = this.glow;
+    if (g > 0.02){
+      const rg = x.createRadialGradient(400, 70, 4, 400, 70, 80);
+      rg.addColorStop(0, alpha(TOK.field, 0.75 * g)); rg.addColorStop(1, alpha(TOK.field, 0));
+      x.fillStyle = rg; x.beginPath(); x.arc(400, 70, 80, 0, TAU); x.fill();
+    }
+    x.fillStyle = g > 0.5 ? TOK.field : TOK.surface; x.strokeStyle = TOK.ink; x.lineWidth = 2;
+    x.beginPath(); x.arc(400, 70, 22, 0, TAU); x.fill(); x.stroke();
+    x.strokeStyle = g > 0.5 ? TOK.heat : TOK.muted; x.lineWidth = 2; x.beginPath();
+    x.moveTo(386, 76); for (let i = 0; i <= 6; i++) x.lineTo(388 + i * 4, i % 2 ? 62 : 76); x.lineTo(414, 76); x.stroke();
+    x.font = '600 13px ' + FONT; x.fillStyle = TOK.muted; x.textAlign = 'center'; x.fillText('電球', 400, 112);
+    // switch
+    x.fillStyle = TOK.ink; x.beginPath(); x.arc(400 - gap, 360, 5, 0, TAU); x.arc(400 + gap, 360, 5, 0, TAU); x.fill();
+    x.strokeStyle = TOK.ink; x.lineWidth = 4; x.lineCap = 'round'; x.beginPath(); x.moveTo(400 + gap, 360);
+    if (this.closed) x.lineTo(400 - gap, 360); else x.lineTo(400 - gap + 6, 330);
+    x.stroke();
+    x.fillStyle = TOK.muted; x.fillText(this.closed ? 'スイッチ（入）' : 'スイッチ（切）— クリックでも操作できます', 400, 396);
+    // electrons
+    const t = this.t;
+    x.fillStyle = TOK.electron;
+    for (const e of this.e){
+      if (e === this.track) continue;
+      const p = this.at(e.u), o = e.j + Math.sin(t * 9 + e.ph) * 1.4;
+      x.beginPath(); x.arc(p[0] + p[2] * o, p[1] + p[3] * o, 2.6, 0, TAU); x.fill();
+    }
+    const tp = this.at(this.track.u);
+    x.fillStyle = TOK.field; x.strokeStyle = TOK.ink; x.lineWidth = 1.5;
+    x.beginPath(); x.arc(tp[0], tp[1], 6, 0, TAU); x.fill(); x.stroke();
+    // current arrows
+    if (this.closed && this.tLamp !== null){
+      for (const u of [60, 250, 560, 830, 1140, 1440]){
+        const p = this.at(u), ox = p[0] - p[2] * 26, oy = p[1] - p[3] * 26;
+        arrow(x, ox - p[4] * 12, oy - p[5] * 12, ox + p[4] * 12, oy + p[5] * 12, TOK.current, 2.5);
+      }
+    }
+    // readouts
+    x.textAlign = 'center';
+    const el = this.closed ? this.t - this.tClose : 0;
+    const dist = (this.track.u - this.uLamp + L) % L;
+    const lines = this.closed
+      ? [['スイッチを入れてから', el.toFixed(1) + ' 秒', TOK.ink],
+         ['電球が光るまで', this.tLamp === null ? '合図を待っています…' : this.tLamp.toFixed(2) + ' 秒', TOK.field],
+         ['黄色い電子が電球に着くまで', 'あと約 ' + Math.round(dist / this.vd) + ' 秒', TOK.electron]]
+      : [['スイッチは切れています', '電子は熱運動で揺れているだけ', TOK.ink],
+         ['黄色い電子', '電池の−極を出たところ', TOK.electron],
+         ['電球まで導線に沿って', Math.round(dist) + ' 目盛り', TOK.muted]];
+    lines.forEach(([a, b, col], i) => {
+      const y = 160 + i * 58;
+      x.font = '500 13px ' + FONT; x.fillStyle = TOK.muted; x.fillText(a, 400, y);
+      x.font = '700 20px ' + FONT; x.fillStyle = col; x.fillText(b, 400, y + 24);
+    });
+  }
+}
+
+/* ---------- 電位の高さ ---------- */
+class HillSim extends Sim {
+  constructor(canvas){
+    super(canvas, 800, 390);
+    this.V = 6; this.R = 3; this.x0 = 90; this.x1 = 770; this.base = 320; this.sc = 210 / 12;
+    this.balls = Array.from({ length: 18 }, (_, i) => ({ p: i / 18, ph: Math.random() * TAU }));
+    this.sparks = [];
+  }
+  reset(){}
+  get I(){ return this.V / this.R; }
+  h(p){ const V = this.V; if (p < .14) return V * p / .14; if (p < .44) return V; if (p < .74) return V * (1 - (p - .44) / .30); return 0; }
+  X(p){ return this.x0 + (this.x1 - this.x0) * p; }
+  Y(p){ return this.base - this.h(p) * this.sc; }
+  step(dt){
+    const sp = 0.03 * this.I;
+    for (const b of this.balls){
+      b.p = (b.p + sp * dt) % 1;
+      if (b.p > .44 && b.p < .74 && Math.random() < dt * this.I * 1.4)
+        this.sparks.push({ x: this.X(b.p), y: this.Y(b.p) - 8, vx: (Math.random() - .5) * 40, vy: -30 - Math.random() * 40, life: 1 });
+    }
+    for (const s of this.sparks){ s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt * 1.3; }
+    this.sparks = this.sparks.filter(s => s.life > 0);
+  }
+  draw(){
+    const x = this.begin(); if (!x) return;
+    const { x0, x1, base } = this, yV = base - this.V * this.sc;
+    // axis
+    x.strokeStyle = TOK.line; x.lineWidth = 1;
+    x.beginPath(); x.moveTo(52, base); x.lineTo(52, base - 12 * this.sc - 10); x.stroke();
+    x.font = '500 12px ' + MONO; x.fillStyle = TOK.muted; x.textAlign = 'right'; x.textBaseline = 'middle';
+    x.fillText('0 V', 46, base);
+    x.setLineDash([4, 5]); x.strokeStyle = TOK.muted; x.beginPath(); x.moveTo(52, yV); x.lineTo(this.X(.44), yV); x.stroke(); x.setLineDash([]);
+    x.fillStyle = TOK.ink; x.fillText(this.V.toFixed(1) + ' V', 46, yV);
+    x.save(); x.translate(16, base - 110); x.rotate(-Math.PI / 2); x.textAlign = 'center';
+    x.font = '500 12px ' + FONT; x.fillStyle = TOK.muted; x.fillText('電位（電気の高さ）', 0, 0); x.restore();
+    // ground
+    x.beginPath(); x.moveTo(x0, base + 50);
+    for (let i = 0; i <= 200; i++){ const p = i / 200; x.lineTo(this.X(p), this.Y(p)); }
+    x.lineTo(x1, base + 50); x.closePath(); x.fillStyle = TOK.metal; x.fill();
+    // profile: battery as stairs
+    x.strokeStyle = TOK.copper; x.lineWidth = 3; x.lineJoin = 'round'; x.beginPath();
+    const steps = 7, bw = (this.X(.14) - x0) / steps, bh = this.V * this.sc / steps;
+    x.moveTo(x0, base);
+    for (let k = 0; k < steps; k++){ x.lineTo(x0 + bw * k, base - bh * (k + 1)); x.lineTo(x0 + bw * (k + 1), base - bh * (k + 1)); }
+    for (let i = 0; i <= 120; i++){ const p = .14 + .86 * i / 120; x.lineTo(this.X(p), this.Y(p)); }
+    x.stroke();
+    // resistor pegs
+    x.fillStyle = TOK.ion;
+    for (let k = 1; k < 12; k++){ const p = .44 + .30 * k / 12; x.beginPath(); x.arc(this.X(p), this.Y(p) + 10 + (k % 2) * 6, 3.5, 0, TAU); x.fill(); }
+    // labels
+    x.font = '600 13px ' + FONT; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+    x.fillStyle = TOK.ink;
+    x.fillText('電池（ポンプ）', this.X(.07), base + 26);
+    x.fillText('導線（平ら）', this.X(.29), yV - 26);
+    x.fillText('抵抗（電球・電熱線）', this.X(.59), Math.min(yV + 40, base - 6) - (this.V * this.sc) / 2 - 24);
+    x.fillText('導線（平ら）', this.X(.87), base - 26);
+    x.font = '500 12px ' + FONT; x.fillStyle = TOK.muted;
+    x.fillText('右端と左端はつながっています（回路は1つの輪）', (x0 + x1) / 2, base + 58);
+    // sparks
+    for (const s of this.sparks){ x.fillStyle = alpha(TOK.heat, s.life); x.beginPath(); x.arc(s.x, s.y, 2.5 + 2 * s.life, 0, TAU); x.fill(); }
+    // balls (+ charges)
+    for (const b of this.balls){
+      const inR = b.p > .44 && b.p < .74;
+      const jy = inR ? Math.abs(Math.sin(this.t * 22 + b.ph * 3)) * 4 : 0;
+      const bx = this.X(b.p), by = this.Y(b.p) - 9 - jy;
+      x.fillStyle = TOK.current; x.beginPath(); x.arc(bx, by, 8, 0, TAU); x.fill();
+      x.strokeStyle = TOK.surface; x.lineWidth = 2; x.beginPath();
+      x.moveTo(bx - 3.5, by); x.lineTo(bx + 3.5, by); x.moveTo(bx, by - 3.5); x.lineTo(bx, by + 3.5); x.stroke();
+    }
+  }
+}
+
+/* ---------- 組み立て ---------- */
+readTokens();
+const redraw = () => { readTokens(); for (const s of sims) s.draw(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+const $ = id => document.getElementById(id);
+const fig = id => $(id).closest('figure');
+const hudSet = (hud, k, v) => { const el = hud.querySelector(`[data-k="${k}"]`); if (el) el.textContent = v; };
+const meterSet = (hud, k, f) => { const el = hud.querySelector(`[data-m="${k}"]`); if (el) el.style.width = (clamp(f, 0, 1) * 100).toFixed(1) + '%'; };
+function range(id, outId, fmt, fn){ const el = $(id), out = $(outId); const upd = () => { const v = parseFloat(el.value); out.textContent = fmt(v); fn(v); }; el.addEventListener('input', upd); upd(); }
+
+new WireSim($('cHero'), { H: 170, V: 3.5, arrows: false, nE: 44 });
+
+const s1 = new WireSim($('c1'), { V: 0, trail: true, arrows: false, H: 280 });
+s1.onHud = s => { const h = $('h1'); hudSet(h, 'therm', s.therm.toFixed(0)); hudSet(h, 'drift', (Math.abs(s.drift) < 0.5 ? '0' : s.drift.toFixed(1))); };
+s1.bind(fig('c1')); s1.onHud(s1);
+$('t1').addEventListener('change', e => { s1.trail = e.target.checked; s1.hist = []; s1.draw(); });
+
+const s2 = new WireSim($('c2'), { V: 5, trail: true });
+s2.onHud = s => {
+  const h = $('h2');
+  hudSet(h, 'therm', s.therm.toFixed(0)); hudSet(h, 'drift', Math.abs(s.drift).toFixed(1));
+  meterSet(h, 'therm', s.therm / 140); meterSet(h, 'drift', Math.abs(s.drift) / 140);
+};
+s2.bind(fig('c2'));
+range('v2', 'v2o', v => v.toFixed(1) + ' V', v => { s2.V = v; s2.draw(); });
+$('m2').addEventListener('change', e => { s2.ac = e.target.value === 'ac'; s2.draw(); });
+$('t2').addEventListener('change', e => { s2.trail = e.target.checked; s2.hist = []; s2.draw(); });
+
+const s3 = new WireSim($('c3'), { V: 4, counter: true });
+s3.onHud = s => { const h = $('h3'); hudSet(h, 'rl', s.nRL); hudSet(h, 'lr', s.nLR); hudSet(h, 'net', s.netRate.toFixed(1) + ' 個/秒'); };
+s3.bind(fig('c3')); s3.onHud(s3);
+range('v3', 'v3o', v => v.toFixed(1) + ' V', v => { s3.V = v; s3.draw(); });
+
+const s4 = new WireSim($('c4'), { V: 6, heat: true });
+s4.onHud = s => {
+  const h = $('h4'), c = Math.max(0, s.drift) / 45, q = Math.max(0, s.heatRate) / HEATREF;
+  meterSet(h, 'cur', c); meterSet(h, 'heat', q);
+  hudSet(h, 'cur', Math.round(clamp(c, 0, 1.5) * 100)); hudSet(h, 'heat', Math.round(clamp(q, 0, 1.5) * 100));
+};
+s4.bind(fig('c4'));
+range('v4', 'v4o', v => v.toFixed(1) + ' V', v => { s4.V = v; });
+range('T4', 'T4o', v => `${v} K（${Math.round(v - 273)} ℃）`, v => { s4.T = v; s4.draw(); });
+
+const s5 = new CircuitSim($('c5'));
+const sw = $('sw5');
+s5.onSwitch = s => { sw.textContent = s.closed ? 'スイッチを切る' : 'スイッチを入れる'; };
+s5.onSwitch(s5);
+sw.addEventListener('click', () => s5.toggle());
+$('slow5').addEventListener('change', e => { s5.slow = e.target.checked; });
+s5.bind(fig('c5'));
+
+const s6 = new HillSim($('c6'));
+const hud6 = () => { const h = $('h6'); hudSet(h, 'V', s6.V.toFixed(1) + ' V'); hudSet(h, 'R', s6.R + ' Ω'); hudSet(h, 'I', s6.I.toFixed(2) + ' A'); hudSet(h, 'P', (s6.V * s6.I).toFixed(1) + ' W'); s6.draw(); };
+range('v6', 'v6o', v => v.toFixed(1) + ' V', v => { s6.V = v; hud6(); });
+range('r6', 'r6o', v => v + ' Ω', v => { s6.R = v; hud6(); });
+s6.bind(fig('c6'));
+
+let last = performance.now();
+function loop(now){ const dt = Math.min(0.05, (now - last) / 1000); last = now; for (const s of sims) if (s.visible) s.tick(dt); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+/* ---------- 計算機 ---------- */
+const E = 1.602176634e-19;
+const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+function sci(v){ const e = Math.floor(Math.log10(v)); const m = v / 10 ** e; return m.toFixed(2) + ' × 10' + String(e).split('').map(c => SUP[c]).join(''); }
+function dur(s){
+  if (s < 60) return s.toFixed(1) + ' 秒';
+  if (s < 3600) return Math.round(s / 60) + ' 分';
+  if (s < 86400 * 2){ const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return `${h} 時間 ${m} 分`; }
+  if (s < 86400 * 365) return (s / 86400).toFixed(1) + ' 日';
+  return (s / 86400 / 365).toFixed(1) + ' 年';
+}
+const NAMES = { '8.49e28': '銅', '18.1e28': 'アルミニウム', '5.86e28': '銀', '5.90e28': '金' };
+function calc(){
+  const I = parseFloat($('cI').value), A = parseFloat($('cA').value) * 1e-6, n = parseFloat($('cM').value);
+  $('cMh').textContent = `${NAMES[$('cM').value]}の自由電子：1 m³あたり ${sci(n)} 個`;
+  if (!(I > 0) || !(A > 0)){ for (const id of ['oN', 'oV', 'oT']) $(id).textContent = '正の数を入れてください'; return; }
+  const v = I / (n * E * A), mm = v * 1000;
+  $('oN').textContent = sci(I / E) + ' 個';
+  $('oV').innerHTML = (mm >= 0.01 ? mm.toFixed(3) + ' mm/s' : (mm * 1000).toFixed(2) + ' µm/s') +
+    (mm < 1 ? `<small>カタツムリ（約1 mm/s）の約 ${Math.round(1 / mm).toLocaleString('ja-JP')} 分の1</small>` : '<small>カタツムリ（約1 mm/s）と同じかそれ以上</small>');
+  $('oT').innerHTML = dur(1 / v) + `<small>合図より約 ${sci((1 / v) / 5e-9)} 倍遅い</small>`;
+}
+for (const id of ['cI', 'cA', 'cM']) $(id).addEventListener('input', calc);
+calc();
+})();
+</script>
