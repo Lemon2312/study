@@ -614,6 +614,60 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .quiz .qz-q{font-size:20px}
 .quiz .qz-a{font-size:19px}
 .pop2{animation:mhit .45s cubic-bezier(.3,1.6,.5,1)}
+/* ---------- 3.4（トフォリ）〜 3.5・コラムで追加した部品 ---------- */
+.defbox.thm::before{content:var(--thm);background:var(--pink)}
+.tagq{display:inline-block;margin-top:4px;font-size:15px;font-weight:800;color:var(--purple);background:#efe7ff;border:2px solid var(--ink);border-radius:999px;padding:0 12px}
+/* トフォリ */
+.tf-main{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px}
+.tf-col{display:flex;flex-direction:column;align-items:center;gap:7px}
+.tf-col small{font-size:13px;font-weight:800;color:var(--muted)}
+.tf-bit,.tf-out{width:52px;height:42px;border:3px solid var(--ink);border-radius:10px;background:#fff;font:800 22px Consolas,Menlo,monospace;
+  display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);color:var(--ink)}
+.tf-bit{cursor:pointer;border-color:var(--blue);color:var(--blue)}
+.tf-bit.on{background:var(--blue);color:#fff;border-color:var(--ink)}
+.tf-out.on{background:var(--yellow)}
+.tf-out.c{outline:3px dashed var(--pink);outline-offset:3px}
+.tf-bit.c{outline:3px dashed #b9b5d0;outline-offset:3px}
+.tf-box{width:118px;height:150px;border:3.5px solid var(--ink);border-radius:18px;background:#efe7ff;display:flex;align-items:center;justify-content:center;
+  text-align:center;font-weight:900;font-size:19px;box-shadow:5px 5px 0 var(--ink)}
+#tfTable td.and{color:var(--pink);font-weight:900}
+#tfTable tbody tr{cursor:pointer}
+/* 図3.5 */
+.f35-tag{text-align:center;font-size:16px;font-weight:700;border:2.5px solid var(--ink);border-radius:999px;padding:3px 10px;margin-bottom:6px;transition:background .3s}
+.f35-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f35-name{text-align:center;font-weight:900;font-size:16px}
+.f35-down{text-align:center;font-weight:900;color:var(--muted);font-size:14px;margin:2px 0}
+/* 立方体（CSS 3D） */
+.c3row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+.c3row .f35-name{font-size:14px;min-height:38px;display:flex;align-items:center;justify-content:center;line-height:1.3}
+.c3wrap{height:190px;perspective:700px;display:flex;align-items:center;justify-content:center}
+.c3{position:relative;width:110px;height:110px;transform-style:preserve-3d}
+.c3in{position:absolute;inset:0;transform-style:preserve-3d}
+.c3f{position:absolute;inset:0;border:3px solid var(--ink);background:rgba(255,250,240,.8);display:flex;align-items:center;justify-content:center}
+.c3f span{font:900 44px Consolas,Menlo,monospace;color:var(--pink);opacity:0;transition:opacity .3s}
+.slide.c3marked .c3f span{opacity:1}
+/* 3.5.3 */
+.zp-main{display:grid;grid-template-columns:1fr 200px;gap:8px;align-items:center}
+.zp-side{display:flex;flex-direction:column;gap:8px}
+#zpPresets{grid-template-columns:repeat(2,1fr)}
+.zp-vals{font-size:16px;line-height:1.7;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:4px 10px}
+.in-row{display:flex;flex-direction:column;gap:2px;padding:6px 0;border-bottom:1.5px dashed #e3dcf2}
+.in-row:last-child{border-bottom:0}
+.in-row .eq.inline{font-size:19px}
+.in-p{font-size:15px;font-weight:700;color:var(--muted);padding-left:10px}
+/* コラム */
+.sch-cmp{display:grid;grid-template-columns:1fr 1.5fr;gap:10px}
+.sch-cmp div{background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink);padding:8px 12px;text-align:center;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.sch-cmp small{font-size:13px;font-weight:800;color:var(--muted)}
+.sch-cmp .math{font-size:22px}
+.sch-cmp em{font-style:normal;font-size:14px;font-weight:900;color:var(--accent-d)}
+.sch-eq{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin:6px 0 10px}
+.sch-p{font:400 32px "Cambria Math","Times New Roman",serif;color:var(--ink);background:#fff;border:2.5px dashed #b9b5d0;border-radius:12px;padding:2px 8px;cursor:pointer;min-height:66px;display:flex;align-items:center}
+.sch-p .frac{font-size:.75em}
+.sch-p:hover{background:var(--accent-l)}
+.sch-p.on{background:var(--yellow);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.sch-exp{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:center;min-height:170px;background:#fffaf0;border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;font-size:17px;line-height:1.65}
+.sch-k{font-size:34px;text-align:center;font-family:"Cambria Math","Times New Roman",serif}
 
 </style>
 </head>
@@ -627,11 +681,12 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="title-wrap">
     <div>
       <div class="chap pop">『量子コンピュータの頭の中』 ゼミ資料</div>
-      <h1 class="pop" style="--d:.1s">測定から<br>量子ゲートへ</h1>
-      <div class="sub pop" style="--d:.2s">― 測定の続き・ユニタリ発展・可逆性 ―</div>
+      <h1 class="pop" style="--d:.1s">量子ゲートと<br>量子状態の区別</h1>
+      <div class="sub pop" style="--d:.2s">― ユニタリ発展・可逆性・区別がつくとき／つかないとき ―</div>
       <div class="tchaps">
-        <div class="tchap pop" style="--d:.3s;--c:var(--accent)"><span class="tno">3.3</span><span class="tname">計算結果を得る「測定」（続き）</span><span class="tsec">p.91</span></div>
-        <div class="tchap pop" style="--d:.4s;--c:var(--purple)"><span class="tno">3.4</span><span class="tname">ビットの状態を変化させる「量子ゲート」</span><span class="tsec">3.4〜3.4.3（pp.91–93）</span></div>
+        <div class="tchap pop" style="--d:.3s;--c:var(--purple)"><span class="tno">3.4</span><span class="tname">ビットの状態を変化させる「量子ゲート」</span><span class="tsec">pp.91–94</span></div>
+        <div class="tchap pop" style="--d:.4s;--c:var(--pink)"><span class="tno">3.5</span><span class="tname">量子状態の区別がつくとき、つかないとき</span><span class="tsec">pp.94–99</span></div>
+        <div class="tchap pop" style="--d:.5s;--c:var(--blue)"><span class="tno">コラム</span><span class="tname">演算はなぜユニタリ行列なのか</span><span class="tsec">pp.100–102</span></div>
       </div>
     </div>
     <div class="card pop" style="--d:.4s">
@@ -648,10 +703,11 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="body cols" style="grid-template-columns:1.5fr 1fr">
     <ul class="agenda">
       <li class="agroup pop">第3章 量子コンピュータの基本ルール</li>
-      <li class="pop" style="--d:.05s"><span class="num">1</span>測定（続き）：|0⟩・|1⟩ の測定と |ψ⟩ の測定</li>
-      <li class="pop" style="--d:.15s"><span class="num">2</span>量子ゲート：ユニタリ発展で状態を変える</li>
-      <li class="pop" style="--d:.25s"><span class="num">3</span>ユニタリ発展の性質：量子状態のまま・実装可能・可逆</li>
-      <li class="pop" style="--d:.35s"><span class="num">4</span>まとめ と 復習問題</li>
+      <li class="pop" style="--d:.05s"><span class="num">1</span>量子ゲート：ユニタリ発展で状態を変える（3.4）</li>
+      <li class="pop" style="--d:.15s"><span class="num">2</span>ユニタリ発展の性質：量子状態のまま・実装可能・可逆（3.4.1〜3.4.3）</li>
+      <li class="pop" style="--d:.25s"><span class="num">3</span>量子状態の区別がつくとき、つかないとき（3.5）</li>
+      <li class="pop" style="--d:.35s"><span class="num">4</span>コラム：演算はなぜユニタリ行列なのか</li>
+      <li class="pop" style="--d:.45s"><span class="num">5</span>まとめ と 復習問題</li>
     </ul>
     <div class="card pop" style="--d:.5s">
       <p style="margin:0 0 8px;font-weight:700">このスライドの使い方</p>
@@ -673,143 +729,18 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     <div class="pd-src pop">『量子コンピュータの頭の中』</div>
     <div class="pd-no pop" style="--d:.05s">第 3 章</div>
     <h1 class="pd-title pop" style="--d:.15s">量子コンピュータの<br>基本ルール</h1>
-    <div class="pd-secs pop" style="--d:.3s"><span>3.3 計算結果を得る「測定」（p.91・前回の続き）</span><span>3.4 ビットの状態を変化させる「量子ゲート」（pp.91–93）</span></div>
-  </div>
-  <div class="pageno"></div>
-</section>
-
-<!-- 扉：PART 1 測定（続き） -->
-<section class="slide door" style="--c:var(--accent)">
-  <div class="door-bg">1</div>
-  <div class="door-wrap">
-    <div class="door-num">1</div>
-    <div>
-      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 1</div>
-      <h1 class="pop" style="--d:.1s">測定（続き）</h1>
-      <p class="door-lead pop" style="--d:.2s">計算結果を得る（教科書 3.3・p.91）</p>
-      <div class="door-topics pop" style="--d:.3s"><span>測定のルール（復習）</span><span>|0⟩・|1⟩ の測定</span><span>|ψ⟩ の測定</span><span>ベクトルは違うのに…</span></div>
-    </div>
-  </div>
-  <div class="pageno"></div>
-</section>
-
-<!-- 復習：測定のルール -->
-<section class="slide" data-id="mrule">
-  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
-  <h2>復習：測定のルール<small>前回（pp.88–90）</small></h2>
-  <div class="body cols even">
-    <div>
-      <div class="defbox rv pop" style="margin-top:8px">量子状態 <span class="math">a|0⟩ + b|1⟩</span> を測定すると
-        <ul style="margin:6px 0 0">
-          <li style="font-size:19px;margin:2px 0">確率 <b class="k"><span class="math">|a|²</span></b> で測定値 <span class="math">|0⟩</span> を得て、測定後の量子状態は <b><span class="math">|0⟩</span></b> に変化する</li>
-          <li style="font-size:19px;margin:2px 0">確率 <b class="kb"><span class="math">|b|²</span></b> で測定値 <span class="math">|1⟩</span> を得て、測定後の量子状態は <b><span class="math">|1⟩</span></b> に変化する</li>
-        </ul>
-      </div>
-      <div class="point frag" style="font-size:19px">例：<span class="eq inline"><span class="math">|φ⟩ =</span><span class="frac"><span>1</span><span>√5</span></span><span class="math">|0⟩ +</span><span class="frac"><span>2</span><span>√5</span></span><span class="math">|1⟩</span></span> なら<br>
-        <span class="math">|0⟩</span> が <b>1/5 = 0.2</b>、<span class="math">|1⟩</span> が <b>4/5 = 0.8</b> の確率で得られる</div>
-      <div class="point blue frag" style="font-size:19px">🔑 測定すると <b>量子状態そのものが変わる</b>。<br>測定後の状態をもう一度測定するとどうなる？ → 右で試してみよう</div>
-    </div>
-    <div class="card pop" style="--d:.2s;padding:12px 16px">
-      <svg class="plane" id="mrPlane" style="height:270px"></svg>
-      <div class="mr-row"><span class="mket mres" id="mrRes">?</span><div class="mr-eq" id="mrEq"></div></div>
-      <div class="mhist" id="mrHist"></div>
-      <div class="btns" style="justify-content:center"><button class="b" id="mrMeas">🔍 測定</button><button class="b" id="mrPrep">↺ |φ⟩ を用意し直す</button><button class="b" id="mrAuto" data-autoplay>▶ 自動再生</button></div>
-    </div>
-  </div>
-  <div class="pageno"></div>
-</section>
-
-<!-- |0⟩ や |1⟩ の測定 -->
-<section class="slide" data-id="meas01">
-  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
-  <h2>|0⟩ や |1⟩ を測定すると？<small>p.91</small></h2>
-  <div class="body cols even">
-    <div>
-      <ul>
-        <li class="pop" style="font-size:20px">一般的には、量子状態を <b>測定するたびに異なる値</b> が得られる</li>
-        <li class="pop" style="--d:.1s;font-size:20px">しかし <span class="math">|0⟩</span> は <b class="k">何度測定しても |0⟩</b>。<span class="math">|1⟩</span> も <b class="kb">何度測定しても |1⟩</b></li>
-      </ul>
-      <div class="card frag" style="padding:10px 16px;margin-top:10px">
-        <div class="eq" style="font-size:21px;justify-content:flex-start"><span class="math">|0⟩ = <b class="k">1</b>·|0⟩ + <b class="kb">0</b>·|1⟩</span></div>
-        <div style="font-size:18px;line-height:1.6;margin-top:2px">→ |0⟩ の確率 <span class="math">|1|² = <b>1</b></span>、|1⟩ の確率 <span class="math">|0|² = <b>0</b></span><br>→ 必ず |0⟩ が出て、測定後も |0⟩ のまま</div>
-      </div>
-      <div class="point frag" style="font-size:20px"><b class="k">重ね合わせ状態になっていない</b> |0⟩ や |1⟩ の測定は、<br><b>古典ビットと同じように振る舞う</b></div>
-    </div>
-    <div class="card pop" style="--d:.2s;padding:14px 18px">
-      <div class="picker" id="m01Pick" data-label="測定する状態"></div>
-      <div class="eq m01-state" id="m01State"></div>
-      <div class="hbars" id="m01Bars"></div>
-      <div class="shots" id="m01Shots"></div>
-      <div class="qverdict" id="m01Verdict">　</div>
-      <div class="btns" style="justify-content:center"><button class="b" id="m01Run">🔍 10回測定</button><button class="b" id="m01Auto" data-autoplay>▶ 自動再生</button></div>
-    </div>
-  </div>
-  <div class="pageno"></div>
-</section>
-
-<!-- |ψ⟩ の測定 -->
-<section class="slide" data-id="measpsi">
-  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
-  <h2>係数がマイナスの |ψ⟩ を測定すると？<small>p.91</small></h2>
-  <div class="body cols even">
-    <div>
-      <p class="pop" style="margin:0 0 8px;font-size:20px">次の <span class="math">|ψ⟩</span> を測定すると、どうなるでしょうか。</p>
-      <div class="formula pop" style="--d:.1s;display:flex;justify-content:center"><span class="eq" style="font-size:28px"><span class="math">|ψ⟩ =</span><span class="frac"><span>1</span><span>√5</span></span><span class="math">|0⟩ <b style="color:#d61f45">−</b></span><span class="frac"><span>2</span><span>√5</span></span><span class="math">|1⟩</span></span></div>
-      <p class="frag" style="margin:12px 0 4px;font-size:19px">測定の定義にあてはめると</p>
-      <div class="mcalc frag"><span class="mc-k a">|0⟩</span><span>を得る確率は</span><span class="eq inline"><span class="math">|</span><span class="frac"><span>1</span><span>√5</span></span><span class="math">|² =</span><span class="frac"><span>1</span><span>5</span></span><span class="math">= <b>0.2</b></span></span><span class="mc-after">測定後は |0⟩ に変化</span></div>
-      <div class="mcalc frag"><span class="mc-k b">|1⟩</span><span>を得る確率は</span><span class="eq inline"><span class="math">|−</span><span class="frac"><span>2</span><span>√5</span></span><span class="math">|² =</span><span class="frac"><span>4</span><span>5</span></span><span class="math">= <b>0.8</b></span></span><span class="mc-after">測定後は |1⟩ に変化</span></div>
-      <div class="point frag" style="font-size:19px;margin-top:12px">係数がマイナスでも、確率は <b class="k">絶対値の2乗</b> なのでプラス。<br>0.2 + 0.8 = 1 で、ちゃんと確率の合計は 1</div>
-    </div>
-    <div class="card pop" style="--d:.2s;padding:14px 18px">
-      <div class="eq" style="font-size:20px;margin-bottom:6px"><span class="math">|ψ⟩</span> をたくさん測定して数えてみる</div>
-      <div class="hbars" id="psBars"></div>
-      <div class="ps-total" id="psTotal"></div>
-      <div class="mhist" id="psHist"></div>
-      <div class="btns" style="justify-content:center"><button class="b" id="ps1">×1</button><button class="b" id="ps10">×10</button><button class="b" id="ps100">×100</button><button class="b" id="psReset">↺ リセット</button><button class="b" id="psAuto" data-autoplay>▶ 自動再生</button></div>
-      <div class="hint" style="text-align:center">黒い点線 ┆ は理論値（0.2 と 0.8）。回数を増やすほど近づく</div>
-    </div>
-  </div>
-  <div class="pageno"></div>
-</section>
-
-<!-- ベクトルとしては異なるが… -->
-<section class="slide" data-id="same">
-  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
-  <h2>ベクトルは違うのに、測定では区別できない<small>p.91</small></h2>
-  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
-    <div>
-      <p class="pop" style="margin:0 0 8px;font-size:19px">先ほどの <span class="math" style="color:#e04e00">|φ⟩</span> とこの <span class="math" style="color:#3b6cff">|ψ⟩</span> を比べると</p>
-      <table class="tt small static pop" style="--d:.1s;font-size:17px">
-        <thead><tr><th></th><th style="color:#e04e00">|φ⟩</th><th style="color:#3b6cff">|ψ⟩</th><th class="out">比べると</th></tr></thead>
-        <tbody>
-          <tr><td>ベクトル</td><td><span class="eq inline"><span class="vec"><span>1/√5</span><span>2/√5</span></span></span></td><td><span class="eq inline"><span class="vec"><span>1/√5</span><span style="color:#d61f45">−2/√5</span></span></span></td><td><b style="color:#d61f45">異なる</b></td></tr>
-          <tr><td>|0⟩ の確率</td><td>0.2</td><td>0.2</td><td><b style="color:#14a35a">一致</b></td></tr>
-          <tr><td>|1⟩ の確率</td><td>0.8</td><td>0.8</td><td><b style="color:#14a35a">一致</b></td></tr>
-        </tbody>
-      </table>
-      <div class="point frag" style="font-size:18px">「<b class="k">ベクトルとしては異なるが、測定したときの振舞いは一致する</b>」というケースがある点は注意が必要</div>
-      <div class="point blue frag" style="font-size:16px;padding:8px 14px">補足（教科書外）：この2つは <b>量子ゲートを通してから測定</b> すると区別できることがある。たとえば第4章の H ゲートを通すと <span class="math">|0⟩</span> の確率が <b>0.9</b> と <b>0.1</b> に分かれる → 右の「H を通してから測定」</div>
-    </div>
-    <div class="card pop" style="--d:.2s;padding:10px 16px">
-      <svg class="plane" id="smPlane" style="height:228px"></svg>
-      <div class="sm-mode" id="smMode"></div>
-      <div class="sm-hists">
-        <div><div class="sm-cap" style="color:#e04e00" id="smCapA"></div><div class="hbars mini" id="smBarsA"></div></div>
-        <div><div class="sm-cap" style="color:#3b6cff" id="smCapB"></div><div class="hbars mini" id="smBarsB"></div></div>
-      </div>
-      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="smRun">🔍 200回ずつ測定</button><button class="b" id="smH">🔀 H を通してから測定（補足）</button><button class="b" id="smAuto" data-autoplay>▶ 自動再生</button></div>
-    </div>
+    <div class="pd-secs pop" style="--d:.3s"><span>3.4 ビットの状態を変化させる「量子ゲート」（pp.91–94）</span><span>3.5 量子状態の区別がつくとき、つかないとき（pp.94–99）</span><span>コラム：どうして量子コンピュータの演算はユニタリ行列なのか（pp.100–102）</span></div>
   </div>
   <div class="pageno"></div>
 </section>
 
 <!-- 扉：PART 2 量子ゲート -->
 <section class="slide door" style="--c:var(--purple)">
-  <div class="door-bg">2</div>
+  <div class="door-bg">1</div>
   <div class="door-wrap">
-    <div class="door-num">2</div>
+    <div class="door-num">1</div>
     <div>
-      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 2</div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 1</div>
       <h1 class="pop" style="--d:.1s">量子ゲート</h1>
       <p class="door-lead pop" style="--d:.2s">ビットの状態を変化させる（教科書 3.4）</p>
       <div class="door-topics pop" style="--d:.3s"><span>古典のゲートと量子ゲート</span><span>ユニタリ発展</span><span>巨大な行列でも高速</span></div>
@@ -825,7 +756,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="body cols even">
     <div>
       <ul>
-        <li class="pop" style="font-size:20px">量子ビットの状態と、それを測定できることは分かった。<b>しかし、これだけでは計算できない</b></li>
+        <li class="pop" style="font-size:20px">量子ビットの状態と、それを測定できること（3.2・3.3）は分かった。<b>しかし、これだけでは計算できない</b></li>
         <li class="pop" style="--d:.1s;font-size:20px">古典コンピュータは、ビット演算を行う <b>ゲート</b>（AND, OR, XOR, NOT など）でビットの状態を変化させて計算する</li>
         <li class="frag" style="font-size:20px">古典コンピュータのゲートに相当するものが <b class="k">量子ゲート</b></li>
         <li class="frag" style="font-size:20px">量子ゲートの操作にあたるものを <b class="k">ユニタリ発展</b> という</li>
@@ -900,14 +831,14 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 
 <!-- 扉：PART 3 ユニタリ発展の性質 -->
 <section class="slide door" style="--c:var(--green)">
-  <div class="door-bg">3</div>
+  <div class="door-bg">2</div>
   <div class="door-wrap">
-    <div class="door-num">3</div>
+    <div class="door-num">2</div>
     <div>
-      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 3</div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 2</div>
       <h1 class="pop" style="--d:.1s">ユニタリ発展の性質</h1>
-      <p class="door-lead pop" style="--d:.2s">教科書 3.4.1 〜 3.4.3（pp.92–93）</p>
-      <div class="door-topics pop" style="--d:.3s"><span>3.4.1 量子状態のまま</span><span>3.4.2 実装可能</span><span>3.4.3 可逆性</span><span>古典の AND と比べる</span></div>
+      <p class="door-lead pop" style="--d:.2s">教科書 3.4.1 〜 3.4.3（pp.92–94）</p>
+      <div class="door-topics pop" style="--d:.3s"><span>3.4.1 量子状態のまま</span><span>3.4.2 実装可能</span><span>3.4.3 可逆性</span><span>古典の AND と比べる</span><span>トフォリゲート</span></div>
     </div>
   </div>
   <div class="pageno"></div>
@@ -995,22 +926,24 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="pageno"></div>
 </section>
 
+
 <!-- 古典ビットの AND -->
 <section class="slide" data-id="and">
   <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4.3</div>
-  <h2>古典回路と比べてみる：AND<small>図3.4（p.93）</small></h2>
+  <h2>古典回路と比べる：AND は元に戻せない<small>図3.4・表3.2（pp.93–94）</small></h2>
   <div class="body cols" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
     <div>
       <ul>
-        <li class="pop" style="font-size:20px">量子回路の可逆性は、<b class="k">古典回路と大きく異なる点</b></li>
-        <li class="pop" style="--d:.1s;font-size:20px">AND は <b>2個のビットを入力し、1個の出力</b> を得る操作。<b>すべての入力が 1 のときに出力が 1</b>、それ以外は 0</li>
+        <li class="pop" style="font-size:19px">量子回路の可逆性は、<b class="k">古典回路と大きく異なる点</b></li>
+        <li class="pop" style="--d:.1s;font-size:19px">AND は <b>2個のビットを入力し、1個の出力</b> を得る操作。すべての入力が 1 のときに出力が 1、それ以外は 0（表3.2）</li>
+        <li class="frag" style="font-size:19px">表3.2 を見ると、<b class="k">出力が 0 となる入力の組み合わせが 3 種類</b>。出力から入力に戻そうとしても、どの入力に戻せばよいのか判別できない</li>
       </ul>
-      <div class="point blue frag" style="font-size:19px">🤔 考えてみよう：<b>出力だけ</b> を見て、入力を元に戻せる？<br><span style="font-size:16px">右の「出力から戻す」ボタンで試そう</span></div>
-      <div class="point frag" style="font-size:19px">出力が 0 になる入力は <b>00・01・10 の3通り</b> → 出力から入力を1つに決められない<br>→ AND は <b class="k">元に戻せない</b>（ユニタリ発展とは違う）</div>
+      <div class="point frag" style="font-size:18px">古典回路では <b class="k">可逆性のない操作</b> ができる</div>
+      <div class="point blue frag" style="font-size:18px">一方、ユニタリ発展の可逆性より、<b>量子回路ではこのような操作はできない</b></div>
     </div>
     <div class="card pop" style="--d:.2s;padding:10px 16px">
-      <div class="ttcap">図3.4：古典ビットの AND</div>
-      <svg class="circ" id="cAnd" style="max-height:170px"></svg>
+      <div class="ttcap">図3.4：古典ビットの AND ／ 表3.2：AND の入出力</div>
+      <svg class="circ" id="cAnd" style="max-height:165px"></svg>
       <table class="tt small" id="tAnd"></table>
       <div class="and-msg" id="andMsg">　</div>
       <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="andBack0">⏪ 出力 0 から戻す</button><button class="b" id="andBack1">⏪ 出力 1 から戻す</button><button class="b" id="pAnd" data-autoplay>▶ 自動再生</button></div>
@@ -1019,32 +952,339 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="pageno"></div>
 </section>
 
+<!-- 量子コンピュータは AND ができない？ -->
+<section class="slide" data-id="toffoli">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4.3</div>
+  <h2>量子コンピュータは AND ができない？<small>p.94</small></h2>
+  <div class="body cols even">
+    <div>
+      <p class="pop" style="margin:0 0 8px;font-size:20px">「量子コンピュータは AND ができないのか」と驚かれるかもしれないが、<b class="k">その点は大丈夫</b></p>
+      <ul>
+        <li class="pop" style="--d:.1s;font-size:20px"><b class="k">入出力のビットを拡張する</b> ことで、AND に相当するユニタリ発展を行える</li>
+        <li class="pop" style="--d:.2s;font-size:20px">第8章で紹介する <b class="k">トフォリゲート</b> が AND に相当する</li>
+      </ul>
+      <div class="point blue frag" style="font-size:17px">補足（第8章の先取り）：トフォリゲートは 3 ビット <span class="math">(a, b, c)</span> を <span class="math" style="white-space:nowrap">(a, b, c ⊕ (a AND b))</span> に変える。<br><b><span class="math">c = 0</span> にすると 3 番目の出力が a AND b</b></div>
+      <div class="point frag" style="font-size:17px">入力 a, b も出力に残るので、<b>8 通りの出力がすべて違う</b> → 出力から入力に戻せる（もう一度通すと元通り）＝ <b class="k">可逆</b></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="tf-main">
+        <div class="tf-col"><small>入力（クリックで切替）</small><button class="tf-bit" data-i="0">0</button><button class="tf-bit" data-i="1">0</button><button class="tf-bit c" data-i="2">0</button></div>
+        <div class="tf-box" id="tfBox">トフォリ<br>ゲート</div>
+        <div class="tf-col"><small>出力</small><span class="tf-out" id="tfO0">0</span><span class="tf-out" id="tfO1">0</span><span class="tf-out c" id="tfO2">0</span></div>
+      </div>
+      <table class="tt small static" id="tfTable" style="font-size:15px;margin-top:6px"></table>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="tfAgain">🔁 出力をもう一度通す</button><button class="b" id="tfAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 扉：PART 3 量子状態の区別 -->
+<section class="slide door" style="--c:var(--pink)">
+  <div class="door-bg">3</div>
+  <div class="door-wrap">
+    <div class="door-num">3</div>
+    <div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 3</div>
+      <h1 class="pop" style="--d:.1s">量子状態の区別</h1>
+      <p class="door-lead pop" style="--d:.2s">区別がつくとき、つかないとき（教科書 3.5）</p>
+      <div class="door-topics pop" style="--d:.3s"><span>3.5.1 区別できる例</span><span>3.5.2 区別できない例</span><span>3.5.3 区別できない理由</span><span>定理3.1・定理3.2</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 3.5.1 区別できる例 -->
+<section class="slide" data-id="dist1">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5 量子状態の区別がつくとき、つかないとき</div>
+  <h2>区別できる例<small>3.5・3.5.1（pp.94–95）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
+    <div>
+      <p class="pop" style="margin:0 0 6px;font-size:17px">量子状態は測定しないと分からない。ただ、2つの量子状態で <span class="math">|0⟩</span>・<span class="math">|1⟩</span> を測定する確率が <b>同じになるケース</b> がある</p>
+      <div class="card pop" style="--d:.1s;padding:8px 14px;font-size:17px;line-height:1.6">
+        <span class="eq inline"><span class="math" style="color:#e04e00">|+⟩ =</span><span class="frac"><span>1</span><span>√2</span></span><span class="math">(|0⟩ + |1⟩)</span></span>　と　<span class="eq inline"><span class="math" style="color:#3b6cff">|−⟩ =</span><span class="frac"><span>1</span><span>√2</span></span><span class="math">(|0⟩ − |1⟩)</span></span><br>
+        → どちらも確率 <b>1/2</b> で |0⟩、<b>1/2</b> で |1⟩。<b style="color:#d61f45">このまま測定しても区別できない</b>
+        <div class="hint" style="margin:0">※ |+⟩, |−⟩ はこの資料での略記</div>
+      </div>
+      <div class="point frag" style="font-size:17px;padding:8px 14px">第4章の <b class="k">アダマール行列</b> <span class="eq inline"><span class="math">H =</span><span class="frac"><span>1</span><span>√2</span></span><span class="vec m2"><span>1</span><span>1</span><span>1</span><span>−1</span></span></span> でユニタリ発展させると、<b>測定で得る確率を変えられる</b>
+        <div class="eq" style="font-size:19px;margin-top:4px;gap:18px"><span class="math">H|+⟩ = |0⟩</span><span class="math">H|−⟩ = |1⟩</span></div></div>
+      <div class="point blue frag" style="font-size:17px;padding:8px 14px">H をかけた後で測定すると、|+⟩ は <b>確率 1 で |0⟩</b>、|−⟩ は <b>確率 1 で |1⟩</b> → <b class="k">区別できる！</b></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:10px 16px">
+      <svg class="plane" id="smPlane" style="height:228px"></svg>
+      <div class="sm-mode" id="smMode"></div>
+      <div class="sm-hists">
+        <div><div class="sm-cap" style="color:#e04e00" id="smCapA"></div><div class="hbars mini" id="smBarsA"></div></div>
+        <div><div class="sm-cap" style="color:#3b6cff" id="smCapB"></div><div class="hbars mini" id="smBarsB"></div></div>
+      </div>
+      <div class="qverdict" id="smVerdict" style="font-size:17px;padding:3px;margin-top:4px">　</div>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="smRun">🔍 200回ずつ測定</button><button class="b" id="smH">🔀 H をかけてから測定</button><button class="b" id="smAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 図3.5 見る向きを変えると区別できる -->
+<section class="slide" data-id="fig35">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5.1 区別できる例</div>
+  <h2>見る向きを変えると、区別できる<small>図3.5（pp.95–96）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:19px"><b>正立方体</b> と <b>横向きの円柱</b> は、<b class="k">正面から見ると同じ図形</b>（正方形）に見える<br><span class="tagq">＝ 量子状態を変えずに測定する</span></li>
+        <li class="pop" style="--d:.1s;font-size:19px">しかし <b class="k">見る方向を変えると、別の図形</b> に見える<br><span class="tagq">＝ アダマール行列をかけてから測定する</span></li>
+      </ul>
+      <div class="point frag" style="font-size:18px">単純に測定するだけでは同じように見える量子状態でも、<b class="k">ユニタリ発展してから（見る方向を変えてから）測定する</b> ことで、区別できるケースがある</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="f35-tag" id="f35Tag"></div>
+      <div class="f35-grid">
+        <div><div class="f35-name">正立方体</div><svg class="plane" id="f35Cube" style="height:160px"></svg></div>
+        <div><div class="f35-name">横向きの円柱</div><svg class="plane" id="f35Cyl" style="height:160px"></svg></div>
+      </div>
+      <div class="f35-down">⬇ 見えた形 ⬇</div>
+      <div class="f35-grid"><svg class="plane" id="f35S1" style="height:100px"></svg><svg class="plane" id="f35S2" style="height:100px"></svg></div>
+      <div class="qverdict" id="f35Verdict" style="font-size:17px;padding:3px">　</div>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="f35Front">👀 正面から見る</button><button class="b" id="f35Side">👀 横から見る</button><button class="b" id="f35Auto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 3.5.2 区別できない例 -->
+<section class="slide" data-id="dist2">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5.2</div>
+  <h2>区別できない例<small>3.5.2（pp.96–97）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
+    <div>
+      <p class="pop" style="margin:0 0 6px;font-size:18px">では、<span class="eq inline"><span class="frac"><span>1</span><span>√2</span></span><span class="math" style="color:#e04e00">(|0⟩ + |1⟩)</span></span> と <span class="eq inline"><span class="math" style="color:#3b6cff">−</span><span class="frac"><span>1</span><span>√2</span></span><span class="math" style="color:#3b6cff">(|0⟩ + |1⟩)</span></span> はどうすれば区別できる？</p>
+      <ul>
+        <li class="pop" style="--d:.1s;font-size:18px">そのまま測定 → どちらも確率 1/2 で |0⟩、1/2 で |1⟩。<b>区別できない</b></li>
+        <li class="frag" style="font-size:18px">さきほどと同様に H をかけてみると
+          <div class="eq" style="font-size:18px;margin:4px 0;gap:16px"><span class="math">H|+⟩ = |0⟩</span><span class="math">H(−|+⟩) = −|0⟩</span></div>
+          どちらも <b>確率 1 で |0⟩</b> → この方法でも <b style="color:#d61f45">区別できない</b></li>
+      </ul>
+      <div class="point frag" style="font-size:18px">別のユニタリ行列をかけた後に測定すれば区別できる？<br>→ 実は、この2つの量子状態は <b class="k">原理的に区別できない</b>（次の 3.5.3 で理由）</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:10px 16px">
+      <div class="picker" id="d2Pick" data-label="かける U"></div>
+      <svg class="plane" id="d2Plane" style="height:220px"></svg>
+      <label class="qslider" id="d2Sl" style="grid-template-columns:110px 1fr 52px"><span style="font-size:15px">回転の角度</span><input type="range" id="d2Th" min="-180" max="180" step="any"><span class="qs-val" id="d2Thv"></span></label>
+      <div class="sm-hists">
+        <div><div class="sm-cap" style="color:#e04e00" id="d2CapA"></div><div class="hbars mini" id="d2BarsA"></div></div>
+        <div><div class="sm-cap" style="color:#3b6cff" id="d2CapB"></div><div class="hbars mini" id="d2BarsB"></div></div>
+      </div>
+      <div class="qverdict ng" style="font-size:16px;padding:3px">どの U でも確率はまったく同じ → 区別できない</div>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="d2Auto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 3.5.3 z|φ⟩ はそのまま測定しても区別できない -->
+<section class="slide" data-id="zph">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5.3 区別できない理由</div>
+  <h2>|φ⟩ と z|φ⟩（|z| = 1）<small>3.5.3（p.97）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:18px">量子状態 <span class="math">|φ⟩ = a|0⟩ + b|1⟩</span> は、|0⟩ を得る確率が <span class="math">|a|²</span>、|1⟩ を得る確率が <span class="math">|b|²</span></li>
+        <li class="pop" style="--d:.1s;font-size:18px">ここで、複素数 <span class="math">z</span> が <b class="k"><span class="math">|z| = 1</span></b> を満たすとする</li>
+        <li class="frag" style="font-size:18px"><span class="math">z|φ⟩ = za|0⟩ + zb|1⟩</span> を測定すると、|0⟩ を得る確率は
+          <div class="formula" style="font-size:22px;margin:6px 0 2px;padding:6px 16px"><span class="math">|za|² = |z|²|a|² = 1²|a|² = |a|²</span></div>
+          同様に、|1⟩ を得る確率は <span class="math">|b|²</span></li>
+      </ul>
+      <div class="point frag" style="font-size:18px">そのため、<b class="k">このまま測定しても |φ⟩ と z|φ⟩ は区別できない</b><br>では、ユニタリ発展させてから測定すれば区別できる？</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:10px 16px">
+      <div class="zp-main">
+        <svg class="plane" id="zpPlane" style="height:250px"></svg>
+        <div class="zp-side">
+          <div class="bpresets" id="zpPresets"></div>
+          <label class="qslider" style="grid-template-columns:22px 1fr 50px"><span class="qs-name">θ</span><input type="range" id="zpTh" min="0" max="360" step="any"><span class="qs-val" id="zpThv"></span></label>
+          <div class="zp-vals" id="zpVals"></div>
+        </div>
+      </div>
+      <div class="hbars" id="zpBars"></div>
+      <div class="hint" style="margin-top:0">複素数平面（横 = 実部、縦 = 虚部）。<span class="math">z = cos θ + i sin θ</span>（|z| = 1）。例として <span class="math">a = 0.6, b = 0.8</span>。<b>za, zb は回るだけで長さは変わらない</b></div>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="zpAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 内積で確率を表す（定理3.1） -->
+<section class="slide" data-id="inner">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5.3 区別できない理由</div>
+  <h2>測定する確率を内積で表す<small>定理3.1（pp.97–98）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)">
+    <div>
+      <p class="pop" style="margin:0 0 8px;font-size:18px">準備として、測定する確率を <b class="k">内積</b> を使って表す。量子状態 <span class="math">|φ⟩ = a|0⟩ + b|1⟩</span> に対し</p>
+      <div class="proof card pop" style="--d:.1s;padding:10px 14px">
+        <div class="pf"><span class="pf-l">⟨0|φ⟩</span><span class="pf-r">= ⟨0|(a|0⟩ + b|1⟩) = a⟨0|0⟩ + b⟨0|1⟩</span><span class="pf-n">分配</span></div>
+        <div class="pf frag"><span class="pf-l"></span><span class="pf-r eq" style="justify-content:flex-start;font-size:19px">= a<span class="vec row"><span>1</span><span>0</span></span><span class="vec"><span>1</span><span>0</span></span> + b<span class="vec row"><span>1</span><span>0</span></span><span class="vec"><span>0</span><span>1</span></span></span><span class="pf-n">ベクトルで</span></div>
+        <div class="pf frag"><span class="pf-l"></span><span class="pf-r">= a·1 + b·0 = <b class="k">a</b></span><span class="pf-n">計算</span></div>
+      </div>
+      <div class="point frag" style="font-size:18px">そのため <span class="math"><b>|⟨0|φ⟩|² = |a|²</b></span>。同様に <span class="math"><b>|⟨1|φ⟩|² = |b|²</b></span><br><span style="font-size:15px">（<span class="math">⟨0|0⟩ = 1</span>、<span class="math">⟨0|1⟩ = 0</span> がポイント）</span></div>
+    </div>
+    <div>
+      <div class="defbox thm pop" style="--d:.2s;--thm:'定理3.1';margin-top:14px">量子状態 <span class="math">|φ⟩ = a|0⟩ + b|1⟩</span> について、次の式が成り立つ。
+        <div class="eq" style="font-size:22px;margin-top:6px;gap:22px"><span class="math">(1) |a|² = |⟨0|φ⟩|²</span><span class="math">(2) |b|² = |⟨1|φ⟩|²</span></div></div>
+      <div class="card pop" style="--d:.3s;padding:10px 14px;margin-top:14px">
+        <div class="picker" id="inPick" data-label="|φ⟩ ="></div>
+        <div class="in-rows" id="inRows"></div>
+      </div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 定理3.2 -->
+<section class="slide" data-id="thm32">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5.3 区別できない理由</div>
+  <h2>ユニタリ発展させても区別できない<small>定理3.2（pp.98–99）</small></h2>
+  <div class="body cols even">
+    <div>
+      <p class="pop" style="margin:0 0 6px;font-size:18px"><span class="math">z|φ⟩</span> をユニタリ発展させたものは、ユニタリ行列 U を使って <span class="math">Uz|φ⟩</span> と書ける。定理3.1 と第2章の定理2.7 を使って |0⟩ を得る確率を求めると</p>
+      <div class="formula pop" style="--d:.1s;display:flex;justify-content:center;font-size:26px"><span class="math">|⟨0|Uzφ⟩|² = |⟨0|Uφ⟩|²</span></div>
+      <div class="card frag" style="padding:6px 14px;margin-top:10px;font-size:16px;line-height:1.7">
+        <b>式変形のイメージ（補足）</b>：z はただの数なので外に出せる<br>
+        <span class="math">|⟨0|Uzφ⟩|² = |z⟨0|Uφ⟩|² = |z|²|⟨0|Uφ⟩|² = |⟨0|Uφ⟩|²</span>
+      </div>
+      <ul style="margin-top:6px">
+        <li class="frag" style="font-size:18px">U|φ⟩ と Uz|φ⟩ で |0⟩ を得る確率が同じ → <b>ユニタリ発展させても区別できない</b>（|1⟩ も同様）</li>
+      </ul>
+    </div>
+    <div>
+      <div class="defbox thm pop" style="--d:.2s;--thm:'定理3.2';margin-top:14px;font-size:21px"><span class="math">|z| = 1</span> を満たす複素数 <span class="math">z</span> に対して、量子状態 <span class="math">|φ⟩</span> と <span class="math">z|φ⟩</span> は <b class="k">区別できない</b>（同一の量子状態）</div>
+      <div class="point frag" style="font-size:17px">どんなユニタリ発展や測定を行っても区別できない量子状態は、<b class="k">同一の量子状態</b> と考える。数式では別の表現でも、実は同一の量子状態の場合があるので、<b>同一かどうか判定するときは注意</b></div>
+      <div class="point blue frag" style="font-size:17px">前節の例に当てはめると：<span class="eq inline"><span class="math">|φ⟩ =</span><span class="frac"><span>1</span><span>√2</span></span><span class="math">(|0⟩ + |1⟩)</span></span>、<b><span class="math">z = −1</span></b> とすると <span class="eq inline"><span class="math">z|φ⟩ = −</span><span class="frac"><span>1</span><span>√2</span></span><span class="math">(|0⟩ + |1⟩)</span></span><br>→ 定理3.2 により <b>区別できない</b></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 図3.6 見る向きを変えても区別できない -->
+<section class="slide" data-id="fig36">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.5.3 区別できない理由</div>
+  <h2>見る向きを変えても、区別できない<small>図3.6（p.99）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:19px">表面に何も書いていない <b>正立方体 A</b> と、上下が入れ替わるように A を回転した <b>正立方体 B</b></li>
+        <li class="pop" style="--d:.1s;font-size:19px">サイコロと違って表面に何も書かれていないので、<b>面を区別できない</b> → <b class="k">どの方向から見ても両者は同じ図形</b></li>
+      </ul>
+      <div class="point frag" style="font-size:18px">このように、どのような操作（<b>ユニタリ発展や測定</b>）を行っても区別できない量子状態は、<b class="k">同一の量子状態</b> と考える</div>
+      <div class="point blue frag" style="font-size:17px">対応：A = <span class="math">|φ⟩</span>、B = <span class="math">z|φ⟩</span>（たとえば −|φ⟩）、見る向き = ユニタリ発展、見る = 測定</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="f35-tag" style="background:var(--ink);color:#fff">どの方向から見ても同じに見えれば同じもの（区別できない）</div>
+      <div class="c3row">
+        <div><div class="f35-name">立方体 A</div><div class="c3wrap"><div class="c3" id="c3A"></div></div></div>
+        <div><div class="f35-name">A の上下が入れ替わるように回転した立方体 B</div><div class="c3wrap"><div class="c3" id="c3B"></div></div></div>
+      </div>
+      <label class="qslider" style="grid-template-columns:110px 1fr 52px"><span style="font-size:15px">横の向き</span><input type="range" id="c3Y" min="-180" max="180" step="any"><span class="qs-val" id="c3Yv"></span></label>
+      <label class="qslider" style="grid-template-columns:110px 1fr 52px"><span style="font-size:15px">縦の向き</span><input type="range" id="c3X" min="-90" max="90" step="any"><span class="qs-val" id="c3Xv"></span></label>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="c3Mark">🎲 もしサイコロの目があったら？</button><button class="b" id="c3Auto" data-autoplay>▶ 自動再生</button></div>
+      <div class="hint" id="c3Hint" style="text-align:center;margin-top:2px">何も書いていないので、どう回しても A と B はまったく同じに見える</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 扉：PART 4 コラム -->
+<section class="slide door" style="--c:var(--blue)">
+  <div class="door-bg">4</div>
+  <div class="door-wrap">
+    <div class="door-num">4</div>
+    <div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 4 ／ コラム</div>
+      <h1 class="pop" style="--d:.1s;font-size:60px">どうして演算は<br>ユニタリ行列なのか</h1>
+      <p class="door-lead pop" style="--d:.2s">コラム（pp.100–102）</p>
+      <div class="door-topics pop" style="--d:.3s"><span>シュレディンガー方程式</span><span>ハミルトニアン</span><span>ユニタリ発展の正体</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- コラム：シュレディンガー方程式 -->
+<section class="slide" data-id="col1">
+  <div class="chap">第3章 ／ コラム：どうして量子コンピュータの演算はユニタリ行列なのか</div>
+  <h2>シュレディンガー方程式<small>コラム（pp.100–101）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+    <div>
+      <p class="pop" style="margin:0 0 8px;font-size:17px;color:var(--muted)">※ 本書の範囲を大きく越える内容。<b>背景の雰囲気を感じれば十分</b></p>
+      <div class="sch-cmp pop" style="--d:.1s">
+        <div><small>古典力学（物体の運動）</small><span class="math">F = ma</span><em>ニュートンの運動方程式</em></div>
+        <div><small>量子力学（量子状態の変化）</small><span class="math">iħ <span class="frac"><span>d</span><span>dt</span></span>|φ(t)⟩ = Ĥ|φ(t)⟩</span><em>シュレディンガー方程式</em></div>
+      </div>
+      <div class="point frag" style="font-size:18px">1量子ビットなら <span class="eq inline"><span class="math">|φ(t)⟩ =</span><span class="vec"><span>φ₀(t)</span><span>φ₁(t)</span></span></span> で、<br>「<b>2次元ベクトル = 2次元ベクトル</b>」の形の方程式</div>
+      <div class="point blue frag" style="font-size:19px;text-align:center"><b>量子状態の変化量 ＝ Ĥ × 量子状態</b></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="sch-eq" id="schEq"></div>
+      <div class="sch-exp" id="schExp"></div>
+      <div class="btns" style="justify-content:center;margin-top:8px"><button class="b" id="schAuto" data-autoplay>▶ 自動再生</button></div>
+      <div class="hint" style="text-align:center">式の記号をクリックすると説明が出ます</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- コラム：解はユニタリ行列 × 初期状態 -->
+<section class="slide" data-id="col2">
+  <div class="chap">第3章 ／ コラム：どうして量子コンピュータの演算はユニタリ行列なのか</div>
+  <h2>ユニタリ発展の正体<small>コラム（pp.101–102）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+    <div>
+      <p class="pop" style="margin:0 0 6px;font-size:17px">方程式の形が時間経過で変わらない場合の解（高校の範囲外）</p>
+      <div class="formula pop" style="--d:.1s;display:flex;justify-content:center;font-size:28px"><span class="math">|φ(t)⟩ = e<sup>−iĤt/ħ</sup>|φ(0)⟩</span></div>
+      <ul style="margin-top:8px">
+        <li class="pop" style="--d:.15s;font-size:17px"><span class="math">|φ(0)⟩</span> は初期状態（演算を行う前の量子状態）</li>
+        <li class="frag" style="font-size:17px"><span class="math">e<sup>−iĤt/ħ</sup></span> は <b>行列指数関数</b>（ここでは 2次正方行列）。Ĥ がエルミート行列なので <b class="k">ユニタリ行列になる</b></li>
+      </ul>
+      <div class="point frag" style="font-size:18px;text-align:center"><b>演算後の量子状態 |φ(t)⟩ ＝ ユニタリ行列 × 初期状態 |φ(0)⟩</b><br><span style="font-size:16px">量子状態を変化させる演算はユニタリ行列で表せる → <b class="k">これがユニタリ発展の正体</b></span></div>
+      <div class="point blue frag" style="font-size:15px;padding:6px 12px">本書では今後シュレディンガー方程式は登場しない。「入力のベクトルが行列によってどのような出力に変換されるか」という <b>計算ルールを理解すれば使いこなせる</b></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="eq" style="font-size:16px;margin-bottom:4px">例（補足）：<span class="math">ħ = 1</span>、<span class="math">Ĥ =</span><span class="vec m2"><span>0</span><span>1</span><span>1</span><span>0</span></span>、<span class="math">|φ(0)⟩ = |0⟩</span></div>
+      <div class="eq" id="seU" style="font-size:17px"></div>
+      <div class="eq" id="seV" style="font-size:17px;margin-top:6px"></div>
+      <label class="qslider" style="grid-template-columns:70px 1fr 64px;margin-top:6px"><span style="font-size:15px">時間 t</span><input type="range" id="seT" min="0" max="6.2832" step="any"><span class="qs-val" id="seTv"></span></label>
+      <div class="hbars" id="seBars"></div>
+      <div class="qb-row" style="margin-top:2px"><div class="pgauge" id="seGauge"></div><div class="qverdict ok" style="width:auto">✓ 合計はずっと 1</div></div>
+      <div class="btns" style="justify-content:center;margin-top:0"><button class="b" id="seAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
 <!-- まとめ -->
 <section class="slide">
   <div class="chap">Summary</div>
-  <h2>まとめ<small>3.3（p.91）〜 3.4.3（p.93）</small></h2>
+  <h2>まとめ<small>3.4（p.91）〜 コラム（p.102）</small></h2>
   <div class="body sumgrid">
-    <div class="sm pop" style="--d:0s;--c:var(--accent)"><div class="smn">測定</div><b>|0⟩・|1⟩ の測定は古典ビットと同じ</b><p>重ね合わせでない状態は、何度測定しても同じ結果</p></div>
-    <div class="sm pop" style="--d:.06s;--c:var(--accent)"><div class="smn">測定</div><b>確率は係数の絶対値の2乗</b><p><span class="math">(1/√5)|0⟩ − (2/√5)|1⟩</span> → 0.2 と 0.8。マイナスでも確率はプラス</p></div>
-    <div class="sm pop" style="--d:.12s;--c:var(--accent)"><div class="smn">注意</div><b>ベクトルが違っても測定の振舞いが同じことがある</b><p>|φ⟩ と |ψ⟩ はベクトルは異なるが、測定確率は一致</p></div>
-    <div class="sm pop" style="--d:.18s;--c:var(--purple)"><div class="smn">3.4</div><b>量子ゲート ＝ ユニタリ発展</b><p>ユニタリ行列 U（U<sup>†</sup>U = I）で |φ⟩ を U|φ⟩ に変える。巨大でも高速（ただしアルゴリズムがある場合だけ）</p></div>
-    <div class="sm pop" style="--d:.24s;--c:var(--green)"><div class="smn">3.4.1・3.4.2</div><b>U|φ⟩ も量子状態／どんな U も実装可能</b><p>⟨Uφ|Uφ⟩ = ⟨φ|φ⟩ = 1。ソロベイ－キタエフの定理で近似的に実装できる</p></div>
-    <div class="sm pop" style="--d:.3s;--c:var(--green)"><div class="smn">3.4.3</div><b>ユニタリ発展は可逆</b><p>U<sup>−1</sup>U|φ⟩ = |φ⟩ で元に戻せる。出力から入力が分からない古典の AND とは大きく違う</p></div>
+    <div class="sm pop" style="--d:0s;--c:var(--purple)"><div class="smn">3.4</div><b>量子ゲート ＝ ユニタリ発展</b><p>ユニタリ行列 U（U<sup>†</sup>U = I）で |φ⟩ を U|φ⟩ に変える</p></div>
+    <div class="sm pop" style="--d:.06s;--c:var(--green)"><div class="smn">3.4.1・3.4.2</div><b>U|φ⟩ も量子状態／実装可能</b><p>⟨Uφ|Uφ⟩ = 1。任意の U はソロベイ－キタエフの定理で近似的に実装できる</p></div>
+    <div class="sm pop" style="--d:.12s;--c:var(--green)"><div class="smn">3.4.3</div><b>ユニタリ発展は可逆、AND は不可逆</b><p>U<sup>−1</sup>U|φ⟩ = |φ⟩。AND はビットを拡張したトフォリゲートで実現</p></div>
+    <div class="sm pop" style="--d:.18s;--c:var(--pink)"><div class="smn">3.5.1</div><b>H をかけると区別できる例</b><p>(|0⟩ ± |1⟩)/√2 はそのままだと同じ確率。H をかけて測ると |0⟩ と |1⟩ に分かれる</p></div>
+    <div class="sm pop" style="--d:.24s;--c:var(--pink)"><div class="smn">3.5.2・3.5.3</div><b>|φ⟩ と z|φ⟩ は区別できない</b><p>|z| = 1 なら、どんな U と測定でも確率は同じ（定理3.1・3.2）→ 同一の量子状態</p></div>
+    <div class="sm pop" style="--d:.3s;--c:var(--blue)"><div class="smn">コラム</div><b>ユニタリ発展の正体</b><p>シュレディンガー方程式の解は「ユニタリ行列 × 初期状態」</p></div>
   </div>
   <div class="pageno"></div>
 </section>
 
 <!-- 復習問題 -->
 <section class="slide" data-id="quiz">
-  <div class="chap">Review ／ 3.3（続き）〜 3.4.3</div>
-  <h2>復習問題<small>p.91 〜 p.93</small><button class="b qz-all" data-quiz-all>答えをぜんぶ表示</button></h2>
+  <div class="chap">Review ／ 3.4 〜 3.5</div>
+  <h2>復習問題<small>pp.91–102</small><button class="b qz-all" data-quiz-all>答えをぜんぶ表示</button></h2>
   <div class="body quiz">
-      <div class="qz pop" style="--d:0.00s"><div class="qz-q"><span class="qz-no">Q1</span><span><span class="math">|1⟩</span> を 100 回測定すると、どんな結果になる？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>100 回とも |1⟩</b>。重ね合わせでない状態は古典ビットと同じように振る舞う</span></div></div>
-      <div class="qz pop" style="--d:0.06s"><div class="qz-q"><span class="qz-no">Q2</span><span><span class="math">(1/√5)|0⟩ − (2/√5)|1⟩</span> を測定して <span class="math">|1⟩</span> を得る確率と、そのときの測定後の状態は？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>|−2/√5|² = 4/5 = 0.8</b>。測定後の状態は <b>|1⟩</b></span></div></div>
-      <div class="qz pop" style="--d:0.12s"><div class="qz-q"><span class="qz-no">Q3</span><span><span class="math">(1/√5)|0⟩ + (2/√5)|1⟩</span> と <span class="math">(1/√5)|0⟩ − (2/√5)|1⟩</span>。ベクトルとして同じ？測定の振舞いは？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">ベクトルとしては <b>異なる</b> が、測定の振舞い（0.2 / 0.8）は <b>一致</b> する</span></div></div>
-      <div class="qz pop" style="--d:0.18s"><div class="qz-q"><span class="qz-no">Q4</span><span>量子ゲートの操作にあたる「<span class="math">|φ⟩ → U|φ⟩</span>」を何という？ U が満たす条件は？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>ユニタリ発展</b>。U は <b>U<sup>†</sup>U = I</b> を満たすユニタリ行列</span></div></div>
-      <div class="qz pop" style="--d:0.24s"><div class="qz-q"><span class="qz-no">Q5</span><span><span class="math">U|φ⟩</span> も量子状態だといえるのはなぜ？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><span class="math">⟨Uφ|Uφ⟩ = φ<sup>†</sup>U<sup>†</sup>Uφ = φ<sup>†</sup>φ = ⟨φ|φ⟩ = 1</span> だから</span></div></div>
-      <div class="qz pop" style="--d:0.30s"><div class="qz-q"><span class="qz-no">Q6</span><span>ユニタリ発展が <b>可逆</b> なのはなぜ？ 古典の AND は可逆？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">U は逆行列を持ち <b>U<sup>−1</sup>U|φ⟩ = |φ⟩</b> で戻せるから。AND は出力 0 の入力が3通りあり <b>戻せない</b></span></div></div>
+      <div class="qz pop" style="--d:0.00s"><div class="qz-q"><span class="qz-no">Q1</span><span>量子ゲートの操作にあたる「<span class="math">|φ⟩ → U|φ⟩</span>」を何という？ U が満たす条件は？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>ユニタリ発展</b>。U は <b>U<sup>†</sup>U = I</b> を満たすユニタリ行列</span></div></div>
+      <div class="qz pop" style="--d:0.06s"><div class="qz-q"><span class="qz-no">Q2</span><span>ユニタリ発展が <b>可逆</b> なのはなぜ？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">ユニタリ行列は必ず逆行列を持ち、<b>U<sup>−1</sup>U|φ⟩ = |φ⟩</b> で元に戻せるから</span></div></div>
+      <div class="qz pop" style="--d:0.12s"><div class="qz-q"><span class="qz-no">Q3</span><span>古典の AND が元に戻せないのはなぜ？ 量子コンピュータで AND に相当するのは？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">出力 0 になる入力が <b>3 通り</b> あるから。入出力を拡張した <b>トフォリゲート</b>（第8章）</span></div></div>
+      <div class="qz pop" style="--d:0.18s"><div class="qz-q"><span class="qz-no">Q4</span><span><span class="math">(|0⟩+|1⟩)/√2</span> と <span class="math">(|0⟩−|1⟩)/√2</span> を区別するには？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>H をかけてから測定</b>。前者は確率 1 で |0⟩、後者は確率 1 で |1⟩</span></div></div>
+      <div class="qz pop" style="--d:0.24s"><div class="qz-q"><span class="qz-no">Q5</span><span><span class="math">(|0⟩+|1⟩)/√2</span> と <span class="math">−(|0⟩+|1⟩)/√2</span> は区別できる？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>区別できない</b>。z = −1（|z| = 1）なので定理3.2 より同一の量子状態</span></div></div>
+      <div class="qz pop" style="--d:0.30s"><div class="qz-q"><span class="qz-no">Q6</span><span><span class="math">|φ⟩ = a|0⟩ + b|1⟩</span> のとき、<span class="math">|⟨0|φ⟩|²</span> は何を表す？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">測定で <b>|0⟩ を得る確率 |a|²</b>（定理3.1）</span></div></div>
   </div>
   <div class="pageno"></div>
 </section>
@@ -1316,7 +1556,7 @@ function hbars(root, rows) {
   });
 }
 /* 量子状態の平面図（係数を実数に限ったイメージ）：横軸 |0⟩、縦軸 |1⟩、点線の円 = 長さ 1 */
-function qPlane(svg, { W = 300, H = 260, OX = W / 2, OY = H / 2, U = 96 } = {}) {
+function qPlane(svg, { W = 300, H = 260, OX = W / 2, OY = H / 2, U = 96, labels = ['|0⟩', '|1⟩'] } = {}) {
   svg = typeof svg === 'string' ? $(svg) : svg;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const defs = el('defs', {}, svg);
@@ -1328,7 +1568,7 @@ function qPlane(svg, { W = 300, H = 260, OX = W / 2, OY = H / 2, U = 96 } = {}) 
     const e = el('text', { x, y, 'text-anchor': 'middle', 'font-size': size, 'font-weight': 800, fill: c, 'font-family': 'Cambria Math,Times New Roman,serif' }, g);
     e.textContent = s; return e;
   };
-  T(OX + U + 16, OY + 20, '|0⟩'); T(OX + 17, OY - U - 12, '|1⟩');
+  T(OX + U + 16, OY + 20, labels[0]); T(OX + 17, OY - U - 12, labels[1]);
   const P = (a, b) => [OX + U * a, OY - U * b];
   function arrow(color, { width = 6, dash = '', label = '', lcolor = color } = {}) {
     const id = 'ah' + Math.random().toString(36).slice(2, 9);
@@ -1395,179 +1635,13 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   }, 2100);
 }
 
-/* ---------- 復習：測定のルール（測定すると状態が |0⟩ か |1⟩ に変わる） ---------- */
-{
-  const pl = qPlane('#mrPlane', { W: 300, H: 270, OX: 140, OY: 150, U: 104 });
-  const ghost = pl.arrow('#b9b5d0', { width: 3, dash: '3 6', label: '' });
-  const ar = pl.arrow('#8a5cff', { label: '|φ⟩' });
-  const res = $('#mrRes'), hist = $('#mrHist'), eq = $('#mrEq');
-  const PHI = [S5, 2 * S5];
-  let v = PHI.slice(), isPhi = true, hs = [], cancel = () => {};
-  const show = () => {
-    eq.innerHTML = isPhi
-      ? `<div>いまの状態 <span class="eq inline">${PHI_H}</span><br><span style="font-size:15px;color:var(--muted)">→ |0⟩ が 20%、|1⟩ が 80%</span></div>`
-      : `<div>いまの状態 <b class="math" style="font-size:22px">|${v[0] > .5 ? 0 : 1}⟩</b>（測定で変化した）<br><span style="font-size:15px;color:var(--muted)">→ もう一度測定すると必ず |${v[0] > .5 ? 0 : 1}⟩</span></div>`;
-  };
-  const moveTo = (w, lab) => { cancel(); const from = v; v = w; cancel = tweenVec(from, w, 650, p => ar(p[0], p[1], lab)); };
-  function measure() {
-    const r = Math.random() < v[0] * v[0] ? 0 : 1;
-    res.textContent = `|${r}⟩`; res.className = 'mket mres r' + r; replay(res, 'hit');
-    hs.push(r); if (hs.length > 14) hs.shift();
-    hist.innerHTML = hs.map(x => `<span class="h${x}">|${x}⟩</span>`).join('');
-    isPhi = false; moveTo(r ? [0, 1] : [1, 0], '測定後'); show();
-  }
-  function prep() {
-    isPhi = true; res.textContent = '?'; res.className = 'mket mres';
-    moveTo(PHI.slice(), '|φ⟩'); show();
-  }
-  let k = 0;
-  const stop = looper('#mrAuto', () => { (k++ % 4 === 0 ? prep : measure)(); }, 1500);
-  $('#mrMeas').addEventListener('click', e => { e.currentTarget.blur(); stop(); measure(); });
-  $('#mrPrep').addEventListener('click', e => { e.currentTarget.blur(); stop(); prep(); });
-  onEnter.mrule = () => { cancel(); hs = []; hist.innerHTML = ''; k = 0; v = PHI.slice(); ghost(...PHI, ''); ar(...v, '|φ⟩'); isPhi = true; res.textContent = '?'; res.className = 'mket mres'; show(); };
-  ghost(...PHI); ar(...v); show();
-}
-
-/* ---------- |0⟩・|1⟩ の測定：10回測定しても毎回同じ ---------- */
-{
-  const states = [
-    { label: '|0⟩', v: [1, 0], eq: `${M_('|0⟩ = <span class="na">1</span>·|0⟩ + <span class="nb">0</span>·|1⟩')}` },
-    { label: '|1⟩', v: [0, 1], eq: `${M_('|1⟩ = <span class="na">0</span>·|0⟩ + <span class="nb">1</span>·|1⟩')}` },
-    { label: '|φ⟩（重ね合わせ）', v: [S5, 2 * S5], eq: PHI_H },
-  ];
-  const bars = hbars('#m01Bars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const shots = $('#m01Shots'), verdict = $('#m01Verdict'), tb = timerBag();
-  let cur = states[0];
-  const resetShots = () => {
-    tb.clear();
-    shots.innerHTML = Array.from({ length: 10 }, () => '<span class="shot"></span>').join('');
-    verdict.className = 'qverdict wait'; verdict.textContent = '10回測定してみよう';
-  };
-  const pick = picker('#m01Pick', states, (s, i, user) => {
-    if (user) stop();
-    cur = s;
-    $('#m01State').innerHTML = s.eq;
-    const p0 = s.v[0] * s.v[0];
-    bars([p0, 1 - p0], [`確率 ${fmt(p0, 1)}`, `確率 ${fmt(1 - p0, 1)}`]);
-    resetShots();
-  });
-  function run() {
-    resetShots();
-    const cells = [...shots.children], out = [];
-    const p0 = cur.v[0] * cur.v[0];
-    cells.forEach((c, j) => tb.later(() => {
-      const r = Math.random() < p0 ? 0 : 1; out.push(r);
-      c.className = 'shot r' + r; c.textContent = `|${r}⟩`;
-      if (j === 9) {
-        const same = out.every(x => x === out[0]);
-        verdict.className = 'qverdict ' + (same ? 'ok' : 'pp');
-        verdict.textContent = same ? `✓ 10回とも |${out[0]}⟩ → 古典ビットと同じ振る舞い` : `🎲 毎回ちがう（|0⟩ ${out.filter(x => !x).length}回・|1⟩ ${out.filter(x => x).length}回）→ 確率的`;
-      }
-    }, 140 + j * 170));
-  }
-  let k = 0;
-  const stop = looper('#m01Auto', () => { pick(k++ % 3); run(); }, 3400);
-  $('#m01Run').addEventListener('click', e => { e.currentTarget.blur(); stop(); run(); });
-  onEnter.meas01 = () => { k = 0; pick(0); };
-  pick(0);
-}
-
-/* ---------- |ψ⟩ = (1/√5)|0⟩ − (2/√5)|1⟩ をたくさん測定する ---------- */
-{
-  const bars = hbars('#psBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const total = $('#psTotal'), hist = $('#psHist');
-  let n0 = 0, n1 = 0, last = [];
-  const draw = () => {
-    const n = n0 + n1, f0 = n ? n0 / n : 0, f1 = n ? n1 / n : 0;
-    bars([f0, f1], [`${n0}回 ${n ? (f0 * 100).toFixed(1) : '−'}%`, `${n1}回 ${n ? (f1 * 100).toFixed(1) : '−'}%`], [.2, .8]);
-    total.innerHTML = `測定回数 <b>${n}</b> 回`;
-    hist.innerHTML = last.map(x => `<span class="h${x}">|${x}⟩</span>`).join('');
-  };
-  const shoot = m => {
-    for (let i = 0; i < m; i++) {
-      const r = Math.random() < .2 ? 0 : 1;
-      r ? n1++ : n0++;
-      last.push(r);
-    }
-    last = last.slice(-16);
-    draw();
-  };
-  const reset = () => { n0 = n1 = 0; last = []; draw(); };
-  const stop = looper('#psAuto', () => {
-    const n = n0 + n1;
-    if (n >= 3000) return reset();
-    shoot(n < 12 ? 1 : n < 100 ? 8 : n < 600 ? 40 : 150);
-  }, 380);
-  [[1, '#ps1'], [10, '#ps10'], [100, '#ps100']].forEach(([m, id]) => $(id).addEventListener('click', e => { e.currentTarget.blur(); stop(); shoot(m); }));
-  $('#psReset').addEventListener('click', e => { e.currentTarget.blur(); stop(); reset(); });
-  onEnter.measpsi = reset;
-  reset();
-}
-
-/* ---------- |φ⟩ と |ψ⟩：ベクトルは違うが測定確率は同じ（補足：H を通すと区別できる） ---------- */
-{
-  const pl = qPlane('#smPlane', { W: 300, H: 250, OX: 130, OY: 125, U: 92 });
-  const projA = el('line', { stroke: '#e04e00', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
-  const projB = el('line', { stroke: '#3b6cff', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
-  const arA = pl.arrow('#ff6b1a', { label: '|φ⟩', lcolor: '#e04e00' });
-  const arB = pl.arrow('#3b6cff', { label: '|ψ⟩' });
-  const H = [[S2, S2], [S2, -S2]];
-  const PHI = [S5, 2 * S5], PSI = [S5, -2 * S5];
-  const barsA = hbars('#smBarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const barsB = hbars('#smBarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const tb = timerBag(), hBtn = $('#smH');
-  let useH = false, va = PHI, vb = PSI, cancels = [];
-  const setProj = (ln, v) => { const [x, y] = pl.P(...v); ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', x); ln.setAttribute('y2', pl.OY); };
-  function place(animate) {
-    cancels.forEach(c => c()); cancels = [];
-    const ta = useH ? mul(H, PHI) : PHI, tb2 = useH ? mul(H, PSI) : PSI;
-    const la = useH ? 'H|φ⟩' : '|φ⟩', lb = useH ? 'H|ψ⟩' : '|ψ⟩';
-    if (!animate) { va = ta; vb = tb2; arA(...va, la); arB(...vb, lb); setProj(projA, va); setProj(projB, vb); }
-    else {
-      cancels.push(tweenVec(va, ta, 800, p => { arA(p[0], p[1], la); setProj(projA, p); }));
-      cancels.push(tweenVec(vb, tb2, 800, p => { arB(p[0], p[1], lb); setProj(projB, p); }));
-      va = ta; vb = tb2;
-    }
-    $('#smMode').innerHTML = useH ? '<span style="color:#8a5cff">H ゲートを通してから測定（補足・教科書外）</span>' : 'そのまま測定';
-    $('#smCapA').textContent = useH ? 'H|φ⟩ を測定' : '|φ⟩ を測定';
-    $('#smCapB').textContent = useH ? 'H|ψ⟩ を測定' : '|ψ⟩ を測定';
-    hBtn.textContent = useH ? '↩ そのまま測定に戻す' : '🔀 H を通してから測定（補足）';
-    clearBars();
-  }
-  const clearBars = () => { tb.clear(); barsA([0, 0], ['0', '0'], [ta0(), 1 - ta0()]); barsB([0, 0], ['0', '0'], [tb0(), 1 - tb0()]); };
-  const ta0 = () => (useH ? mul(H, PHI) : PHI)[0] ** 2, tb0 = () => (useH ? mul(H, PSI) : PSI)[0] ** 2;
-  function run() {
-    clearBars();
-    const pa = ta0(), pb = tb0();
-    let a0 = 0, b0 = 0, n = 0;
-    for (let s = 1; s <= 20; s++) tb.later(() => {
-      for (let i = 0; i < 10; i++) { if (Math.random() < pa) a0++; if (Math.random() < pb) b0++; }
-      n += 10;
-      barsA([a0 / 200, (n - a0) / 200], [`${a0}`, `${n - a0}`], [pa, 1 - pa]);
-      barsB([b0 / 200, (n - b0) / 200], [`${b0}`, `${n - b0}`], [pb, 1 - pb]);
-    }, s * 70);
-  }
-  let k = 0;
-  const stop = looper('#smAuto', () => {
-    const ph = k++ % 4;
-    if (ph === 0) { useH = false; place(true); tb.later(run, 850); }
-    else if (ph === 1) run();
-    else if (ph === 2) { useH = true; place(true); tb.later(run, 850); }
-    else run();
-  }, 2600);
-  $('#smRun').addEventListener('click', e => { e.currentTarget.blur(); stop(); run(); });
-  hBtn.addEventListener('click', e => { e.currentTarget.blur(); stop(); useH = !useH; place(true); tb.later(run, 850); });
-  onEnter.same = () => { k = 0; useH = false; place(false); };
-  place(false);
-}
-
 /* ---------- 古典のゲートと量子ゲート ---------- */
 {
   const ex = [
     { c: ['NOT', '0', '1'], q: ['X', '|0⟩', '|1⟩'], note: '古典の NOT は 0 を 1 に。量子ゲート X は |0⟩ を |1⟩ に（NOT に対応）' },
     { c: ['NOT', '1', '0'], q: ['X', '|1⟩', '|0⟩'], note: 'X は |1⟩ を |0⟩ に。ここまでは古典と同じ' },
     { c: ['AND', '1 1', '1'], q: ['H', '|0⟩', '(|0⟩+|1⟩)/√2'], note: '量子ゲート H は |0⟩ から <b>重ね合わせ状態</b> をつくれる（古典にはない！）' },
-    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'], note: 'Z は |1⟩ の係数の符号を反転。<b>測定確率は変わらないがベクトルは変わる</b>（さっきの |φ⟩ と |ψ⟩ の関係）' },
+    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'], note: 'Z は |1⟩ の係数の符号を反転。<b>測定確率は変わらないがベクトルは変わる</b>（3.5.1 で H を使って区別する2つの状態）' },
   ];
   const ids = ['In', 'W1', 'G', 'W2', 'Out'];
   const C = Object.fromEntries(ids.map(s => [s, $('#gc' + s)])), Q = Object.fromEntries(ids.map(s => [s, $('#gq' + s)]));
@@ -1821,6 +1895,338 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   }));
   onEnter.and = () => { c.set({ A: 0, B: 0 }, false); clearBack(); };
   c.set({}, false);
+}
+
+
+/* ---------- トフォリゲート：ビットを拡張すると AND も可逆にできる ---------- */
+{
+  const bits = [...document.querySelectorAll('.tf-bit')], outs = [0, 1, 2].map(i => $('#tfO' + i)), box = $('#tfBox');
+  const tbl = $('#tfTable');
+  const f = ([a, b, c]) => [a, b, c ^ (a & b)];
+  let v = [0, 0, 0];
+  tbl.innerHTML = '<thead><tr><th>a</th><th>b</th><th>c</th><th class="out">a</th><th class="out">b</th><th class="out">c ⊕ (a AND b)</th></tr></thead><tbody>' +
+    Array.from({ length: 8 }, (_, n) => {
+      const x = [(n >> 2) & 1, (n >> 1) & 1, n & 1], y = f(x);
+      return `<tr data-n="${n}">${x.map(d => `<td>${d}</td>`).join('')}${y.map((d, i) => `<td class="out${i === 2 && x[2] === 0 ? ' and' : ''}">${d}</td>`).join('')}</tr>`;
+    }).join('') + '</tbody>';
+  const trs = [...tbl.querySelectorAll('tbody tr')];
+  function draw(flash = true) {
+    const y = f(v);
+    bits.forEach((b, i) => { b.textContent = v[i]; b.classList.toggle('on', !!v[i]); });
+    outs.forEach((o, i) => { o.textContent = y[i]; o.classList.toggle('on', !!y[i]); if (flash) replay(o, 'pop2'); });
+    if (flash) replay(box, 'pop2');
+    const n = v[0] * 4 + v[1] * 2 + v[2];
+    trs.forEach((tr, i) => tr.classList.toggle('cur', i === n));
+  }
+  bits.forEach((b, i) => b.addEventListener('click', e => { e.currentTarget.blur(); stop(); v[i] ^= 1; draw(); }));
+  trs.forEach((tr, n) => tr.addEventListener('click', () => { stop(); v = [(n >> 2) & 1, (n >> 1) & 1, n & 1]; draw(); }));
+  $('#tfAgain').addEventListener('click', e => { e.currentTarget.blur(); stop(); v = f(v); draw(); });
+  let k = 0;
+  const stop = looper('#tfAuto', () => { const n = [0, 2, 4, 6, 7, 6][k++ % 6]; v = [(n >> 2) & 1, (n >> 1) & 1, n & 1]; draw(); }, 1700);
+  onEnter.toffoli = () => { k = 0; v = [0, 0, 0]; draw(false); };
+  draw(false);
+}
+
+/* ---------- 3.5.1 区別できる例：(|0⟩ ± |1⟩)/√2 は H をかけてから測ると区別できる ---------- */
+{
+  const pl = qPlane('#smPlane', { W: 300, H: 250, OX: 130, OY: 125, U: 92 });
+  const projA = el('line', { stroke: '#e04e00', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
+  const projB = el('line', { stroke: '#3b6cff', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
+  const arA = pl.arrow('#ff6b1a', { label: '|+⟩', lcolor: '#e04e00' });
+  const arB = pl.arrow('#3b6cff', { label: '|−⟩' });
+  const H = [[S2, S2], [S2, -S2]];
+  const PHI = [S2, S2], PSI = [S2, -S2];
+  const barsA = hbars('#smBarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const barsB = hbars('#smBarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const tb = timerBag(), hBtn = $('#smH'), vd = $('#smVerdict');
+  let useH = false, va = PHI, vb = PSI, cancels = [];
+  const setProj = (ln, v) => { const [x, y] = pl.P(...v); ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', x); ln.setAttribute('y2', pl.OY); };
+  const ta0 = () => (useH ? mul(H, PHI) : PHI)[0] ** 2, tb0 = () => (useH ? mul(H, PSI) : PSI)[0] ** 2;
+  const clearBars = () => {
+    tb.clear(); barsA([0, 0], ['0', '0'], [ta0(), 1 - ta0()]); barsB([0, 0], ['0', '0'], [tb0(), 1 - tb0()]);
+    vd.className = 'qverdict wait'; vd.textContent = '測定してみよう';
+  };
+  function place(animate) {
+    cancels.forEach(c => c()); cancels = [];
+    const ta = useH ? mul(H, PHI) : PHI, tb2 = useH ? mul(H, PSI) : PSI;
+    const la = useH ? 'H|+⟩' : '|+⟩', lb = useH ? 'H|−⟩' : '|−⟩';
+    if (!animate) { va = ta; vb = tb2; arA(...va, la); arB(...vb, lb); setProj(projA, va); setProj(projB, vb); }
+    else {
+      cancels.push(tweenVec(va, ta, 800, p => { arA(p[0], p[1], la); setProj(projA, p); }));
+      cancels.push(tweenVec(vb, tb2, 800, p => { arB(p[0], p[1], lb); setProj(projB, p); }));
+      va = ta; vb = tb2;
+    }
+    $('#smMode').innerHTML = useH ? '<span style="color:#8a5cff">アダマール行列 H をかけてから測定</span>' : 'そのまま測定';
+    $('#smCapA').textContent = useH ? 'H|+⟩ を測定' : '|+⟩ を測定';
+    $('#smCapB').textContent = useH ? 'H|−⟩ を測定' : '|−⟩ を測定';
+    hBtn.textContent = useH ? '↩ そのまま測定に戻す' : '🔀 H をかけてから測定';
+    clearBars();
+  }
+  function run() {
+    clearBars();
+    const pa = ta0(), pb = tb0();
+    let a0 = 0, b0 = 0, n = 0;
+    for (let s = 1; s <= 20; s++) tb.later(() => {
+      for (let i = 0; i < 10; i++) { if (Math.random() < pa) a0++; if (Math.random() < pb) b0++; }
+      n += 10;
+      barsA([a0 / 200, (n - a0) / 200], [`${a0}`, `${n - a0}`], [pa, 1 - pa]);
+      barsB([b0 / 200, (n - b0) / 200], [`${b0}`, `${n - b0}`], [pb, 1 - pb]);
+      if (s === 20) {
+        vd.className = 'qverdict ' + (useH ? 'ok' : 'ng');
+        vd.textContent = useH ? '✓ |+⟩ は必ず |0⟩、|−⟩ は必ず |1⟩ → 区別できる！' : '✗ どちらも半々 → 区別できない';
+      }
+    }, s * 70);
+  }
+  let k = 0;
+  const stop = looper('#smAuto', () => {
+    const ph = k++ % 4;
+    if (ph === 0) { useH = false; place(true); tb.later(run, 850); }
+    else if (ph === 1) run();
+    else if (ph === 2) { useH = true; place(true); tb.later(run, 850); }
+    else run();
+  }, 2600);
+  $('#smRun').addEventListener('click', e => { e.currentTarget.blur(); stop(); run(); });
+  hBtn.addEventListener('click', e => { e.currentTarget.blur(); stop(); useH = !useH; place(true); tb.later(run, 850); });
+  onEnter.dist1 = () => { k = 0; useH = false; place(false); };
+  place(false);
+}
+
+/* ---------- 図3.5：正立方体と横向きの円柱（見る向きを変えると区別できる） ---------- */
+{
+  const ink = '#1f1a3d';
+  const cube = $('#f35Cube'), cyl = $('#f35Cyl');
+  [cube, cyl].forEach(s => s.setAttribute('viewBox', '0 0 300 160'));
+  const line = (g, d, extra = {}) => el('path', { d, fill: 'none', stroke: ink, 'stroke-width': 3, 'stroke-linejoin': 'round', ...extra }, g);
+  // 正立方体（斜めから見た図）
+  el('path', { d: 'M115,55 h70 v70 h-70 z', fill: '#fff' }, cube);
+  el('path', { d: 'M115,55 l28,-26 h70 l-28,26 z', fill: '#f1ecff' }, cube);
+  el('path', { d: 'M185,55 l28,-26 v70 l-28,26 z', fill: '#e3d9ff' }, cube);
+  line(cube, 'M115,55 h70 v70 h-70 z M115,55 l28,-26 h70 v70 l-28,26 M185,55 l28,-26');
+  line(cube, 'M143,29 v70 h70 M143,99 l-28,26', { 'stroke-width': 1.6, 'stroke-dasharray': '4 4', opacity: .6 });
+  // 横向きの円柱
+  el('path', { d: 'M115,55 h70 a14,35 0 0 1 0,70 h-70 z', fill: '#fff' }, cyl);
+  el('ellipse', { cx: 185, cy: 90, rx: 14, ry: 35, fill: '#e3d9ff', stroke: ink, 'stroke-width': 3 }, cyl);
+  line(cyl, 'M115,55 h70 M115,125 h70');
+  line(cyl, 'M115,55 a14,35 0 0 0 0,70', {});
+  line(cyl, 'M115,55 a14,35 0 0 1 0,70', { 'stroke-width': 1.6, 'stroke-dasharray': '4 4', opacity: .6 });
+  // 見る向きの矢印（正面 = 左下から斜め、横 = 右から）
+  const arrows = [];
+  [cube, cyl].forEach(s => {
+    const id = 'f35a' + Math.random().toString(36).slice(2, 7);
+    const m = el('marker', { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto' }, el('defs', {}, s));
+    el('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#ff4f9a' }, m);
+    const front = el('line', { x1: 55, y1: 150, x2: 122, y2: 102, stroke: '#ff4f9a', 'stroke-width': 5, 'stroke-linecap': 'round', 'marker-end': `url(#${id})` }, s);
+    const side = el('line', { x1: 290, y1: 90, x2: 222, y2: 90, stroke: '#ff4f9a', 'stroke-width': 5, 'stroke-linecap': 'round', 'marker-end': `url(#${id})` }, s);
+    arrows.push([front, side]);
+  });
+  // 見えた形
+  const shapes = ['#f35S1', '#f35S2'].map((id, i) => {
+    const s = $(id); s.setAttribute('viewBox', '0 0 300 100');
+    const r = el('rect', { x: 112, y: 12, width: 76, height: 76, rx: 0, fill: i ? '#e3d9ff' : '#fff1c2', stroke: ink, 'stroke-width': 3.5 }, s);
+    const t = el('text', { x: 200, y: 56, 'font-size': 18, 'font-weight': 900, fill: ink }, s);
+    return { r, t };
+  });
+  let side = false, raf = 0, rx = 0;
+  function set(toSide) {
+    side = toSide;
+    arrows.forEach(([f, s]) => { f.setAttribute('opacity', side ? .12 : 1); s.setAttribute('opacity', side ? 1 : .12); });
+    $('#f35Tag').innerHTML = side ? '横から見る ＝ <b>アダマール行列をかけてから測定</b>' : '正面から見る ＝ <b>量子状態を変えずに測定</b>';
+    $('#f35Tag').style.background = side ? '#e3d9ff' : '#fff1c2';
+    const target = side ? 38 : 0, from = rx, t0 = performance.now();
+    cancelAnimationFrame(raf);
+    const step = now => {
+      const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
+      rx = from + (target - from) * e; shapes[1].r.setAttribute('rx', rx);
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    shapes[0].t.textContent = '正方形';
+    shapes[1].t.textContent = side ? '円' : '正方形';
+    [0, 1].forEach(i => replay(shapes[i].r, 'pop2'));
+    const v = $('#f35Verdict');
+    v.className = 'qverdict ' + (side ? 'ok' : 'ng');
+    v.textContent = side ? '✓ 正方形 と 円 → 区別できる！' : '✗ どちらも正方形 → 区別できない';
+  }
+  let k = 0;
+  const stop = looper('#f35Auto', () => set(k++ % 2 === 1), 2400);
+  $('#f35Front').addEventListener('click', e => { e.currentTarget.blur(); stop(); set(false); });
+  $('#f35Side').addEventListener('click', e => { e.currentTarget.blur(); stop(); set(true); });
+  onEnter.fig35 = () => { k = 0; set(false); };
+  set(false);
+}
+
+/* ---------- 3.5.2 区別できない例：|+⟩ と −|+⟩ はどの U をかけても確率が同じ ---------- */
+{
+  const pl = qPlane('#d2Plane', { W: 300, H: 220, U: 82 });
+  const arA = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const arB = pl.arrow('#3b6cff', { label: '' });
+  const A = [S2, S2], B = [-S2, -S2];
+  const barsA = hbars('#d2BarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const barsB = hbars('#d2BarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const th = $('#d2Th'), sl = $('#d2Sl');
+  const Us = [
+    { label: 'なし', n: '', M: () => [[1, 0], [0, 1]] },
+    { label: 'H', n: 'H', M: () => [[S2, S2], [S2, -S2]] },
+    { label: 'X', n: 'X', M: () => [[0, 1], [1, 0]] },
+    { label: 'Z', n: 'Z', M: () => [[1, 0], [0, -1]] },
+    { label: 'R(θ)', n: 'R', M: () => rot(deg) },
+  ];
+  let U = Us[0], deg = 40, va = A, vb = B, cancels = [];
+  function draw(animate = true) {
+    const M = U.M(), wa = mul(M, A), wb = mul(M, B);
+    const la = (U.n ? U.n : '') + '|+⟩', lb = (U.n ? U.n : '') + '(−|+⟩)';
+    cancels.forEach(c => c()); cancels = [];
+    if (animate) {
+      cancels.push(tweenVec(va, wa, 700, p => arA(p[0], p[1], la)));
+      cancels.push(tweenVec(vb, wb, 700, p => arB(p[0], p[1], lb)));
+    } else { arA(...wa, la); arB(...wb, lb); }
+    va = wa; vb = wb;
+    const pa = wa[0] ** 2, pb = wb[0] ** 2;
+    barsA([pa, 1 - pa], [`${Math.round(pa * 100)}%`, `${Math.round((1 - pa) * 100)}%`]);
+    barsB([pb, 1 - pb], [`${Math.round(pb * 100)}%`, `${Math.round((1 - pb) * 100)}%`]);
+    $('#d2CapA').textContent = `${la} を測定`; $('#d2CapB').textContent = `${lb} を測定`;
+    sl.style.opacity = U.n === 'R' ? 1 : .35; th.disabled = U.n !== 'R';
+    th.value = deg; $('#d2Thv').textContent = `${Math.round(deg)}°`;
+  }
+  const setU = picker('#d2Pick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
+  th.addEventListener('input', () => { stop(); deg = +th.value; draw(false); });
+  let k = 0;
+  const stop = looper('#d2Auto', () => {
+    const j = k++ % 14;
+    if (j < 4) setU(j);
+    else { if (j === 4) { deg = -150; setU(4); } else { deg += 30; draw(); } }
+  }, 1300);
+  onEnter.dist2 = () => { k = 0; deg = 40; va = A; vb = B; setU(0); };
+  setU(0);
+}
+
+/* ---------- 3.5.3：z|φ⟩（|z| = 1）は係数が回るだけで、確率は変わらない ---------- */
+{
+  const pl = qPlane('#zpPlane', { W: 270, H: 250, U: 100, labels: ['実部', '虚部'] });
+  [.6, .8].forEach((r, i) => el('circle', { cx: pl.OX, cy: pl.OY, r: pl.U * r, fill: 'none', stroke: i ? '#3b6cff' : '#ff6b1a', 'stroke-width': 1.5, 'stroke-dasharray': '2 5', opacity: .7 }, pl.gBack));
+  const arZ = pl.arrow('#8a5cff', { width: 4, label: 'z', lcolor: '#8a5cff' });
+  const arB = pl.arrow('#3b6cff', { label: '' });
+  const arA = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const th = $('#zpTh');
+  const bars = hbars('#zpBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const cx = (re, im) => `${fmt(re)} ${im < -5e-3 ? '−' : '+'} ${fmt(Math.abs(im))}i`;
+  let deg = 0, raf = 0;
+  function draw() {
+    const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t);
+    arZ(c, s); arA(.6 * c, .6 * s); arB(.8 * c, .8 * s);
+    th.value = deg; $('#zpThv').textContent = `${Math.round(deg)}°`;
+    $('#zpVals').innerHTML = `<div><span class="math">z = ${cx(c, s)}</span></div><div class="na"><span class="math">za = ${cx(.6 * c, .6 * s)}</span></div><div class="nb"><span class="math">zb = ${cx(.8 * c, .8 * s)}</span></div>`;
+    bars([.36, .64], ['|za|² = 0.36', '|zb|² = 0.64']);
+  }
+  const P = $('#zpPresets');
+  P.innerHTML = [['z = 1', 0], ['z = i', 90], ['z = −1', 180], ['z = −i', 270]].map(([l, d]) => `<button data-d="${d}">${l}</button>`).join('');
+  const go2 = d => {
+    cancelAnimationFrame(raf);
+    const from = deg, to = from + ((((d - from) % 360) + 540) % 360 - 180), t0 = performance.now();
+    const step = now => { const k = Math.min(1, (now - t0) / 600), e = 1 - Math.pow(1 - k, 3); deg = ((from + (to - from) * e) % 360 + 360) % 360; draw(); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+  };
+  P.querySelectorAll('button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(+b.dataset.d); }));
+  th.addEventListener('input', () => { stop(); cancelAnimationFrame(raf); deg = +th.value; draw(); });
+  const stop = looper('#zpAuto', () => { cancelAnimationFrame(raf); deg = (deg + 3) % 360; draw(); }, 60);
+  onEnter.zph = () => { deg = 0; draw(); };
+  draw();
+}
+
+/* ---------- 定理3.1：⟨0|φ⟩ = a、⟨1|φ⟩ = b を計算してみる ---------- */
+{
+  const states = [
+    { label: '0.6|0⟩ + 0.8|1⟩', a: '0.6', b: '0.8', pa: .36, pb: .64 },
+    { label: '(1/√5)|0⟩ + (2/√5)|1⟩', a: FR(1, '√5'), b: FR(2, '√5'), pa: .2, pb: .8 },
+    { label: '0.6|0⟩ + 0.8i|1⟩', a: '0.6', b: '0.8i', pa: .36, pb: .64 },
+  ];
+  const rows = $('#inRows');
+  picker('#inPick', states, s => {
+    const row = (k, val, p, cls) => `<div class="in-row"><span class="eq inline"><span class="math">⟨${k}|φ⟩ =</span><span class="vec row"><span>${k ? 0 : 1}</span><span>${k ? 1 : 0}</span></span><span class="vec"><span class="${k ? '' : 'na'}">${s.a}</span><span class="${k ? 'nb' : ''}">${s.b}</span></span><span class="math">= <b class="${cls}">${val}</b></span></span>` +
+      `<span class="in-p">→ <span class="math">|⟨${k}|φ⟩|² = ${p.toFixed(2)}</span>（|${k}⟩ を得る確率）</span></div>`;
+    rows.innerHTML = row(0, s.a, s.pa, 'na') + row(1, s.b, s.pb, 'nb');
+    rows.querySelectorAll('.in-row').forEach(r => replay(r, 'pop2'));
+  })(0);
+}
+
+/* ---------- 図3.6：何も書いていない立方体 A と、上下を入れ替えた B ---------- */
+{
+  const faces = [['rotateY(0deg)', 1], ['rotateY(180deg)', 6], ['rotateY(90deg)', 3], ['rotateY(-90deg)', 4], ['rotateX(90deg)', 2], ['rotateX(-90deg)', 5]];
+  const build = (root, flip) => {
+    const inner = document.createElement('div');
+    inner.className = 'c3in'; if (flip) inner.style.transform = 'rotateX(180deg)';
+    inner.innerHTML = faces.map(([t, n]) => `<div class="c3f" style="transform:${t} translateZ(55px)"><span>${n}</span></div>`).join('');
+    root.appendChild(inner);
+  };
+  const A = $('#c3A'), B = $('#c3B');
+  build(A, false); build(B, true);
+  const sx = $('#c3X'), sy = $('#c3Y'), slide = A.closest('.slide');
+  let rx = -22, ry = 32, marked = false;
+  function draw() {
+    [A, B].forEach(c => c.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`);
+    sx.value = rx; sy.value = ry;
+    $('#c3Xv').textContent = `${Math.round(rx)}°`; $('#c3Yv').textContent = `${Math.round(ry)}°`;
+  }
+  const mark = on => {
+    marked = on; slide.classList.toggle('c3marked', on);
+    $('#c3Mark').textContent = on ? '⬜ 目を消す（本来の姿）' : '🎲 もしサイコロの目があったら？';
+    $('#c3Hint').innerHTML = on ? '目があれば A と B の違いが見える。<b>でも実際は何も書いていないので見分けられない</b>' : '何も書いていないので、どう回しても A と B はまったく同じに見える';
+  };
+  sx.addEventListener('input', () => { stop(); rx = +sx.value; draw(); });
+  sy.addEventListener('input', () => { stop(); ry = +sy.value; draw(); });
+  $('#c3Mark').addEventListener('click', e => { e.currentTarget.blur(); mark(!marked); });
+  let t = 0;
+  const stop = looper('#c3Auto', () => { t += .03; ry = ((t * 40) % 360 + 540) % 360 - 180; rx = -25 + 45 * Math.sin(t * .8); draw(); }, 50);
+  onEnter.fig36 = () => { t = 0; mark(false); rx = -22; ry = 32; draw(); };
+  draw();
+}
+
+/* ---------- コラム：シュレディンガー方程式の記号の説明 ---------- */
+{
+  const parts = [
+    { k: 'i', h: '<span class="math">i</span>', d: '<b>虚数単位</b>' },
+    { k: 'hbar', h: '<span class="math">ħ</span>', d: '「エイチバー」と読む。<b>ディラック定数</b>（Dirac\'s constant）または <b>換算プランク定数</b>（reduced Planck constant）と呼ばれる、量子力学に登場する定数。何か特定の実数だと思えばよい' },
+    { k: 'ddt', h: `<span class="frac"><span>d</span><span>dt</span></span>`, d: '<b>時間 t での微分</b>。|φ(t)⟩ の時間での微分は、時間が経ったときの |φ(t)⟩ の <b>変化量</b>。左辺は量子状態の変化量（に定数 iħ をかけたもの）' },
+    { k: 'phi', h: '<span class="math">|φ(t)⟩</span>', d: `出力が列ベクトルになる関数で、<b>時間 t によって変化する量子状態</b>。ケット記号を使わずに書くと <span class="eq inline"><span class="vec"><span>φ₀(t)</span><span>φ₁(t)</span></span></span>` },
+    { k: 'eq', h: '<span class="math">=</span>', d: '「<b>2次元ベクトル = 2次元ベクトル</b>」という形の方程式。φ₀(t) と φ₁(t) に関する微分の連立方程式になっている' },
+    { k: 'H', h: '<span class="math">Ĥ</span>', d: '<b>ハミルトニアン</b>（Hamiltonian）。量子状態（2次元ベクトル）を量子状態に写す <b>2次正方行列</b> とみなせる。^ は <b>ハット</b>（hat）で「エイチハット」と読む。Ĥ は <b>エルミート行列</b>' },
+  ];
+  const order = ['i', 'hbar', 'ddt', 'phi', 'eq', 'H'];
+  $('#schEq').innerHTML = ['i', 'hbar', 'ddt', 'phi', 'eq', 'H', 'phi2'].map(k => k === 'phi2'
+    ? `<button class="sch-p" data-k="phi"><span class="math">|φ(t)⟩</span></button>`
+    : `<button class="sch-p" data-k="${k}">${parts.find(p => p.k === k).h}</button>`).join('');
+  const btns = [...document.querySelectorAll('#schEq .sch-p')], exp = $('#schExp');
+  const show = k => {
+    const p = parts.find(x => x.k === k);
+    btns.forEach(b => b.classList.toggle('on', b.dataset.k === k));
+    exp.innerHTML = `<div class="sch-k">${p.h}</div><div>${p.d}</div>`; replay(exp, 'pop2');
+  };
+  btns.forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); stop(); show(b.dataset.k); }));
+  let k = 0;
+  const stop = looper('#schAuto', () => show(order[k++ % order.length]), 3400);
+  onEnter.col1 = () => { k = 0; show('i'); };
+  show('i');
+}
+
+/* ---------- コラム：|φ(t)⟩ = e^{−iĤt/ħ}|φ(0)⟩ の例（ħ = 1, Ĥ = X, |φ(0)⟩ = |0⟩） ---------- */
+{
+  const sl = $('#seT'), bars = hbars('#seBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const gEl = $('#seGauge'), gauge = probGauge(gEl);
+  gEl.classList.add('instant');
+  const cx = (re, im) => (Math.abs(im) < 5e-3 ? fmt(re) : Math.abs(re) < 5e-3 ? `${fmt(im)}i` : `${fmt(re)}${im < 0 ? '−' : '+'}${fmt(Math.abs(im))}i`);
+  let t = 0;
+  function draw() {
+    const c = Math.cos(t), s = Math.sin(t);
+    sl.value = t; $('#seTv').textContent = t.toFixed(2);
+    $('#seU').innerHTML = `${M_('e<sup>−iĤt</sup> =')}${matH([[fmt(c), cx(0, -s)], [cx(0, -s), fmt(c)]])}<span style="font-size:13px;color:var(--muted)">（ユニタリ）</span>`;
+    $('#seV').innerHTML = `${M_('|φ(t)⟩ =')}${matH([[fmt(c), cx(0, -s)], [cx(0, -s), fmt(c)]])}${vecH(1, 0)}${M_('=')}${vecH(fmt(c), cx(0, -s), 'na', 'nb')}`;
+    bars([c * c, s * s], [`${(c * c).toFixed(2)}`, `${(s * s).toFixed(2)}`]);
+    gauge(c * c, s * s);
+  }
+  sl.addEventListener('input', () => { stop(); t = +sl.value; draw(); });
+  const stop = looper('#seAuto', () => { t = (t + .04) % (2 * Math.PI); draw(); }, 50);
+  onEnter.col2 = () => { t = 0; draw(); };
+  draw();
 }
 
 /* ---------- 復習問題：カードをクリックすると答えが出る（もう一度押すと隠れる） ---------- */
