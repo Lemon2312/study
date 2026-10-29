@@ -673,28 +673,6 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .zp-vals{display:flex;gap:14px;justify-content:center;font-size:15px;margin-top:4px}
 .se-main{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;margin-top:4px}
 
-/* ---------- アニメーションをゆっくりにする（全体で約 1.7 倍） ---------- */
-.slide{transition:opacity .75s ease,transform 1s cubic-bezier(.3,1.5,.5,1)}
-.slide.active .pop{animation:pop 1.2s cubic-bezier(.3,1.6,.5,1) both;animation-delay:calc(var(--d,0s) * 1.7)}
-.frag{transition:opacity .7s ease,transform .85s cubic-bezier(.3,1.6,.5,1)}
-.slide.active h2::before{animation-duration:1.7s}
-.slide.active .door-num{animation-duration:1.5s}
-.wire{transition:stroke .45s}
-.flow.on{animation-duration:.95s}
-.dot{transition:fill .45s}
-.gate path,.gate circle,.lamp circle,table.tt td{transition-duration:.5s}
-.pg-seg,.pg-gap,.pg-over{transition:left .5s,width .5s}
-.qz.open .qz-ans{animation-duration:.7s}
-#progress{transition:width .7s}
-.hb-f{transition:width .8s cubic-bezier(.2,.8,.3,1)}
-.shot.r0,.shot.r1,.rv-chain .gch{animation-duration:.7s}
-.pop2{animation-duration:.75s}
-.tok{transition:opacity .6s,transform .75s cubic-bezier(.3,1.6,.5,1)}
-.pwire.on{animation-duration:.8s}
-.gbox{transition:background .5s,transform .5s cubic-bezier(.3,1.6,.5,1)}
-.c3f span{transition:opacity .5s}
-.f35-tag,.hz-bar div{transition-duration:.5s}
-
 </style>
 </head>
 <body>
@@ -716,8 +694,9 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       </div>
     </div>
     <div class="card pop" style="--d:.4s">
-      <svg class="plane" id="titlePlane" style="height:330px"></svg>
+      <svg class="plane" id="titlePlane" style="height:300px"></svg>
       <div class="hint" style="text-align:center">量子ゲートはブロッホ球の上で状態を回す。でも <b>球面からは外れない</b></div>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="titleAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
 </section>
@@ -794,6 +773,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       <div class="pipe-row q"><div class="pipe-lab">量子<br>ゲート</div><div class="pipe"><span class="tok q" id="gqIn">|0⟩</span><span class="pwire" id="gqW1"></span><span class="gbox q" id="gqG">X</span><span class="pwire" id="gqW2"></span><span class="tok q" id="gqOut">|1⟩</span></div></div>
       <div class="pipe-note" id="gNote"></div>
       <div class="hint" style="text-align:center">※ X・H・Z は第4章で詳しく扱う量子ゲートの例</div>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="gAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
   <div class="pageno"></div>
@@ -1524,8 +1504,6 @@ function probGauge(el) {
 }
 
 window.onEnter = window.onEnter || {};
-// アニメーション全体の速さ（大きいほどゆっくり）
-const SLOW = 1.7;
 
 /* ---------- 共通：2×2 行列（実数）とベクトル ---------- */
 const S2 = Math.SQRT1_2, S5 = 1 / Math.sqrt(5);
@@ -1550,7 +1528,7 @@ function looper(btn, step, interval) {
     btn.blur();
     if (t) return stop();
     btn.textContent = '■ 停止'; btn.classList.add('playing');
-    step(); t = setInterval(step, interval * SLOW);
+    step(); t = setInterval(step, interval);
   });
   stoppers.push(stop);
   return stop;
@@ -1559,7 +1537,7 @@ function looper(btn, step, interval) {
 function timerBag() {
   let ts = [];
   const bag = {
-    later(f, ms) { ts.push(setTimeout(f, ms * SLOW)); },
+    later(f, ms) { ts.push(setTimeout(f, ms)); },
     clear() { ts.forEach(clearTimeout); ts = []; },
   };
   stoppers.push(bag.clear);
@@ -1635,7 +1613,7 @@ function tweenVec(from, to, dur, step) {
   da = Math.atan2(Math.sin(da), Math.cos(da));
   if (r0 < 1e-6) da = 0;
   const f = now => {
-    const k = Math.min(1, (now - t0) / (dur * SLOW)), e = 1 - Math.pow(1 - k, 3);
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
     const r = r0 + (r1 - r0) * e, a = (r0 < 1e-6 ? Math.atan2(to[1], to[0]) : a0) + da * e;
     step(k < 1 ? [r * Math.cos(a), r * Math.sin(a)] : to, k);
     if (k < 1) raf = requestAnimationFrame(f);
@@ -1678,7 +1656,7 @@ function animB(f, dur, step) {
   let raf;
   const t0 = performance.now();
   const g = now => {
-    const k = Math.min(1, (now - t0) / (dur * SLOW)), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
     step(f(k < 1 ? e : 1), k);
     if (k < 1) raf = requestAnimationFrame(g);
   };
@@ -1808,14 +1786,14 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['R(50°)', rot(50)], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
   let v = cvec([1, 0]), i = 0, pts = [bvec(v)], cancel = () => {};
   pt(bvec(v));
-  setInterval(() => {
-    if (document.body.classList.contains('overview') || !document.querySelector('.slide[data-id="title"]').classList.contains('active')) return;
+  looper('#titleAuto', () => {
     const [name, M] = seq[i++ % seq.length];
     gl.textContent = `量子ゲート ${name} をかける`;
     cancel(); pts = pts.slice(-90);
     cancel = gateAnim(v, M, 1100, b => { pt(b, 'U|φ⟩'); pts.push(b); tr(pts); });
     v = cmulv(M, v);
-  }, 2300 * SLOW);
+  }, 2300);
+  stoppers.push(() => cancel());
 }
 
 /* ---------- 古典のゲートと量子ゲート ---------- */
@@ -1829,7 +1807,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const ids = ['In', 'W1', 'G', 'W2', 'Out'];
   const C = Object.fromEntries(ids.map(s => [s, $('#gc' + s)])), Q = Object.fromEntries(ids.map(s => [s, $('#gq' + s)]));
   const tb = timerBag();
-  let k = 0, t = null;
+  let k = 0;
   function play() {
     tb.clear();
     const e = ex[k++ % ex.length];
@@ -1845,8 +1823,8 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     });
     $('#gNote').innerHTML = e.note;
   }
-  stoppers.push(() => { clearInterval(t); t = null; });
-  onEnter.gates = () => { k = 0; play(); clearInterval(t); t = setInterval(play, 3600 * SLOW); };
+  looper('#gAuto', play, 3600);
+  onEnter.gates = () => { k = 0; };
   play();
 }
 
@@ -2066,14 +2044,14 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- 図3.4：古典ビットの AND（出力から入力に戻れる？） ---------- */
 {
-  const c = new Circuit('cAnd', { viewBox: '-70 40 600 180', delay: 330 * SLOW });
+  const c = new Circuit('cAnd', { viewBox: '-70 40 600 180' });
   c.input('A', 60, 95, '入力1'); c.input('B', 60, 165, '入力2');
   c.gate('g', 'AND', 200, 130, ['A', 'B']);
   c.link('A', 'g.in0', 140); c.link('B', 'g.in1', 140);
   c.output('Q', 380, 130, 'g', '出力');
   c.link('g', 'Q');
   truthTable('tAnd', c, [['A', '入力1'], ['B', '入力2']], [['g', '出力']]);
-  const stop = autoplay('pAnd', c, 1900 * SLOW);
+  const stop = autoplay('pAnd', c);
   const trs = [...document.querySelectorAll('#tAnd tbody tr')], m = $('#andMsg');
   const clearBack = () => { trs.forEach(tr => tr.classList.remove('rv')); m.textContent = '　'; };
   c.onChange(clearBack);
@@ -2231,7 +2209,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     const target = side ? 38 : 0, from = rx, t0 = performance.now();
     cancelAnimationFrame(raf);
     const step = now => {
-      const k = Math.min(1, (now - t0) / (700 * SLOW)), e = 1 - Math.pow(1 - k, 3);
+      const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
       rx = Math.max(0, from + (target - from) * e); shapes[1].r.setAttribute('rx', rx);
       if (k < 1) raf = requestAnimationFrame(step);
     };
@@ -2328,7 +2306,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const go2 = d => {
     cancelAnimationFrame(raf);
     const from = deg, to = from + ((((d - from) % 360) + 540) % 360 - 180), t0 = performance.now();
-    const step = now => { const k = Math.min(1, (now - t0) / (600 * SLOW)), e = 1 - Math.pow(1 - k, 3); deg = ((from + (to - from) * e) % 360 + 360) % 360; draw(); if (k < 1) raf = requestAnimationFrame(step); };
+    const step = now => { const k = Math.min(1, (now - t0) / 600), e = 1 - Math.pow(1 - k, 3); deg = ((from + (to - from) * e) % 360 + 360) % 360; draw(); if (k < 1) raf = requestAnimationFrame(step); };
     raf = requestAnimationFrame(step);
   };
   P.querySelectorAll('button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(+b.dataset.d); }));
