@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>測定から量子ゲートへ ― 測定の続き・ユニタリ発展・可逆性</title>
+<style>
+:root{
+  --ink:#1f1a3d; --muted:#6b6790; --line:#1f1a3d; --bg:#fffaf0;
+  --accent:#ff6b1a; --accent-d:#e04e00; --accent-l:#fff1c2;
+  --blue:#3b6cff; --blue-l:#dfe8ff; --green:#14a35a;
+  --off:#b9b5d0; --pink:#ff4f9a; --yellow:#ffd53d; --purple:#8a5cff;
+  --hard:4px 4px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;height:100%;background:#1e293b;overflow:hidden;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;color:var(--ink)}
+#viewport{position:fixed;inset:0}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center;
+  background:var(--bg);box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;padding:44px 64px 50px;opacity:0;pointer-events:none;
+  transform:translateX(60px);transition:opacity .55s ease,transform .55s ease;display:flex;flex-direction:column}
+.slide.past{transform:translateX(-60px)}
+.slide.active{opacity:1;transform:none;pointer-events:auto}
+.slide::before{content:"";position:absolute;left:0;top:0;right:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#facc15 50%,var(--blue))}
+.chap{font-size:15px;color:var(--muted);letter-spacing:.05em}
+h2{font-size:38px;margin:6px 0 22px;padding-left:16px;border-left:10px solid var(--accent);line-height:1.25}
+h2 small{font-size:22px;color:var(--muted);font-weight:500;margin-left:12px}
+.pageno{position:absolute;right:30px;bottom:16px;font-size:14px;color:var(--muted)}
+.body{flex:1;min-height:0}
+p,li{font-size:23px;line-height:1.6}
+ul{margin:0;padding-left:1.2em}
+li{margin:6px 0}
+b.k{color:var(--accent-d)}
+b.kb{color:var(--blue)}
+.muted{color:var(--muted)}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:30px;align-items:center;height:100%}
+.cols.even{grid-template-columns:1fr 1fr}
+.cols.wide{grid-template-columns:1.7fr 1fr}
+.card{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(15,23,42,.08);padding:18px 22px}
+.point{background:var(--accent-l);border-left:7px solid var(--accent);padding:12px 18px;border-radius:10px;font-size:22px;line-height:1.55;margin-top:14px}
+.point.blue{background:var(--blue-l);border-left-color:var(--blue)}
+.hint{font-size:16px;color:var(--muted);margin-top:6px}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:30px;background:#fff;border-radius:12px;
+  padding:10px 20px;display:inline-block;box-shadow:0 3px 12px rgba(15,23,42,.08)}
+sub{font-size:.65em}
+.center{display:flex;justify-content:center;align-items:center}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+button.b{font:inherit;font-size:16px;padding:7px 16px;border-radius:999px;border:2px solid var(--blue);background:#fff;color:var(--blue);cursor:pointer;font-weight:700}
+button.b:hover{background:var(--blue-l)}
+button.b.playing{background:var(--blue);color:#fff}
+
+/* fragments & entrance animations */
+.frag{opacity:0;transform:translateY(18px);transition:opacity .45s ease,transform .45s ease}
+.frag.vis{opacity:1;transform:none}
+.slide.active .pop{animation:pop .6s cubic-bezier(.2,.8,.3,1.2) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+
+/* ---------- truth tables ---------- */
+.ttcap{text-align:center;font-size:18px;font-weight:800;color:#334155;margin:0 0 6px}
+.bitex{display:flex;gap:10px;margin:6px 0 4px;flex-wrap:wrap}
+.bitex span{background:#fff;border-radius:10px;padding:4px 12px;font-size:18px;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+.bitex small{display:block;font-size:12px;color:var(--muted)}
+.bitex b{color:var(--accent-d);font-family:Consolas,Menlo,monospace}
+.quote{display:block;background:#fff;border-left:6px solid var(--blue);border-radius:8px;padding:6px 14px;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+.quote small{display:block;text-align:right;font-size:15px;color:var(--muted)}
+.mapline{text-align:center;font-size:20px;margin-top:4px;font-family:Consolas,Menlo,monospace}
+.mapline b{color:var(--blue);font-size:24px}
+.mapline b.o{color:var(--accent-d)}
+table.tt{border-collapse:collapse;font-size:22px;text-align:center;background:#fff;border-radius:12px;overflow:hidden;
+  box-shadow:0 4px 16px rgba(15,23,42,.08);margin:0 auto}
+table.tt th,table.tt td{padding:6px 16px;border:1px solid var(--line)}
+table.tt th{background:#e2e8f0;font-size:18px;white-space:nowrap}
+table.tt th.out{background:#fde7d3}
+table.tt td.calc{font-family:Consolas,Menlo,monospace;color:var(--muted);font-size:19px}
+table.tt td.out.one{color:var(--accent-d);font-weight:800}
+table.tt tbody tr{cursor:pointer;transition:background .2s}
+table.tt tbody tr:hover td{background:#f8fafc}
+table.tt tbody tr.cur td{box-shadow:inset 0 0 0 999px rgba(250,204,21,.38)}
+table.tt.small{font-size:18px}
+.point.logic{display:flex;align-items:center;gap:14px}
+.venn{width:112px;flex:none}
+table.tt.small th,table.tt.small td{padding:3px 12px}
+table.tt.small th{font-size:15px}
+table.tt td{transition:background .3s,color .3s}
+.slide.show-s table.tt td.s1{background:var(--blue-l);color:var(--blue);font-weight:800}
+.slide.show-c table.tt td.c1{background:#fed7aa;color:var(--accent-d);font-weight:800}
+
+/* ---------- circuits (SVG) ---------- */
+svg.circ{width:100%;height:auto;display:block;user-select:none}
+.wire{fill:none;stroke:var(--off);stroke-width:4;stroke-linejoin:round;stroke-linecap:round;transition:stroke .25s}
+.wire.on{stroke:var(--accent)}
+.flow{fill:none;stroke:#fff;stroke-width:2.2;stroke-dasharray:4 12;stroke-linecap:round;opacity:0;transition:opacity .25s}
+.flow.on{opacity:.95;animation:flow .55s linear infinite}
+@keyframes flow{from{stroke-dashoffset:16}to{stroke-dashoffset:0}}
+.dot{fill:var(--off);transition:fill .25s}
+.dot.on{fill:var(--accent)}
+.gate path,.gate circle{fill:#fff;stroke:#1e293b;stroke-width:3;transition:fill .3s,stroke .3s}
+.gate path.xorback{fill:none}
+.gate.on path:not(.xorback),.gate.on circle{fill:var(--accent-l);stroke:var(--accent-d)}
+.gate.on path.xorback{stroke:var(--accent-d)}
+.gate.on{filter:drop-shadow(0 0 6px rgba(249,115,22,.55))}
+.glabel{font-size:11px;fill:var(--muted);text-anchor:middle;font-weight:700;pointer-events:none}
+.inp{cursor:pointer}
+.inp circle{fill:#fff;stroke:var(--blue);stroke-width:3;transition:fill .2s}
+.inp:hover circle{fill:var(--blue-l)}
+.inp.on circle{fill:var(--blue);stroke:var(--blue)}
+.inp .val{fill:var(--blue)}
+.inp.on .val{fill:#fff}
+.val{font-size:19px;font-weight:800;text-anchor:middle;pointer-events:none;font-family:Consolas,Menlo,monospace}
+.lbl{font-size:20px;font-weight:700;fill:var(--ink)}
+.lamp circle{fill:#f1f5f9;stroke:#475569;stroke-width:3;transition:fill .3s,stroke .3s}
+.lamp .val{fill:#475569}
+.lamp.on circle{fill:#facc15;stroke:var(--accent-d);filter:drop-shadow(0 0 10px rgba(250,204,21,.9))}
+.lamp.on .val{fill:#7c2d12}
+.probe{font-size:15px;font-weight:700;fill:var(--muted);font-family:Consolas,Menlo,monospace;transition:fill .3s}
+.probe.on{fill:var(--accent-d)}
+.habox{fill:rgba(37,99,235,.05);stroke:var(--blue);stroke-width:2;stroke-dasharray:7 6}
+.halbl{font-size:15px;font-weight:700;fill:var(--blue)}
+
+/* ripple adder */
+.fa rect{fill:#fff;stroke:#1e293b;stroke-width:3;transition:fill .3s,stroke .3s}
+.fa.active rect{fill:#fef3c7;stroke:var(--accent);filter:drop-shadow(0 0 12px rgba(249,115,22,.7))}
+.fa.done rect{fill:#f8fafc}
+.fa .t1{font-size:22px;font-weight:800;text-anchor:middle}
+.fa .t2{font-size:18px;text-anchor:middle;fill:var(--muted);font-family:Consolas,Menlo,monospace}
+.fa .t3{font-size:20px;text-anchor:middle;fill:var(--accent-d);font-weight:800;font-family:Consolas,Menlo,monospace}
+.wait .val{fill:#94a3b8}
+.wire.wait{stroke:#cbd5e1;stroke-dasharray:6 6}
+.readout{font-size:26px;text-align:center;margin-top:6px;font-family:Consolas,Menlo,monospace}
+.readout .eq{color:var(--accent-d);font-weight:800}
+
+/* column addition */
+.ca-grid{display:grid;grid-template-columns:110px repeat(5,72px);gap:6px 6px;justify-content:center;font-family:Consolas,Menlo,monospace}
+.ca-grid div{height:64px;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;border-radius:10px;transition:background .3s}
+.ca-grid .rl{font-size:18px;font-family:inherit;color:var(--muted);justify-content:flex-end;padding-right:10px;font-weight:700}
+.ca-grid .carry{font-size:26px;color:var(--accent);height:44px}
+.ca-grid .carry span,.ca-grid .sum span{opacity:0;transform:translateY(-20px);transition:all .5s cubic-bezier(.2,.8,.3,1.3)}
+.ca-grid .carry.show span,.ca-grid .sum.show span{opacity:1;transform:none}
+.ca-grid .sum{color:var(--blue)}
+.ca-grid .hl{background:#fef3c7}
+.ca-grid .bar{grid-column:1/-1;height:4px;background:var(--ink);border-radius:2px}
+.ca-msg{min-height:80px;font-size:23px;margin-top:16px;line-height:1.5;text-align:center}
+
+/* bars */
+.barrow{display:grid;grid-template-columns:190px 1fr;align-items:center;gap:10px;margin:8px 0;font-size:18px}
+.bar-bg{background:#e2e8f0;border-radius:8px;height:30px;overflow:hidden}
+.bar-fill{height:100%;width:0;border-radius:8px;transition:width 1.2s cubic-bezier(.2,.8,.3,1);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#fff;font-weight:800}
+.slide.active .bar-fill{width:var(--w)}
+.bar-fill.o{background:var(--off)}
+.bar-fill.a{background:var(--accent)}
+
+/* bit tiles */
+.tiles{display:flex;gap:14px;justify-content:center;margin:6px 0 16px}
+.tile{background:#fff;border-radius:14px;padding:10px 18px;font-family:Consolas,Menlo,monospace;font-size:28px;box-shadow:0 4px 14px rgba(15,23,42,.08);text-align:center}
+.tile b{color:var(--accent-d)}
+.tile small{display:block;font-size:14px;color:var(--muted);font-family:inherit}
+.chips{display:inline-flex;gap:6px;vertical-align:middle}
+.chip{display:inline-block;width:34px;text-align:center;border-radius:6px;background:#fff;font-family:Consolas,monospace;font-weight:800;border:2px solid var(--line)}
+.chip.ng{border-color:#dc2626;color:#dc2626;background:#fee2e2}
+.chip.ok{border-color:var(--green);color:var(--green)}
+
+/* title */
+.title-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center;height:100%}
+.title-wrap h1{font-size:54px;line-height:1.25;margin:0 0 14px}
+.title-wrap .sub{font-size:30px;color:var(--accent-d);font-weight:700;margin-bottom:34px}
+.title-wrap .meta{font-size:20px;color:var(--muted);line-height:1.8}
+.agenda li{font-size:27px;margin:16px 0;list-style:none;display:flex;align-items:center;gap:16px}
+.agenda .num{width:46px;height:46px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.agenda .new{background:var(--accent)}
+.tag{font-size:15px;background:var(--accent);color:#fff;border-radius:999px;padding:2px 12px;font-weight:700}
+details{background:#fff;border-radius:12px;padding:10px 18px;margin:10px 0;box-shadow:0 3px 12px rgba(15,23,42,.06);font-size:22px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{color:var(--accent-d)}
+details div{margin-top:8px;line-height:1.6;color:#334155}
+
+/* ---------- UI ---------- */
+#ui{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;
+  color:#cbd5e1;font-size:14px;opacity:.25;transition:opacity .3s;z-index:10}
+#ui:hover{opacity:1}
+#ui button{background:#334155;color:#fff;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+#progress{position:fixed;left:0;bottom:0;height:4px;background:var(--accent);transition:width .4s;z-index:11}
+
+/* ---------- 一覧モード ---------- */
+#ovHead{display:none}
+body.overview{overflow:auto}
+body.overview #viewport{position:static;padding:64px 24px 60px}
+body.overview #ovHead{display:flex;position:fixed;left:0;right:0;top:0;height:52px;align-items:center;gap:16px;padding:0 24px;
+  background:#0f172a;color:#e2e8f0;font-size:16px;z-index:12}
+body.overview #ovHead b{font-size:18px}
+body.overview #ovHead b,body.overview #ovHead button{white-space:nowrap}
+@media (max-width:900px){body.overview #ovHead span{display:none}}
+body.overview #ovHead button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit;font-weight:700;margin-left:auto}
+body.overview #stage{position:static;transform:none!important;width:auto;height:auto;overflow:visible;background:none;box-shadow:none;
+  display:grid;grid-template-columns:repeat(var(--cols,4),var(--ow,256px));gap:22px}
+/* 縮小は zoom ではなく transform で行う（iPad の Safari は zoom の扱いが異なり、中身の位置がずれるため）。
+   transform は並べるときの大きさに影響しないので、負の余白で縮小後の大きさ（--ow × --oh）に合わせる */
+body.overview .slide{position:relative;inset:auto;width:1280px;height:720px;opacity:1;pointer-events:auto;
+  transform:scale(var(--z,.2));transform-origin:0 0;margin:0 calc(var(--ow,256px) - 1280px) calc(var(--oh,144px) - 720px) 0;
+  cursor:pointer;background:var(--bg);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);outline:0 solid var(--accent);transition:outline-width .15s}
+body.overview .slide *{pointer-events:none}
+body.overview .slide:hover{outline-width:14px}
+body.overview .slide.current{outline-width:22px}
+body.overview .frag{opacity:1;transform:none}
+body.overview .bar-fill{width:var(--w);transition:none}
+body.overview .slide{overflow:hidden}
+/* 一覧ではページ番号を右下の札にして、中身と重なっても読めるようにする */
+body.overview .slide .pageno{font-size:40px;font-weight:900;color:#fff;background:var(--ink);border-radius:16px;padding:2px 20px;bottom:14px;right:14px;z-index:6}
+body.overview #ui,body.overview #progress{display:none}
+
+/* ---------- ポップ調デザイン（太枠・ずらし影・弾むアニメ） ---------- */
+html,body{background:#2a2350}
+#stage{background:
+  radial-gradient(circle at 92% 8%,#ffd6e8 0 120px,transparent 121px),
+  radial-gradient(circle at 4% 96%,#d4f4ff 0 150px,transparent 151px),
+  radial-gradient(circle at 98% 92%,#fff0b3 0 70px,transparent 71px),
+  radial-gradient(#e9e2cf 1.4px,transparent 1.6px) 0 0/22px 22px,
+  var(--bg)}
+.slide{transition:opacity .45s ease,transform .6s cubic-bezier(.3,1.5,.5,1)}
+.slide::before{height:10px;background:repeating-linear-gradient(90deg,var(--accent) 0 80px,var(--yellow) 80px 160px,var(--pink) 160px 240px,var(--blue) 240px 320px)}
+.chap{font-weight:700;color:var(--pink);letter-spacing:.08em}
+h2{border-left:none;padding-left:54px;position:relative}
+h2::before{content:"";position:absolute;left:0;top:50%;width:34px;height:34px;margin-top:-17px;border-radius:10px;
+  background:linear-gradient(135deg,var(--yellow),var(--accent) 55%,var(--pink));border:3px solid var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink)}
+.slide.active h2::before{animation:wiggle 1s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes wiggle{from{transform:rotate(-120deg) scale(.3)}to{transform:rotate(-12deg)}}
+h2 small{white-space:nowrap;background:var(--accent-l);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:2px 14px;font-size:18px;font-weight:700;vertical-align:middle}
+b.k{color:var(--accent-d);background:linear-gradient(transparent 62%,#ffe58a 62%)}
+b.kb{color:var(--blue);background:linear-gradient(transparent 62%,#cfe0ff 62%)}
+.card{border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink)}
+.point{border:2.5px solid var(--ink);border-left:10px solid var(--accent);border-radius:16px;box-shadow:var(--hard)}
+.point.blue{border-left-color:var(--blue)}
+.formula{border:2.5px solid var(--ink);box-shadow:var(--hard)}
+button.b{border:2.5px solid var(--ink);background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+button.b:hover{background:#ffe06b;transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+button.b:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+button.b.playing{background:var(--pink);color:#fff}
+.slide.active .pop{animation:pop .7s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:translateY(30px) scale(.85) rotate(-2deg)}to{opacity:1;transform:none}}
+.frag{transform:translateY(18px) scale(.95);transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.6,.5,1)}
+
+.bitex span,.quote,.tile,details{border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+table.tt{border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-collapse:separate;border-spacing:0}
+table.tt th,table.tt td{border:0;border-right:1.5px solid #d9d4ea;border-bottom:1.5px solid #d9d4ea}
+table.tt th{background:#ece6ff;border-bottom:2.5px solid var(--ink)}
+table.tt th.out{background:#ffe1c7}
+table.tt tbody tr.cur td{box-shadow:inset 0 0 0 999px rgba(255,213,61,.55)}
+
+.wire{stroke-width:5}
+.gate path,.gate circle{stroke:var(--ink);stroke-width:3.5}
+.gate.on path:not(.xorback),.gate.on circle{fill:#ffe1c7;stroke:var(--ink)}
+.gate.on path.xorback{stroke:var(--ink)}
+.gate.on{filter:drop-shadow(3px 3px 0 var(--accent))}
+.inp circle{stroke-width:3.5}
+.inp.on circle{stroke:var(--ink)}
+.lamp circle{stroke:var(--ink)}
+.lamp.on circle{fill:var(--yellow);stroke:var(--ink);filter:drop-shadow(0 0 12px rgba(255,213,61,.95))}
+.fa rect{stroke:var(--ink);rx:16}
+.fa.active rect{fill:#fff1c2;stroke:var(--ink);filter:drop-shadow(4px 4px 0 var(--accent))}
+.ca-grid .hl{background:#fff1c2;border:2px dashed var(--accent)}
+.bar-bg{background:#ece6ff;border:2px solid var(--ink)}
+.bar-fill.a{background:linear-gradient(90deg,var(--accent),var(--pink))}
+
+.title-wrap h1{font-size:64px;background:linear-gradient(transparent 70%,#ffe58a 70%) no-repeat;display:inline;line-height:1.3;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.title-wrap .sub{color:var(--pink);margin-top:18px;margin-bottom:22px;font-size:23px;white-space:nowrap}
+.tchaps{display:flex;flex-direction:column;gap:12px}
+.tchap{display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 var(--ink);padding:6px 14px 6px 6px}
+.tchap .tno{background:var(--c);color:#fff;font-weight:900;border:2px solid var(--ink);border-radius:10px;padding:2px 10px;font-size:18px;flex:none}
+.tchap .tname{font-weight:900;font-size:21px}
+.tchap .tsec{margin-left:auto;font-size:14px;color:var(--muted);font-weight:700;white-space:nowrap}
+.agenda .num{border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--blue)}
+.agenda li:nth-child(3) .num{background:var(--pink)}
+.agenda li:nth-child(4) .num{background:var(--green)}
+.agenda li:nth-child(6) .num{background:var(--purple)}
+.agenda li:nth-child(7) .num{background:var(--accent)}
+.agenda .new{background:var(--accent)}
+.tag{background:var(--pink);border:2px solid var(--ink);white-space:nowrap;flex:none}
+
+/* 量子ビット（第4章）の数式・図 */
+.math,.vec,.frac{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.eq{display:flex;align-items:center;justify-content:center;gap:8px;font-size:26px;flex-wrap:wrap}
+.eq.inline{display:inline-flex;font-size:inherit;vertical-align:middle;gap:5px}
+.vec{display:inline-grid;text-align:center;padding:1px 10px;border-left:3px solid currentColor;border-right:3px solid currentColor;border-radius:14px;line-height:1.25}
+.vec.row{grid-auto-flow:column;column-gap:14px}
+.eq.inline .vec{line-height:1.05;padding:0 7px;border-width:2px;border-radius:10px;font-size:.85em}
+.frac{display:inline-grid;text-align:center;line-height:1.1;font-size:.85em;vertical-align:middle}
+.frac>span:first-child{border-bottom:2px solid currentColor;padding:0 2px}
+.brace{font-size:2.3em;font-weight:200;line-height:1;transform:scaleX(.7)}
+.bar{width:2px;align-self:stretch;background:currentColor;margin:6px 2px}
+.defbox{position:relative;background:#fff;border:3px solid var(--ink);border-radius:16px;box-shadow:var(--hard);padding:16px 18px 12px;margin-top:18px;font-size:20px;line-height:1.7}
+.defbox::before{content:"定義";position:absolute;left:14px;top:-16px;background:var(--ink);color:#fff;font-weight:800;font-size:15px;border-radius:999px;padding:2px 14px}
+.qrow{display:flex;align-items:center;gap:16px}
+.qlab{width:110px;flex:none;font-weight:800;font-size:19px}
+.qcells{display:flex;gap:26px;align-items:center}
+.qbit{width:56px;height:56px;border:3px solid var(--ink);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;font-family:Consolas,Menlo,monospace;box-shadow:3px 3px 0 var(--ink);background:#fff}
+.qarrow{margin:14px 0 14px 126px;color:var(--muted);font-weight:700}
+.qverdict{margin-top:12px;text-align:center;font-size:24px;font-weight:900;padding:6px;border-radius:12px;border:2.5px solid var(--ink)}
+.qverdict.ok{background:#d9f7e6;color:var(--green)}
+.qverdict.ng{background:#ffe0e6;color:#d61f45}
+
+/* 目次の教科書の章見出し */
+.agenda li.agroup{font-size:17px;font-weight:900;color:var(--pink);letter-spacing:.06em;margin:14px 0 -4px;border-bottom:2.5px dashed #e3dcf2;padding-bottom:4px}
+.agenda li.agroup:first-child{margin-top:0}
+
+/* 教科書の章の扉（本の章扉風） */
+.partdoor .pd-wrap{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:40px}
+.pd-src{font-size:18px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+.pd-no{margin-top:14px;font-size:30px;font-weight:900;color:#fff;background:var(--c);border:3px solid var(--ink);border-radius:999px;padding:4px 26px;box-shadow:4px 4px 0 var(--ink);letter-spacing:.12em}
+.pd-title{font-size:68px;line-height:1.25;margin:22px 0 26px;background:linear-gradient(transparent 70%,#ffe58a 70%);display:inline;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.pd-secs{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:22px}
+.pd-secs span{background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 18px;font-size:19px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+.pd-secs span.add{background:var(--accent-l)}
+.pd-bg{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;color:var(--c);opacity:.13;font-size:84px;pointer-events:none}
+.pd-bg .eq{font-size:50px;gap:14px}
+.pd-bg .vec{border-width:5px;border-radius:40px;padding:4px 26px;line-height:1.15}
+
+/* 量子状態をつくってみる（ベクトルの足し算） */
+.qbuild{display:grid;grid-template-columns:1fr 200px;gap:10px;align-items:center}
+.qbuild svg{width:100%;height:auto;display:block;user-select:none}
+.qb-side{display:flex;flex-direction:column;gap:10px}
+.qb-side button.b{width:100%}
+.qslider{display:grid;grid-template-columns:22px 1fr 52px;align-items:center;gap:6px;font-weight:800}
+.qslider .qs-name{font-family:"Cambria Math","Times New Roman",serif;font-size:24px;font-style:italic}
+.qslider .qs-name.la{color:#e04e00}
+.qslider .qs-name.lb{color:var(--blue)}
+.qslider .qs-val{font-family:Consolas,Menlo,monospace;font-size:17px;text-align:right}
+.qslider input{width:100%;accent-color:var(--ink);height:28px;touch-action:none}
+.qb-eq{font-size:22px;margin-top:4px}
+.qb-eq .na{color:#e04e00;font-weight:700}
+.qb-eq .nb{color:var(--blue);font-weight:700}
+.qb-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px}
+.qb-sum{font-size:21px}
+.qb-row .qverdict{margin-top:0;font-size:17px;padding:3px 10px;white-space:nowrap;flex:none;width:200px;box-sizing:border-box}
+.qb-row .pgauge{flex:1;margin:0 0 14px}
+/* 確率のゲージ：太枠の箱がちょうど「確率 1」。足りない分は灰色の斜線、はみ出した分は赤の斜線 */
+.pgauge{position:relative;height:28px}
+.pg-box{position:absolute;left:0;top:0;bottom:0;width:60%;border:3px solid var(--ink);border-radius:8px;box-shadow:3px 3px 0 var(--ink);background:#fff;z-index:0}
+.pg-seg,.pg-gap,.pg-over{position:absolute;top:3px;bottom:3px;z-index:1;transition:left .3s,width .3s}
+.pg-seg.a{background:var(--accent);border-radius:5px 0 0 5px}
+.pg-seg.b{background:var(--blue)}
+.pg-gap{background:repeating-linear-gradient(45deg,#cfc7e6 0 5px,transparent 5px 10px)}
+.pg-over{top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(214,31,69,.75) 0 5px,rgba(214,31,69,.15) 5px 10px);
+  border:2.5px dashed #d61f45;border-left:0;border-radius:0 8px 8px 0;z-index:2}
+.pg-tick{position:absolute;top:100%;margin-top:3px;transform:translateX(-50%);font:800 13px Consolas,Menlo,monospace;color:var(--ink)}
+.pgauge.instant .pg-seg,.pgauge.instant .pg-gap,.pgauge.instant .pg-over{transition:none}
+.qb-sum{font-size:18px;font-weight:700}
+
+/* XOR ＝ 2進数の足し算の 1 桁目 */
+.b1row{display:flex;gap:10px;margin-top:8px}
+.b1c{flex:1;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:4px 6px;text-align:center;font-family:Consolas,Menlo,monospace;font-size:17px;white-space:nowrap}
+.b1e{color:var(--muted);margin-right:4px}
+.b1r{font-weight:900;font-size:20px;letter-spacing:2px}
+.b1hi{color:#b9b5d0}
+.b1lo{color:#fff;background:var(--accent);border-radius:5px;padding:0 4px}
+.b1leg{margin-top:6px;font-size:14px;color:var(--muted);font-weight:700}
+.b1leg .b1lo,.b1leg .b1hi{background:none;padding:0}
+.b1leg .b1lo{color:var(--accent)}
+
+/* 測定（3.3） */
+.mworld{display:flex;align-items:center;gap:12px}
+.mw-lab{width:128px;flex:none;font-weight:900;font-size:15px;text-align:center;line-height:1.3;white-space:nowrap}
+.mw-box{flex:1;display:flex;align-items:center;justify-content:space-around;border:2.5px solid var(--ink);border-radius:14px;min-height:74px;padding:8px;background:#f1ecff}
+.mw-box.mw-q{flex-direction:column;gap:4px;padding:6px 8px}
+.mw-state{font-size:20px}
+.mw-kets{display:flex;justify-content:space-around;width:100%}
+.mworld.c .mw-box{background:#fff8e6;justify-content:center;gap:22px}
+.mket{display:inline-flex;align-items:center;justify-content:center;width:76px;height:50px;border:2.5px solid var(--ink);border-radius:50%;
+  font-family:"Cambria Math","Times New Roman",serif;font-size:24px;background:#fff;flex:none}
+.mworld.q .mket{background:#e3d9ff;animation:mwob 1.6s ease-in-out infinite}
+.mworld.q .m1{animation-delay:.8s}
+@keyframes mwob{50%{transform:scale(1.08);box-shadow:0 0 14px rgba(138,92,255,.6)}}
+.mres.r0{background:var(--accent);color:#fff}
+.mres.r1{background:var(--blue);color:#fff}
+.mres.hit{animation:mhit .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes mhit{from{transform:scale(.3)}to{transform:none}}
+.mw-note{font-size:14px;color:var(--muted);font-weight:700;line-height:1.4}
+.mdrop{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0;border-top:2.5px dashed #b9b5d0;padding-top:6px}
+.marrow{font-size:24px}
+.marrow.go{animation:mgo .45s ease}
+@keyframes mgo{from{transform:translateY(-16px);opacity:.2}}
+.mtag{border:2px solid var(--ink);border-radius:8px;padding:0 10px;font-weight:900;background:#fff}
+.mhist{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;min-height:28px;margin-top:8px}
+.mhist span{font-family:"Cambria Math","Times New Roman",serif;font-size:15px;border-radius:8px;padding:1px 7px;color:#fff;font-weight:700}
+.mhist .h0{background:var(--accent)}
+.mhist .h1{background:var(--blue)}
+
+/* ブロッホ球 */
+.bpresets{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.bpresets button{font:700 16px "Cambria Math","Times New Roman",serif;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:10px;
+  padding:3px 0;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.bpresets button:hover{background:var(--accent-l)}
+.bformula{font-size:19px;margin-top:2px;min-height:34px}
+
+/* 復習問題：カードをクリックすると答えが出る */
+.quiz{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px 16px;align-content:center}
+.qz{display:flex;flex-direction:column;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:10px 14px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.qz:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.qz-q{display:flex;gap:10px;align-items:flex-start;font-size:17px;line-height:1.5;font-weight:600}
+.qz-no{flex:none;background:var(--blue);color:#fff;font-weight:900;font-size:14px;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;margin-top:2px}
+.qz-a{margin-top:auto;padding-top:8px;min-height:40px;display:flex;align-items:center;border-top:2px dashed #e3dcf2;font-size:17px;line-height:1.5}
+.qz-hide{color:var(--muted);font-weight:800;font-size:15px}
+.qz-ans{display:none;color:#1f1a3d}
+.qz.open{background:#fffaf0}
+.qz.open .qz-no{background:var(--green)}
+.qz.open .qz-hide{display:none}
+.qz.open .qz-ans{display:inline;animation:qzIn .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes qzIn{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+.quiz.q2{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:auto}
+.quiz.q2 .qz{grid-column:span 2}
+.quiz.q2 .qz.dia{grid-column:span 3}
+.quiz.q2 .qz.wide .qzc{max-height:200px}
+.quiz.q2 .qz-q{font-size:16px}
+.quiz.q2 .qz-a{font-size:15.5px;min-height:34px}
+.qz-q > span:last-child{min-width:0;flex:1}
+.qzc{display:block;width:100%;max-height:170px;margin:6px auto 0;font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+.qzc .qg{fill:#f1ecff;stroke:#1f1a3d;stroke-width:2.5;stroke-dasharray:6 4}
+.qzc .g-q{font-size:26px;font-weight:900;fill:#8a5cff}
+.qzc .g-ans{display:none;font-weight:900;fill:#1f1a3d}
+.qz.open .qzc .qg{fill:#fff1c2;stroke-dasharray:none}
+.qz.open .qzc .g-q{display:none}
+.qz.open .qzc .g-ans{display:inline}
+.quiz.q3{grid-auto-rows:auto}
+.quiz.q3 .qz{min-height:118px}
+.quiz.q3 .qz:last-child{grid-column:span 2}
+.qzc.qzbloch{max-height:145px}
+.qgb{cursor:pointer}
+.qgb:hover .qg{fill:#e6dcff}
+.qgb.shown .qg{fill:#fff1c2;stroke-dasharray:none}
+.qgb.shown .g-q{display:none}
+.qgb.shown .g-ans{display:inline;animation:qzIn .35s cubic-bezier(.3,1.6,.5,1)}
+h2 .qz-all{font-size:14px;padding:4px 14px;margin-left:16px;vertical-align:middle}
+
+/* 章の扉スライド */
+.door-wrap{position:relative;display:grid;grid-template-columns:auto 1fr;gap:64px;align-items:center;height:100%;padding:0 40px}
+.door-num{width:210px;height:210px;border-radius:46px;background:var(--c);color:#fff;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:140px;font-weight:900;font-family:Consolas,Menlo,monospace;transform:rotate(-6deg)}
+.slide.active .door-num{animation:doorIn .9s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes doorIn{from{opacity:0;transform:rotate(-120deg) scale(.3)}to{opacity:1;transform:rotate(-6deg)}}
+.door-label{font-size:22px;font-weight:900;letter-spacing:.14em;color:var(--c)}
+.door-label .door-book{display:block;font-size:16px;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.door-label .tag{font-size:15px;letter-spacing:0;vertical-align:middle;margin-left:8px}
+.door h1{font-size:80px;line-height:1.15;margin:6px 0 4px}
+.door-lead{font-size:32px;font-weight:700;color:var(--muted);margin:0 0 30px}
+.door-topics{display:flex;flex-wrap:wrap;gap:12px}
+.door-topics span{background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 18px;font-size:19px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+.door-bg{position:absolute;right:-20px;bottom:-150px;font-size:600px;font-weight:900;line-height:1;color:var(--c);opacity:.09;
+  font-family:Consolas,Menlo,monospace;pointer-events:none}
+#progress{height:6px;background:linear-gradient(90deg,var(--accent),var(--pink),var(--blue))}
+
+/* ---------- レーザーポインター（Apple Pencil） ---------- */
+#stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body:not(.overview) #stage{touch-action:none}
+#laser{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;z-index:5}
+body.overview #laser{display:none}
+/* 黒ペン（Apple Pencil で書き込み） */
+#ink{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;z-index:4}
+#penbar{position:fixed;right:12px;top:14px;z-index:20;display:flex;align-items:center;gap:4px;background:#fff;border:2.5px solid var(--ink);
+  border-radius:999px;box-shadow:3px 3px 0 var(--ink);padding:4px;touch-action:manipulation;opacity:.85}
+#penbar:hover{opacity:1}
+#penbar button{height:38px;min-width:38px;border-radius:999px;border:2px solid transparent;background:none;font:inherit;font-size:14px;font-weight:800;
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px}
+#penbar button.on{background:var(--accent-l);border-color:var(--ink)}
+#penbar .sep{width:2px;height:24px;background:#e3dcf2;border-radius:1px}
+body.overview #ink,body.overview #penbar{display:none}
+
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{overflow:visible;background:#fff}
+  #viewport{position:static}
+  #stage{position:static;transform:none!important;box-shadow:none;width:auto;height:auto;overflow:visible;background:none}
+  .slide{position:relative;width:1280px;height:720px;opacity:1;transform:none;page-break-after:always;background:var(--bg)}
+  .frag{opacity:1;transform:none}
+  #ui,#progress,.btns,.hint,#laser,#penbar{display:none}
+}
+
+/* ---------- 3.3（続き）〜 3.4.3 で追加した部品 ---------- */
+svg.plane{display:block;width:100%;user-select:none}
+.defbox.rv::before{content:"前回の復習";background:var(--accent)}
+.vec.m2{grid-template-columns:repeat(2,auto);column-gap:12px}
+.hl{background:#ffe58a;border-radius:6px;padding:0 3px}
+
+/* 選択ボタン */
+.picker{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.picker .pk-l{font-weight:800;font-size:15px;color:var(--muted);margin-right:2px;font-family:"Cambria Math","Times New Roman",serif}
+.picker button{font:700 16px "Cambria Math","Times New Roman",serif;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:10px;
+  padding:3px 11px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.picker button:hover{background:var(--accent-l)}
+.picker button.on{background:var(--yellow)}
+.picker button.bad{color:#d61f45}
+.picker button.bad.on{background:#ffe0e6}
+
+/* 確率・回数の横棒 */
+.hbars{margin:6px 0}
+.hb{display:grid;grid-template-columns:44px 1fr 118px;align-items:center;gap:8px;margin:7px 0}
+.hb-l{font-size:20px;font-weight:700;text-align:center}
+.hb-t{position:relative;height:28px;background:#ece6ff;border:2.5px solid var(--ink);border-radius:8px}
+.hb-f{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:5px;transition:width .45s cubic-bezier(.2,.8,.3,1)}
+.hb-f.a{background:var(--accent)}
+.hb-f.b{background:var(--blue)}
+.hb-mk{display:none;position:absolute;top:-7px;bottom:-7px;width:0;border-left:3px dotted var(--ink)}
+.hb-v{font:800 15px Consolas,Menlo,monospace;text-align:right;white-space:nowrap}
+.hbars.mini .hb{grid-template-columns:34px 1fr 54px;gap:5px;margin:4px 0}
+.hbars.mini .hb-l{font-size:16px}
+.hbars.mini .hb-t{height:20px}
+.hbars.mini .hb-v{font-size:13px}
+
+/* 10回測定 */
+.m01-state{font-size:21px;margin:10px 0 2px;min-height:40px}
+.shots{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:10px 0 8px}
+.shot{height:38px;border:2.5px dashed #c9c1e3;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font:700 16px "Cambria Math","Times New Roman",serif;color:#fff}
+.shot.r0{background:var(--accent);border:2.5px solid var(--ink);animation:mhit .4s cubic-bezier(.3,1.6,.5,1)}
+.shot.r1{background:var(--blue);border:2.5px solid var(--ink);animation:mhit .4s cubic-bezier(.3,1.6,.5,1)}
+.qverdict.pp{background:#efe7ff;color:var(--purple)}
+.qverdict.wait{background:#fff;color:var(--muted);border-style:dashed}
+
+/* 測定の計算 */
+.mcalc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:18px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;
+  box-shadow:3px 3px 0 var(--ink);padding:6px 12px;margin:8px 0}
+.mcalc .eq.inline{font-size:21px}
+.mc-k{font-family:"Cambria Math","Times New Roman",serif;font-weight:700;color:#fff;border:2px solid var(--ink);border-radius:999px;padding:0 10px;font-size:19px}
+.mc-k.a{background:var(--accent)}
+.mc-k.b{background:var(--blue)}
+.mc-after{margin-left:auto;font-size:15px;font-weight:800;color:var(--muted)}
+.ps-total{text-align:center;font-size:18px;font-weight:800;margin-top:4px}
+.ps-total b{font-family:Consolas,Menlo,monospace;color:var(--pink);font-size:22px}
+.mr-row{display:flex;align-items:center;gap:14px;justify-content:center;margin-top:2px}
+.mr-eq{font-size:18px;line-height:1.5;min-height:54px;display:flex;align-items:center}
+.mr-eq .eq{font-size:18px}
+
+/* ベクトルは違うのに… */
+table.tt.static tbody tr{cursor:default}
+table.tt.static tbody tr:hover td{background:none}
+table.tt.small td .eq.inline .vec{font-size:15px}
+.sm-mode{text-align:center;font-weight:900;font-size:16px;margin:0 0 2px;min-height:24px}
+.sm-hists{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sm-cap{font-size:14px;font-weight:900;text-align:center;font-family:"Cambria Math","Times New Roman",serif}
+
+/* 古典ゲートと量子ゲート */
+.pipe-row{display:grid;grid-template-columns:62px 1fr;align-items:center;gap:10px;margin:14px 0 22px}
+.pipe-lab{font-weight:900;font-size:16px;text-align:center;line-height:1.3;color:var(--accent-d)}
+.pipe-row.q .pipe-lab{color:var(--purple)}
+.pipe{display:flex;align-items:center}
+.tok{min-width:84px;height:58px;padding:0 10px;border:3px solid var(--ink);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;
+  font:800 26px Consolas,Menlo,monospace;box-shadow:3px 3px 0 var(--ink);white-space:nowrap;transition:opacity .35s,transform .45s cubic-bezier(.3,1.6,.5,1)}
+.tok.q{font:400 22px "Cambria Math","Times New Roman",serif;border-radius:999px;background:#e3d9ff}
+.tok.hid{opacity:0;transform:scale(.5)}
+.pwire{flex:1;min-width:18px;height:6px;background:var(--off);border-radius:3px}
+.pwire.on{background:repeating-linear-gradient(90deg,var(--accent) 0 12px,#ffc08f 12px 20px);background-size:20px 100%;animation:pw .45s linear infinite}
+.pipe-row.q .pwire.on{background:repeating-linear-gradient(90deg,var(--purple) 0 12px,#c9b3ff 12px 20px);background-size:20px 100%}
+@keyframes pw{to{background-position:20px 0}}
+.gbox{flex:none;width:86px;height:86px;border:3.5px solid var(--ink);border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:24px;box-shadow:4px 4px 0 var(--ink);transition:background .3s,transform .3s cubic-bezier(.3,1.6,.5,1)}
+.gbox.q{font:700 34px "Cambria Math","Times New Roman",serif}
+.gbox.on{background:#ffe1c7;transform:scale(1.1) rotate(-3deg)}
+.gbox.q.on{background:#e3d9ff}
+.pipe-note{text-align:center;font-size:17px;font-weight:700;min-height:54px;background:#fffaf0;border:2.5px dashed #d9d4ea;border-radius:12px;padding:6px 10px;line-height:1.5}
+
+/* ユニタリ発展 */
+.u-main{display:grid;grid-template-columns:236px 1fr;align-items:center;gap:6px;margin-top:4px}
+.u-eqs .eq{font-size:19px;justify-content:flex-start;gap:5px}
+.u-eqs .u-res{margin-top:10px;font-size:18px}
+.u-check{font-size:16px;text-align:center;background:#d9f7e6;border:2.5px solid var(--ink);border-radius:12px;padding:3px 10px;font-weight:700}
+.u-check .eq{font-size:16px}
+.na{color:#e04e00;font-weight:700}
+.nb{color:var(--blue);font-weight:700}
+
+/* 巨大な行列 */
+.hz-sl{grid-template-columns:150px 1fr 40px;font-size:17px}
+.hz-main{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:center;margin-top:8px}
+#hzCanvas{width:180px;height:180px;border:3px solid var(--ink);border-radius:10px;box-shadow:4px 4px 0 var(--ink);background:#fff}
+.hz-stats div{margin:4px 0}
+.hz-stats small{display:block;font-size:13px;color:var(--muted);font-weight:700}
+.hz-stats b{font:800 20px Consolas,Menlo,monospace}
+.hz-tag{display:inline-block;margin-top:4px!important;font-weight:900;font-size:16px;border:2.5px solid var(--ink);border-radius:999px;padding:2px 14px;background:var(--accent-l)}
+.hz-bar{height:18px;border:2.5px solid var(--ink);border-radius:8px;background:#ece6ff;margin-top:12px;overflow:hidden}
+.hz-bar div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--yellow),var(--accent),#d61f45);transition:width .3s}
+
+/* 3.4.1 */
+.pf{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:8px;font-family:"Cambria Math","Times New Roman",serif;font-size:21px;padding:4px 0;border-bottom:1.5px dashed #e3dcf2}
+.pf:last-child{border-bottom:0}
+.pf-n{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;font-size:13px;font-weight:800;color:#fff;background:var(--purple);border-radius:999px;padding:1px 10px;white-space:nowrap}
+.kp-main{display:grid;grid-template-columns:220px 1fr;align-items:center;gap:6px;margin-top:4px}
+.kp-eq{font-size:17px;justify-content:flex-start;gap:4px}
+.kp-dag{font-size:15px;justify-content:flex-start;gap:4px;margin-top:10px}
+.kp-sum{text-align:center;font-size:15px;font-weight:700;margin:4px 0 2px}
+
+/* 3.4.2 */
+.sk-out{text-align:center;font-size:17px;font-weight:800;min-height:26px;margin-bottom:2px}
+.sk-out b{font-family:Consolas,Menlo,monospace}
+
+/* 3.4.3 */
+.rv-chain{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-items:center;min-height:36px;font-family:"Cambria Math","Times New Roman",serif;font-size:19px}
+.rv-chain .gch{background:#e3d9ff;border:2px solid var(--ink);border-radius:8px;padding:0 8px;animation:mhit .4s cubic-bezier(.3,1.6,.5,1)}
+.rv-msg{text-align:center;font-weight:900;font-size:17px;min-height:28px;margin:2px 0}
+.rv-msg.ok{color:var(--green)}
+.rv-msg.go{color:var(--purple)}
+
+/* AND */
+#tAnd{margin-top:2px}
+#tAnd tbody tr.rv td{box-shadow:inset 0 0 0 999px rgba(255,79,154,.22)}
+.and-msg{text-align:center;font-weight:800;font-size:17px;min-height:28px;margin-top:6px}
+
+/* まとめ */
+.sumgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:16px 18px;align-content:center}
+.sm{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink);padding:12px 16px;border-top:10px solid var(--c)}
+.sm .smn{display:inline-block;background:var(--c);color:#fff;font-weight:900;font-size:14px;border:2px solid var(--ink);border-radius:999px;padding:0 10px;margin-bottom:6px}
+.sm b{display:block;font-size:23px;line-height:1.4}
+.sm p{font-size:19px;line-height:1.6;margin:8px 0 0;color:#3b3560}
+.quiz .qz-q{font-size:20px}
+.quiz .qz-a{font-size:19px}
+.pop2{animation:mhit .45s cubic-bezier(.3,1.6,.5,1)}
+
+</style>
+</head>
+<body>
+<div id="ovHead"><b>スライド一覧</b><span>クリックでそのスライドへ ／ ← → で選択、Enter で開く、O / Esc で戻る</span><button id="btnOvClose">一覧を閉じる</button></div>
+<div id="viewport"><div id="stage">
+
+
+<!-- 1. タイトル -->
+<section class="slide" data-id="title">
+  <div class="title-wrap">
+    <div>
+      <div class="chap pop">『量子コンピュータの頭の中』 ゼミ資料</div>
+      <h1 class="pop" style="--d:.1s">測定から<br>量子ゲートへ</h1>
+      <div class="sub pop" style="--d:.2s">― 測定の続き・ユニタリ発展・可逆性 ―</div>
+      <div class="tchaps">
+        <div class="tchap pop" style="--d:.3s;--c:var(--accent)"><span class="tno">3.3</span><span class="tname">計算結果を得る「測定」（続き）</span><span class="tsec">p.91</span></div>
+        <div class="tchap pop" style="--d:.4s;--c:var(--purple)"><span class="tno">3.4</span><span class="tname">ビットの状態を変化させる「量子ゲート」</span><span class="tsec">3.4〜3.4.3（pp.91–93）</span></div>
+      </div>
+    </div>
+    <div class="card pop" style="--d:.4s">
+      <svg class="plane" id="titlePlane" style="height:330px"></svg>
+      <div class="hint" style="text-align:center">量子ゲートは量子状態を動かす。でも <b>円の上からは外れない</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 本日の流れ -->
+<section class="slide">
+  <div class="chap">Agenda</div>
+  <h2>本日の流れ</h2>
+  <div class="body cols" style="grid-template-columns:1.5fr 1fr">
+    <ul class="agenda">
+      <li class="agroup pop">第3章 量子コンピュータの基本ルール</li>
+      <li class="pop" style="--d:.05s"><span class="num">1</span>測定（続き）：|0⟩・|1⟩ の測定と |ψ⟩ の測定</li>
+      <li class="pop" style="--d:.15s"><span class="num">2</span>量子ゲート：ユニタリ発展で状態を変える</li>
+      <li class="pop" style="--d:.25s"><span class="num">3</span>ユニタリ発展の性質：量子状態のまま・実装可能・可逆</li>
+      <li class="pop" style="--d:.35s"><span class="num">4</span>まとめ と 復習問題</li>
+    </ul>
+    <div class="card pop" style="--d:.5s">
+      <p style="margin:0 0 8px;font-weight:700">このスライドの使い方</p>
+      <ul>
+        <li style="font-size:19px"><b class="kb">黄色いボタン</b> で測定やゲートを実際に試せます（スライドを開くと自動再生）</li>
+        <li style="font-size:19px">矢印は量子状態のベクトル。<b class="k">点線の円 = 量子状態でいられる場所</b></li>
+        <li style="font-size:19px">← → キー / スペースでページ送り、F キーで全画面、O キーで一覧</li>
+        <li style="font-size:19px">右上のペンで書き込み・レーザーポインター</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 教科書 第3章の扉 -->
+<section class="slide partdoor" style="--c:var(--purple)">
+  <div class="pd-bg"><span class="eq"><span class="math">|φ⟩ =</span><span class="vec"><span>a</span><span>b</span></span><span class="math">∈ ℂ²</span></span></div>
+  <div class="pd-wrap">
+    <div class="pd-src pop">『量子コンピュータの頭の中』</div>
+    <div class="pd-no pop" style="--d:.05s">第 3 章</div>
+    <h1 class="pd-title pop" style="--d:.15s">量子コンピュータの<br>基本ルール</h1>
+    <div class="pd-secs pop" style="--d:.3s"><span>3.3 計算結果を得る「測定」（p.91・前回の続き）</span><span>3.4 ビットの状態を変化させる「量子ゲート」（pp.91–93）</span></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 扉：PART 1 測定（続き） -->
+<section class="slide door" style="--c:var(--accent)">
+  <div class="door-bg">1</div>
+  <div class="door-wrap">
+    <div class="door-num">1</div>
+    <div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 1</div>
+      <h1 class="pop" style="--d:.1s">測定（続き）</h1>
+      <p class="door-lead pop" style="--d:.2s">計算結果を得る（教科書 3.3・p.91）</p>
+      <div class="door-topics pop" style="--d:.3s"><span>測定のルール（復習）</span><span>|0⟩・|1⟩ の測定</span><span>|ψ⟩ の測定</span><span>ベクトルは違うのに…</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 復習：測定のルール -->
+<section class="slide" data-id="mrule">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
+  <h2>復習：測定のルール<small>前回（pp.88–90）</small></h2>
+  <div class="body cols even">
+    <div>
+      <div class="defbox rv pop" style="margin-top:8px">量子状態 <span class="math">a|0⟩ + b|1⟩</span> を測定すると
+        <ul style="margin:6px 0 0">
+          <li style="font-size:19px;margin:2px 0">確率 <b class="k"><span class="math">|a|²</span></b> で測定値 <span class="math">|0⟩</span> を得て、測定後の量子状態は <b><span class="math">|0⟩</span></b> に変化する</li>
+          <li style="font-size:19px;margin:2px 0">確率 <b class="kb"><span class="math">|b|²</span></b> で測定値 <span class="math">|1⟩</span> を得て、測定後の量子状態は <b><span class="math">|1⟩</span></b> に変化する</li>
+        </ul>
+      </div>
+      <div class="point frag" style="font-size:19px">例：<span class="eq inline"><span class="math">|φ⟩ =</span><span class="frac"><span>1</span><span>√5</span></span><span class="math">|0⟩ +</span><span class="frac"><span>2</span><span>√5</span></span><span class="math">|1⟩</span></span> なら<br>
+        <span class="math">|0⟩</span> が <b>1/5 = 0.2</b>、<span class="math">|1⟩</span> が <b>4/5 = 0.8</b> の確率で得られる</div>
+      <div class="point blue frag" style="font-size:19px">🔑 測定すると <b>量子状態そのものが変わる</b>。<br>測定後の状態をもう一度測定するとどうなる？ → 右で試してみよう</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <svg class="plane" id="mrPlane" style="height:270px"></svg>
+      <div class="mr-row"><span class="mket mres" id="mrRes">?</span><div class="mr-eq" id="mrEq"></div></div>
+      <div class="mhist" id="mrHist"></div>
+      <div class="btns" style="justify-content:center"><button class="b" id="mrMeas">🔍 測定</button><button class="b" id="mrPrep">↺ |φ⟩ を用意し直す</button><button class="b" id="mrAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- |0⟩ や |1⟩ の測定 -->
+<section class="slide" data-id="meas01">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
+  <h2>|0⟩ や |1⟩ を測定すると？<small>p.91</small></h2>
+  <div class="body cols even">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:20px">一般的には、量子状態を <b>測定するたびに異なる値</b> が得られる</li>
+        <li class="pop" style="--d:.1s;font-size:20px">しかし <span class="math">|0⟩</span> は <b class="k">何度測定しても |0⟩</b>。<span class="math">|1⟩</span> も <b class="kb">何度測定しても |1⟩</b></li>
+      </ul>
+      <div class="card frag" style="padding:10px 16px;margin-top:10px">
+        <div class="eq" style="font-size:21px;justify-content:flex-start"><span class="math">|0⟩ = <b class="k">1</b>·|0⟩ + <b class="kb">0</b>·|1⟩</span></div>
+        <div style="font-size:18px;line-height:1.6;margin-top:2px">→ |0⟩ の確率 <span class="math">|1|² = <b>1</b></span>、|1⟩ の確率 <span class="math">|0|² = <b>0</b></span><br>→ 必ず |0⟩ が出て、測定後も |0⟩ のまま</div>
+      </div>
+      <div class="point frag" style="font-size:20px"><b class="k">重ね合わせ状態になっていない</b> |0⟩ や |1⟩ の測定は、<br><b>古典ビットと同じように振る舞う</b></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:14px 18px">
+      <div class="picker" id="m01Pick" data-label="測定する状態"></div>
+      <div class="eq m01-state" id="m01State"></div>
+      <div class="hbars" id="m01Bars"></div>
+      <div class="shots" id="m01Shots"></div>
+      <div class="qverdict" id="m01Verdict">　</div>
+      <div class="btns" style="justify-content:center"><button class="b" id="m01Run">🔍 10回測定</button><button class="b" id="m01Auto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- |ψ⟩ の測定 -->
+<section class="slide" data-id="measpsi">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
+  <h2>係数がマイナスの |ψ⟩ を測定すると？<small>p.91</small></h2>
+  <div class="body cols even">
+    <div>
+      <p class="pop" style="margin:0 0 8px;font-size:20px">次の <span class="math">|ψ⟩</span> を測定すると、どうなるでしょうか。</p>
+      <div class="formula pop" style="--d:.1s;display:flex;justify-content:center"><span class="eq" style="font-size:28px"><span class="math">|ψ⟩ =</span><span class="frac"><span>1</span><span>√5</span></span><span class="math">|0⟩ <b style="color:#d61f45">−</b></span><span class="frac"><span>2</span><span>√5</span></span><span class="math">|1⟩</span></span></div>
+      <p class="frag" style="margin:12px 0 4px;font-size:19px">測定の定義にあてはめると</p>
+      <div class="mcalc frag"><span class="mc-k a">|0⟩</span><span>を得る確率は</span><span class="eq inline"><span class="math">|</span><span class="frac"><span>1</span><span>√5</span></span><span class="math">|² =</span><span class="frac"><span>1</span><span>5</span></span><span class="math">= <b>0.2</b></span></span><span class="mc-after">測定後は |0⟩ に変化</span></div>
+      <div class="mcalc frag"><span class="mc-k b">|1⟩</span><span>を得る確率は</span><span class="eq inline"><span class="math">|−</span><span class="frac"><span>2</span><span>√5</span></span><span class="math">|² =</span><span class="frac"><span>4</span><span>5</span></span><span class="math">= <b>0.8</b></span></span><span class="mc-after">測定後は |1⟩ に変化</span></div>
+      <div class="point frag" style="font-size:19px;margin-top:12px">係数がマイナスでも、確率は <b class="k">絶対値の2乗</b> なのでプラス。<br>0.2 + 0.8 = 1 で、ちゃんと確率の合計は 1</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:14px 18px">
+      <div class="eq" style="font-size:20px;margin-bottom:6px"><span class="math">|ψ⟩</span> をたくさん測定して数えてみる</div>
+      <div class="hbars" id="psBars"></div>
+      <div class="ps-total" id="psTotal"></div>
+      <div class="mhist" id="psHist"></div>
+      <div class="btns" style="justify-content:center"><button class="b" id="ps1">×1</button><button class="b" id="ps10">×10</button><button class="b" id="ps100">×100</button><button class="b" id="psReset">↺ リセット</button><button class="b" id="psAuto" data-autoplay>▶ 自動再生</button></div>
+      <div class="hint" style="text-align:center">黒い点線 ┆ は理論値（0.2 と 0.8）。回数を増やすほど近づく</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ベクトルとしては異なるが… -->
+<section class="slide" data-id="same">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.3 計算結果を得る「測定」</div>
+  <h2>ベクトルは違うのに、測定では区別できない<small>p.91</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
+    <div>
+      <p class="pop" style="margin:0 0 8px;font-size:19px">先ほどの <span class="math" style="color:#e04e00">|φ⟩</span> とこの <span class="math" style="color:#3b6cff">|ψ⟩</span> を比べると</p>
+      <table class="tt small static pop" style="--d:.1s;font-size:17px">
+        <thead><tr><th></th><th style="color:#e04e00">|φ⟩</th><th style="color:#3b6cff">|ψ⟩</th><th class="out">比べると</th></tr></thead>
+        <tbody>
+          <tr><td>ベクトル</td><td><span class="eq inline"><span class="vec"><span>1/√5</span><span>2/√5</span></span></span></td><td><span class="eq inline"><span class="vec"><span>1/√5</span><span style="color:#d61f45">−2/√5</span></span></span></td><td><b style="color:#d61f45">異なる</b></td></tr>
+          <tr><td>|0⟩ の確率</td><td>0.2</td><td>0.2</td><td><b style="color:#14a35a">一致</b></td></tr>
+          <tr><td>|1⟩ の確率</td><td>0.8</td><td>0.8</td><td><b style="color:#14a35a">一致</b></td></tr>
+        </tbody>
+      </table>
+      <div class="point frag" style="font-size:18px">「<b class="k">ベクトルとしては異なるが、測定したときの振舞いは一致する</b>」というケースがある点は注意が必要</div>
+      <div class="point blue frag" style="font-size:16px;padding:8px 14px">補足（教科書外）：この2つは <b>量子ゲートを通してから測定</b> すると区別できることがある。たとえば第4章の H ゲートを通すと <span class="math">|0⟩</span> の確率が <b>0.9</b> と <b>0.1</b> に分かれる → 右の「H を通してから測定」</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:10px 16px">
+      <svg class="plane" id="smPlane" style="height:228px"></svg>
+      <div class="sm-mode" id="smMode"></div>
+      <div class="sm-hists">
+        <div><div class="sm-cap" style="color:#e04e00" id="smCapA"></div><div class="hbars mini" id="smBarsA"></div></div>
+        <div><div class="sm-cap" style="color:#3b6cff" id="smCapB"></div><div class="hbars mini" id="smBarsB"></div></div>
+      </div>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="smRun">🔍 200回ずつ測定</button><button class="b" id="smH">🔀 H を通してから測定（補足）</button><button class="b" id="smAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 扉：PART 2 量子ゲート -->
+<section class="slide door" style="--c:var(--purple)">
+  <div class="door-bg">2</div>
+  <div class="door-wrap">
+    <div class="door-num">2</div>
+    <div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 2</div>
+      <h1 class="pop" style="--d:.1s">量子ゲート</h1>
+      <p class="door-lead pop" style="--d:.2s">ビットの状態を変化させる（教科書 3.4）</p>
+      <div class="door-topics pop" style="--d:.3s"><span>古典のゲートと量子ゲート</span><span>ユニタリ発展</span><span>巨大な行列でも高速</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 古典のゲートと量子ゲート -->
+<section class="slide" data-id="gates">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4 ビットの状態を変化させる「量子ゲート」</div>
+  <h2>古典のゲート と 量子ゲート<small>3.4（pp.91–92）</small></h2>
+  <div class="body cols even">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:20px">量子ビットの状態と、それを測定できることは分かった。<b>しかし、これだけでは計算できない</b></li>
+        <li class="pop" style="--d:.1s;font-size:20px">古典コンピュータは、ビット演算を行う <b>ゲート</b>（AND, OR, XOR, NOT など）でビットの状態を変化させて計算する</li>
+        <li class="frag" style="font-size:20px">古典コンピュータのゲートに相当するものが <b class="k">量子ゲート</b></li>
+        <li class="frag" style="font-size:20px">量子ゲートの操作にあたるものを <b class="k">ユニタリ発展</b> という</li>
+      </ul>
+      <div class="point frag" style="font-size:19px">古典：ビット <b>0 / 1</b> を書き換える<br>量子：量子状態 <span class="math">|φ⟩</span> を <b>ユニタリ行列 U</b> で <span class="math">U|φ⟩</span> に変える</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:16px 20px">
+      <div class="pipe-row"><div class="pipe-lab">古典<br>ゲート</div><div class="pipe"><span class="tok" id="gcIn">0</span><span class="pwire" id="gcW1"></span><span class="gbox" id="gcG">NOT</span><span class="pwire" id="gcW2"></span><span class="tok" id="gcOut">1</span></div></div>
+      <div class="pipe-row q"><div class="pipe-lab">量子<br>ゲート</div><div class="pipe"><span class="tok q" id="gqIn">|0⟩</span><span class="pwire" id="gqW1"></span><span class="gbox q" id="gqG">X</span><span class="pwire" id="gqW2"></span><span class="tok q" id="gqOut">|1⟩</span></div></div>
+      <div class="pipe-note" id="gNote"></div>
+      <div class="hint" style="text-align:center">※ X・H・Z は第4章で詳しく扱う量子ゲートの例</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 定義：ユニタリ発展 -->
+<section class="slide" data-id="unitary">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4 ビットの状態を変化させる「量子ゲート」</div>
+  <h2>ユニタリ発展<small>定義（p.92）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)">
+    <div>
+      <div class="defbox pop" style="margin-top:10px">量子状態 <span class="math">|φ⟩</span> は、<span class="math">2×2</span> ユニタリ行列 <span class="math">U</span> を使って <span class="math">U|φ⟩</span> という量子状態に変化する。このような量子状態の変化を <b class="k">ユニタリ発展</b>（unitary evolution）という</div>
+      <div class="point frag" style="font-size:18px">第2章の復習：<b>ユニタリ行列</b> とは <span class="math" style="white-space:nowrap"><b>U<sup>†</sup>U = I</b></span> が成り立つ行列<br><span style="font-size:15px;color:var(--muted)"><span class="math">U<sup>†</sup></span> は U の転置の複素共役（随伴）、<span class="math">I</span> は単位行列</span></div>
+      <div class="point blue frag" style="font-size:18px">量子コンピュータは、ユニタリ発展を行う <b>回路を実装</b> することで、量子ビットの状態を変化させ、計算できる</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="picker" id="uPick" data-label="U ="></div>
+      <div class="picker" id="uIn" data-label="|φ⟩ =" style="margin-top:6px"></div>
+      <div class="u-main">
+        <svg class="plane" id="uPlane" style="height:236px"></svg>
+        <div class="u-eqs"><div class="eq" id="uEq"></div><div class="eq u-res" id="uRes"></div></div>
+      </div>
+      <div class="u-check" id="uCheck"></div>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="uAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 巨大な行列でも高速 -->
+<section class="slide" data-id="huge">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4 ビットの状態を変化させる「量子ゲート」</div>
+  <h2>巨大なユニタリ発展も高速に<small>p.92</small></h2>
+  <div class="body cols even">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:19px">ユニタリ発展に使うユニタリ行列のサイズが <b class="k">指数関数的に巨大</b> になっても、量子コンピュータの計算時間への影響は <b>古典コンピュータほど大きくならない</b></li>
+        <li class="pop" style="--d:.1s;font-size:19px">そのため、量子コンピュータは指数関数的に巨大なユニタリ発展を <b class="k">高速に</b> 行える</li>
+      </ul>
+      <div class="point frag" style="font-size:18px">⚠ ただし、<b>あらゆる行列計算を高速化できる訳ではない</b>。<br>ユニタリ発展による <b class="k">高速なアルゴリズムが発見されている場合だけ</b> 高速化できる</div>
+      <div class="point blue frag" style="font-size:18px">よく使うユニタリ発展は、<b>第4章・第6章・第8章</b> で具体的な計算例と共に紹介される</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:14px 18px">
+      <label class="qslider hz-sl"><span>量子ビットの数 <span class="math">n</span></span><input type="range" id="hzN" min="1" max="40" step="1" value="1"><span class="qs-val" id="hzNv"></span></label>
+      <div class="hz-main">
+        <canvas id="hzCanvas" width="360" height="360"></canvas>
+        <div class="hz-stats">
+          <div><small>ユニタリ行列のサイズ</small><b id="hzSize"></b></div>
+          <div><small>成分の数（4ⁿ 個）</small><b id="hzCnt"></b></div>
+          <div><small>古典で全成分を保存すると（複素数1個 = 16バイト）</small><b id="hzMem"></b></div>
+          <div class="hz-tag" id="hzTag"></div>
+        </div>
+      </div>
+      <div class="hz-bar"><div id="hzBar"></div></div>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="hzAuto" data-autoplay>▶ 自動再生</button></div>
+      <div class="hint">※ n 量子ビットでは 2ⁿ×2ⁿ のユニタリ行列になる（複数の量子ビットは第4章以降）。バーは対数目盛</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 扉：PART 3 ユニタリ発展の性質 -->
+<section class="slide door" style="--c:var(--green)">
+  <div class="door-bg">3</div>
+  <div class="door-wrap">
+    <div class="door-num">3</div>
+    <div>
+      <div class="door-label pop"><span class="door-book">第3章 量子コンピュータの基本ルール</span>PART 3</div>
+      <h1 class="pop" style="--d:.1s">ユニタリ発展の性質</h1>
+      <p class="door-lead pop" style="--d:.2s">教科書 3.4.1 〜 3.4.3（pp.92–93）</p>
+      <div class="door-topics pop" style="--d:.3s"><span>3.4.1 量子状態のまま</span><span>3.4.2 実装可能</span><span>3.4.3 可逆性</span><span>古典の AND と比べる</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 3.4.1 -->
+<section class="slide" data-id="keep">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4.1</div>
+  <h2>ユニタリ発展させても、量子状態のまま<small>3.4.1（pp.92–93）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+    <div>
+      <p class="pop" style="margin:0 0 10px;font-size:18px"><span class="math">U|φ⟩</span> が量子状態にならないと、この定義は意味がない。<br><span class="math">|φ⟩</span> を量子状態、<span class="math">U</span> をユニタリ行列として確かめよう</p>
+      <div class="proof card pop" style="--d:.1s;padding:12px 14px">
+        <div class="pf"><span class="pf-l">⟨Uφ|Uφ⟩</span><span class="pf-r">= (Uφ)<sup>†</sup>(Uφ)</span><span class="pf-n">内積の定義</span></div>
+        <div class="pf frag"><span class="pf-l"></span><span class="pf-r">= φ<sup>†</sup><b class="hl">U<sup>†</sup>U</b>φ</span><span class="pf-n">(AB)<sup>†</sup> = B<sup>†</sup>A<sup>†</sup></span></div>
+        <div class="pf frag"><span class="pf-l"></span><span class="pf-r">= φ<sup>†</sup><b class="hl">I</b>φ = φ<sup>†</sup>φ</span><span class="pf-n">U<sup>†</sup>U = I（ユニタリ）</span></div>
+        <div class="pf frag"><span class="pf-l"></span><span class="pf-r">= ⟨φ|φ⟩ = <b class="k">1</b></span><span class="pf-n">|φ⟩ は量子状態</span></div>
+      </div>
+      <div class="point frag" style="font-size:18px">内積による量子状態の定義（p.87）を満たすので <b class="k">U|φ⟩ も量子状態</b>。<br>→ ユニタリ行列 U は「<b>量子状態 → 量子状態</b>」の関数と見られる</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <div class="picker" id="kpPick" data-label="かける行列"></div>
+      <div class="kp-main">
+        <svg class="plane" id="kpPlane" style="height:220px"></svg>
+        <div><div id="kpEq"></div><div class="eq kp-dag" id="kpDag"></div></div>
+      </div>
+      <label class="qslider" style="grid-template-columns:120px 1fr 52px"><span style="font-size:15px">|φ⟩ の向き</span><input type="range" id="kpTh" min="0" max="360" step="any"><span class="qs-val" id="kpThv"></span></label>
+      <div class="qb-row" style="margin-top:4px"><div class="pgauge" id="kpGauge"></div><div class="qverdict" id="kpVerdict"></div></div>
+      <div class="kp-sum" id="kpSum"></div>
+      <div class="btns" style="justify-content:center;margin-top:0"><button class="b" id="kpAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 3.4.2 -->
+<section class="slide" data-id="sk">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4.2</div>
+  <h2>任意のユニタリ発展は、ハードウェアとして実装可能<small>3.4.2（p.93）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:20px"><b class="k">任意のユニタリ発展を近似的に実装できる</b> ことが、理論的に分かっている</li>
+        <li class="pop" style="--d:.1s;font-size:20px">これは <b class="k">ソロベイ－キタエフの定理</b>（Solovay–Kitaev theorem）として知られている</li>
+        <li class="pop" style="--d:.2s;font-size:18px;color:var(--muted)">詳しい説明は本書の範囲を越える（巻末の参考文献 [8][9][10]）</li>
+      </ul>
+      <div class="point blue frag" style="font-size:18px">イメージ：<b>決まった少しの種類のゲート</b> を何個もつなげると、<b>どんなユニタリ発展にも、いくらでも近づける</b></div>
+      <div class="point frag" style="font-size:17px">右の例：使えるのは <b>G（約57.3°回す回転）だけ</b>。<br>G を何回かければ目標に一番近いか探す。<b>使える個数を増やすほど、ずれが小さくなる</b></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <svg class="plane" id="skPlane" style="height:260px"></svg>
+      <div class="sk-out" id="skOut"></div>
+      <label class="qslider" style="grid-template-columns:150px 1fr 52px"><span style="font-size:15px;color:#d61f45">目標の向き</span><input type="range" id="skT" min="0" max="360" step="any"><span class="qs-val" id="skTv"></span></label>
+      <label class="qslider" style="grid-template-columns:150px 1fr 52px"><span style="font-size:15px;color:#8a5cff">使える G の個数 N</span><input type="range" id="skN" min="1" max="150" step="1"><span class="qs-val" id="skNv"></span></label>
+      <div class="btns" style="justify-content:center;margin-top:2px"><button class="b" id="skAuto" data-autoplay>▶ 自動再生</button></div>
+      <div class="hint" style="margin-top:2px">※ イメージ図（教科書外）。実際の定理は H・T のような少数のゲートの組み合わせで、効率よく近似できることを示す</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 3.4.3 可逆性 -->
+<section class="slide" data-id="rev">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4.3</div>
+  <h2>ユニタリ発展の可逆性<small>3.4.3（p.93）</small></h2>
+  <div class="body cols even">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:20px">ユニタリ行列は <b class="k">必ず逆行列を持つ</b><span style="font-size:16px;color:var(--muted)">（U<sup>†</sup>U = I なので U<sup>−1</sup> = U<sup>†</sup>）</span></li>
+        <li class="pop" style="--d:.1s;font-size:20px">そのため、<span class="math">U|φ⟩</span> を <span class="math">U<sup>−1</sup></span> でユニタリ発展させると</li>
+      </ul>
+      <div class="formula pop" style="--d:.15s;display:flex;justify-content:center;margin:6px auto 10px;width:max-content"><span class="math">U<sup>−1</sup>U|φ⟩ = |φ⟩</span></div>
+      <ul>
+        <li class="frag" style="font-size:20px">となり、<span class="math">|φ⟩</span> に戻る。状態の変化に対して、<b>元に戻す変化が可能</b> であることを <b class="k">可逆</b>（reversible）という</li>
+      </ul>
+      <div class="point frag" style="font-size:20px">そのため、<b class="k">任意のユニタリ発展は可逆</b><br><span style="font-size:17px">いくつ続けても、逆順に U<sup>−1</sup> をかければ元通り</span></div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <svg class="plane" id="rvPlane" style="height:270px"></svg>
+      <div class="rv-chain" id="rvChain"></div>
+      <div class="rv-msg" id="rvMsg"></div>
+      <div class="btns" style="justify-content:center"><button class="b" id="rvDo">▶ U をかける</button><button class="b" id="rvUndo">◀ U⁻¹ で戻す</button><button class="b" id="rvAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 古典ビットの AND -->
+<section class="slide" data-id="and">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4.3</div>
+  <h2>古典回路と比べてみる：AND<small>図3.4（p.93）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
+    <div>
+      <ul>
+        <li class="pop" style="font-size:20px">量子回路の可逆性は、<b class="k">古典回路と大きく異なる点</b></li>
+        <li class="pop" style="--d:.1s;font-size:20px">AND は <b>2個のビットを入力し、1個の出力</b> を得る操作。<b>すべての入力が 1 のときに出力が 1</b>、それ以外は 0</li>
+      </ul>
+      <div class="point blue frag" style="font-size:19px">🤔 考えてみよう：<b>出力だけ</b> を見て、入力を元に戻せる？<br><span style="font-size:16px">右の「出力から戻す」ボタンで試そう</span></div>
+      <div class="point frag" style="font-size:19px">出力が 0 になる入力は <b>00・01・10 の3通り</b> → 出力から入力を1つに決められない<br>→ AND は <b class="k">元に戻せない</b>（ユニタリ発展とは違う）</div>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:10px 16px">
+      <div class="ttcap">図3.4：古典ビットの AND</div>
+      <svg class="circ" id="cAnd" style="max-height:170px"></svg>
+      <table class="tt small" id="tAnd"></table>
+      <div class="and-msg" id="andMsg">　</div>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="andBack0">⏪ 出力 0 から戻す</button><button class="b" id="andBack1">⏪ 出力 1 から戻す</button><button class="b" id="pAnd" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- まとめ -->
+<section class="slide">
+  <div class="chap">Summary</div>
+  <h2>まとめ<small>3.3（p.91）〜 3.4.3（p.93）</small></h2>
+  <div class="body sumgrid">
+    <div class="sm pop" style="--d:0s;--c:var(--accent)"><div class="smn">測定</div><b>|0⟩・|1⟩ の測定は古典ビットと同じ</b><p>重ね合わせでない状態は、何度測定しても同じ結果</p></div>
+    <div class="sm pop" style="--d:.06s;--c:var(--accent)"><div class="smn">測定</div><b>確率は係数の絶対値の2乗</b><p><span class="math">(1/√5)|0⟩ − (2/√5)|1⟩</span> → 0.2 と 0.8。マイナスでも確率はプラス</p></div>
+    <div class="sm pop" style="--d:.12s;--c:var(--accent)"><div class="smn">注意</div><b>ベクトルが違っても測定の振舞いが同じことがある</b><p>|φ⟩ と |ψ⟩ はベクトルは異なるが、測定確率は一致</p></div>
+    <div class="sm pop" style="--d:.18s;--c:var(--purple)"><div class="smn">3.4</div><b>量子ゲート ＝ ユニタリ発展</b><p>ユニタリ行列 U（U<sup>†</sup>U = I）で |φ⟩ を U|φ⟩ に変える。巨大でも高速（ただしアルゴリズムがある場合だけ）</p></div>
+    <div class="sm pop" style="--d:.24s;--c:var(--green)"><div class="smn">3.4.1・3.4.2</div><b>U|φ⟩ も量子状態／どんな U も実装可能</b><p>⟨Uφ|Uφ⟩ = ⟨φ|φ⟩ = 1。ソロベイ－キタエフの定理で近似的に実装できる</p></div>
+    <div class="sm pop" style="--d:.3s;--c:var(--green)"><div class="smn">3.4.3</div><b>ユニタリ発展は可逆</b><p>U<sup>−1</sup>U|φ⟩ = |φ⟩ で元に戻せる。出力から入力が分からない古典の AND とは大きく違う</p></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 復習問題 -->
+<section class="slide" data-id="quiz">
+  <div class="chap">Review ／ 3.3（続き）〜 3.4.3</div>
+  <h2>復習問題<small>p.91 〜 p.93</small><button class="b qz-all" data-quiz-all>答えをぜんぶ表示</button></h2>
+  <div class="body quiz">
+      <div class="qz pop" style="--d:0.00s"><div class="qz-q"><span class="qz-no">Q1</span><span><span class="math">|1⟩</span> を 100 回測定すると、どんな結果になる？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>100 回とも |1⟩</b>。重ね合わせでない状態は古典ビットと同じように振る舞う</span></div></div>
+      <div class="qz pop" style="--d:0.06s"><div class="qz-q"><span class="qz-no">Q2</span><span><span class="math">(1/√5)|0⟩ − (2/√5)|1⟩</span> を測定して <span class="math">|1⟩</span> を得る確率と、そのときの測定後の状態は？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>|−2/√5|² = 4/5 = 0.8</b>。測定後の状態は <b>|1⟩</b></span></div></div>
+      <div class="qz pop" style="--d:0.12s"><div class="qz-q"><span class="qz-no">Q3</span><span><span class="math">(1/√5)|0⟩ + (2/√5)|1⟩</span> と <span class="math">(1/√5)|0⟩ − (2/√5)|1⟩</span>。ベクトルとして同じ？測定の振舞いは？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">ベクトルとしては <b>異なる</b> が、測定の振舞い（0.2 / 0.8）は <b>一致</b> する</span></div></div>
+      <div class="qz pop" style="--d:0.18s"><div class="qz-q"><span class="qz-no">Q4</span><span>量子ゲートの操作にあたる「<span class="math">|φ⟩ → U|φ⟩</span>」を何という？ U が満たす条件は？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><b>ユニタリ発展</b>。U は <b>U<sup>†</sup>U = I</b> を満たすユニタリ行列</span></div></div>
+      <div class="qz pop" style="--d:0.24s"><div class="qz-q"><span class="qz-no">Q5</span><span><span class="math">U|φ⟩</span> も量子状態だといえるのはなぜ？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans"><span class="math">⟨Uφ|Uφ⟩ = φ<sup>†</sup>U<sup>†</sup>Uφ = φ<sup>†</sup>φ = ⟨φ|φ⟩ = 1</span> だから</span></div></div>
+      <div class="qz pop" style="--d:0.30s"><div class="qz-q"><span class="qz-no">Q6</span><span>ユニタリ発展が <b>可逆</b> なのはなぜ？ 古典の AND は可逆？</span></div><div class="qz-a"><span class="qz-hide">👆 クリックで答え</span><span class="qz-ans">U は逆行列を持ち <b>U<sup>−1</sup>U|φ⟩ = |φ⟩</b> で戻せるから。AND は出力 0 の入力が3通りあり <b>戻せない</b></span></div></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+
+</div></div>
+
+<div id="ui">
+  <button id="btnPrev">◀</button><span id="counter"></span><button id="btnNext">▶</button>
+  <button id="btnFs">全画面 (F)</button>
+  <button id="btnOv">一覧 (O)</button>
+  <span>← → / Space でページ送り</span>
+</div>
+<div id="progress"></div>
+<div id="penbar" aria-label="ペンの道具">
+  <button data-tool="laser" class="on" title="レーザーポインター（書き込みは残らない）">🔴 レーザー</button>
+  <button data-tool="pen" title="黒ペンで書き込む (P)">✏️ 黒ペン</button>
+  <button data-tool="eraser" title="消しゴム（なぞった線を消す）">🧽 消す</button>
+  <span class="sep"></span>
+  <button id="inkUndo" title="元に戻す (Z)">↩️</button>
+  <button id="inkClear" title="このスライドの書き込みを全部消す">🗑️</button>
+</div>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+// "C_{in}" 形式の下付き文字に対応した SVG テキスト
+function rich(t, str) {
+  t.textContent = '';
+  str.split(/(_\{[^}]*\})/).forEach(part => {
+    if (!part) return;
+    const m = part.match(/^_\{([^}]*)\}$/);
+    if (m) {
+      el('tspan', { dy: 6, 'font-size': '70%' }, t).textContent = m[1];
+      el('tspan', { dy: -6 }, t).textContent = '\u200b';
+    } else {
+      el('tspan', {}, t).textContent = part;
+    }
+  });
+  return t;
+}
+function text(parent, x, y, str, attrs = {}) { return rich(el('text', { x, y, ...attrs }, parent), str); }
+
+const OPS = { AND: (a, b) => a & b, OR: (a, b) => a | b, XOR: (a, b) => a ^ b, NOT: a => a ^ 1 };
+const stoppers = [];
+
+class Circuit {
+  constructor(svg, { delay = 330, viewBox } = {}) {
+    this.svg = typeof svg === 'string' ? document.getElementById(svg) : svg;
+    if (viewBox) this.svg.setAttribute('viewBox', viewBox);
+    this.delay = delay;
+    this.pins = {}; this.depth = {}; this.gates = []; this.inputs = [];
+    this.inputVals = {}; this.sig = {}; this.items = []; this.listeners = []; this.timers = [];
+    this.gDeco = el('g', {}, this.svg);
+    this.gWire = el('g', {}, this.svg);
+    this.gBody = el('g', {}, this.svg);
+    this.gTop = el('g', {}, this.svg);
+  }
+  reg(sig, node, txt, fmt) { this.items.push({ sig, node, txt, fmt }); }
+  input(name, x, y, label) {
+    this.inputs.push(name); this.inputVals[name] = 0; this.depth[name] = 0;
+    const g = el('g', { class: 'inp' }, this.gTop);
+    el('circle', { cx: x, cy: y, r: 17 }, g);
+    const t = el('text', { x, y: y + 7, class: 'val' }, g);
+    text(g, x - 26, y + 7, label ?? name, { class: 'lbl', 'text-anchor': 'end' });
+    g.addEventListener('click', () => this.set({ [name]: this.inputVals[name] ^ 1 }));
+    this.pins[name] = { x: x + 17, y };
+    this.reg(name, g, t);
+  }
+  output(name, x, y, src, label) {
+    const g = el('g', { class: 'lamp' }, this.gTop);
+    el('circle', { cx: x, cy: y, r: 17 }, g);
+    const t = el('text', { x, y: y + 7, class: 'val' }, g);
+    text(g, x + 26, y + 7, label ?? name, { class: 'lbl' });
+    this.pins[name] = { x: x - 17, y };
+    this.reg(src, g, t);
+  }
+  gate(id, type, x, cy, ins, showLabel = true) {
+    this.depth[id] = Math.max(...ins.map(s => this.depth[s])) + 1;
+    this.gates.push({ id, type, ins });
+    const g = el('g', { class: 'gate' }, this.gBody);
+    if (type === 'NOT') {
+      el('path', { d: `M${x},${cy - 18} L${x + 44},${cy} L${x},${cy + 18} Z` }, g);
+      el('circle', { cx: x + 49, cy, r: 5 }, g);
+      this.pins[id + '.in0'] = { x, y: cy };
+      this.pins[id] = { x: x + 54, y: cy };
+      if (showLabel) el('text', { x: x + 16, y: cy + 4, class: 'glabel' }, g).textContent = 'NOT';
+    } else {
+      if (type === 'AND') el('path', { d: `M${x},${cy - 24} H${x + 40} A24,24 0 0 1 ${x + 40},${cy + 24} H${x} Z` }, g);
+      else el('path', { d: `M${x},${cy - 24} Q${x + 40},${cy - 24} ${x + 64},${cy} Q${x + 40},${cy + 24} ${x},${cy + 24} Q${x + 16},${cy} ${x},${cy - 24} Z` }, g);
+      if (type === 'XOR') el('path', { class: 'xorback', d: `M${x - 9},${cy + 24} Q${x + 7},${cy} ${x - 9},${cy - 24}` }, g);
+      const inset = type === 'AND' ? 0 : 8;
+      this.pins[id + '.in0'] = { x: x + inset, y: cy - 12 };
+      this.pins[id + '.in1'] = { x: x + inset, y: cy + 12 };
+      this.pins[id] = { x: x + 64, y: cy };
+      if (showLabel) el('text', { x: x + (type === 'AND' ? 28 : 32), y: cy + 4, class: 'glabel' }, g).textContent = type;
+    }
+    this.reg(id, g);
+  }
+  wire(sig, pts) {
+    const d = 'M' + pts.map(p => p.join(',')).join(' L');
+    this.reg(sig, el('path', { d, class: 'wire' }, this.gWire));
+    this.reg(sig, el('path', { d, class: 'flow' }, this.gWire));
+  }
+  pt(p) { return typeof p === 'string' ? this.pins[p] : { x: p[0], y: p[1] }; }
+  link(from, to, mx, sig) {
+    const a = this.pt(from), b = this.pt(to);
+    sig = sig ?? from;
+    if (a.y === b.y) return this.wire(sig, [[a.x, a.y], [b.x, b.y]]);
+    mx = mx ?? (a.x + b.x) / 2;
+    this.wire(sig, [[a.x, a.y], [mx, a.y], [mx, b.y], [b.x, b.y]]);
+  }
+  dot(x, y, sig) { this.reg(sig, el('circle', { cx: x, cy: y, r: 6, class: 'dot' }, this.gWire)); }
+  probe(sig, x, y, label, anchor = 'start') {
+    const t = el('text', { x, y, class: 'probe', 'text-anchor': anchor }, this.gTop);
+    this.reg(sig, t, t, v => `${label}=${v}`);
+  }
+  box(x, y, w, h, label) {
+    el('rect', { x, y, width: w, height: h, rx: 10, class: 'habox' }, this.gDeco);
+    el('text', { x: x + w / 2, y: y - 7, class: 'halbl', 'text-anchor': 'middle' }, this.gDeco).textContent = label;
+  }
+  compute(vals) {
+    const s = { ...vals };
+    for (const g of this.gates) s[g.id] = OPS[g.type](...g.ins.map(i => s[i]));
+    return s;
+  }
+  onChange(f) { this.listeners.push(f); }
+  set(vals = {}, animate = true) {
+    Object.assign(this.inputVals, vals);
+    this.sig = this.compute(this.inputVals);
+    this.timers.forEach(clearTimeout); this.timers = [];
+    for (const it of this.items) {
+      const v = this.sig[it.sig];
+      const apply = () => {
+        it.node.classList.toggle('on', !!v);
+        if (it.txt) it.txt.textContent = it.fmt ? it.fmt(v) : v;
+      };
+      const t = animate ? this.depth[it.sig] * this.delay : 0;
+      if (t) this.timers.push(setTimeout(apply, t)); else apply();
+    }
+    this.listeners.forEach(f => f(this));
+  }
+  index() { return this.inputs.reduce((a, s) => a * 2 + this.inputVals[s], 0); }
+  setIndex(n) {
+    const k = this.inputs.length, v = {};
+    this.inputs.forEach((s, j) => v[s] = (n >> (k - 1 - j)) & 1);
+    this.set(v);
+  }
+}
+
+function truthTable(id, c, ins, outs, extra) {
+  const table = document.getElementById(id);
+  const k = ins.length;
+  let html = '<thead><tr>' + ins.map(i => `<th>${i[1]}</th>`).join('') +
+    outs.map(o => `<th class="out">${o[1]}</th>`).join('') + (extra ? `<th>${extra[0]}</th>` : '') + '</tr></thead><tbody>';
+  // 行は ins に書いた列の順（左の列が上位ビット）で並べ、各行の入力値を覚えておく
+  const rows = [];
+  for (let n = 0; n < (1 << k); n++) {
+    const vals = {};
+    ins.forEach((inp, j) => vals[inp[0]] = (n >> (k - 1 - j)) & 1);
+    rows.push(vals);
+    const s = c.compute(vals);
+    html += '<tr>' + ins.map(i => `<td>${vals[i[0]]}</td>`).join('') +
+      outs.map(o => `<td class="out${s[o[0]] ? ' one' : ''}${o[2] ? ' ' + o[2] + s[o[0]] : ''}">${s[o[0]]}</td>`).join('') +
+      (extra ? `<td class="calc">${extra[1](vals, s)}</td>` : '') + '</tr>';
+  }
+  table.innerHTML = html + '</tbody>';
+  const trs = [...table.querySelectorAll('tbody tr')];
+  trs.forEach((tr, n) => tr.addEventListener('click', () => c.set(rows[n])));
+  c.onChange(() => trs.forEach((tr, i) =>
+    tr.classList.toggle('cur', ins.every(([name]) => rows[i][name] === c.inputVals[name]))));
+}
+
+function autoplay(btnId, c, interval = 1900) {
+  const btn = document.getElementById(btnId);
+  let t = null;
+  const stop = () => { clearInterval(t); t = null; btn.textContent = '▶ 自動再生'; btn.classList.remove('playing'); };
+  btn.addEventListener('click', () => {
+    btn.blur();
+    if (t) return stop();
+    btn.textContent = '■ 停止'; btn.classList.add('playing');
+    const step = () => c.setIndex((c.index() + 1) % (1 << c.inputs.length));
+    step(); t = setInterval(step, interval);
+  });
+  stoppers.push(stop);
+  return stop;
+}
+
+/* 確率のゲージ。太枠の箱の幅がちょうど確率 1（全体の 60%）で、箱の外は合計が 1 を超えた分 */
+function probGauge(el) {
+  const BOX = 60, MAX = 100 / BOX;  // 表示できる合計の上限（約 1.67）
+  el.innerHTML = '<div class="pg-box"></div><div class="pg-seg a"></div><div class="pg-seg b"></div><div class="pg-gap"></div><div class="pg-over"></div>' +
+    `<span class="pg-tick" style="left:0">0</span><span class="pg-tick" style="left:${BOX}%">1</span>`;
+  const [sa, sb] = el.querySelectorAll('.pg-seg'), gap = el.querySelector('.pg-gap'), over = el.querySelector('.pg-over');
+  const pos = (e, from, to) => { e.style.left = `${from * BOX}%`; e.style.width = `${Math.max(0, to - from) * BOX}%`; };
+  return (a2, b2) => {
+    const A = Math.min(a2, MAX), S = Math.min(a2 + b2, MAX);
+    pos(sa, 0, A); pos(sb, A, S);
+    pos(gap, Math.min(S, 1), 1);   // 1 に足りない分（箱の中の空き）
+    pos(over, 1, Math.max(S, 1));  // 1 を超えた分（箱からはみ出す）
+  };
+}
+
+window.onEnter = window.onEnter || {};
+
+/* ---------- 共通：2×2 行列（実数）とベクトル ---------- */
+const S2 = Math.SQRT1_2, S5 = 1 / Math.sqrt(5);
+const rot = deg => { const t = deg * Math.PI / 180; return [[Math.cos(t), -Math.sin(t)], [Math.sin(t), Math.cos(t)]]; };
+const mul = (M, v) => [M[0][0] * v[0] + M[0][1] * v[1], M[1][0] * v[0] + M[1][1] * v[1]];
+const mmul = (A, B) => [0, 1].map(i => [0, 1].map(j => A[i][0] * B[0][j] + A[i][1] * B[1][j]));
+const tr = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];  // 実数の行列なので U† は転置
+const fmt = (x, d = 2) => (Math.abs(x) < 5e-3 ? 0 : x).toFixed(d).replace('-', '−');
+const FR = (n, d) => `<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+const M_ = s => `<span class="math">${s}</span>`;
+const vecH = (x, y, cx = '', cy = '') => `<span class="vec"><span class="${cx}">${x}</span><span class="${cy}">${y}</span></span>`;
+const matH = m => `<span class="vec m2">${m.flat().map(v => `<span>${v}</span>`).join('')}</span>`;
+const numMat = M => matH(M.map(r => r.map(v => fmt(v))));
+const PHI_H = `${M_('|φ⟩ =')}${FR(1, '√5')}${M_('|0⟩ +')}${FR(2, '√5')}${M_('|1⟩')}`;
+
+/* 自動再生ボタン（step を一定間隔で呼ぶ）。戻り値は停止する関数 */
+function looper(btn, step, interval) {
+  btn = typeof btn === 'string' ? $(btn) : btn;
+  let t = null;
+  const stop = () => { clearInterval(t); t = null; btn.textContent = '▶ 自動再生'; btn.classList.remove('playing'); };
+  btn.addEventListener('click', () => {
+    btn.blur();
+    if (t) return stop();
+    btn.textContent = '■ 停止'; btn.classList.add('playing');
+    step(); t = setInterval(step, interval);
+  });
+  stoppers.push(stop);
+  return stop;
+}
+/* スライドを離れたら止めるタイマーの束 */
+function timerBag() {
+  let ts = [];
+  const bag = {
+    later(f, ms) { ts.push(setTimeout(f, ms)); },
+    clear() { ts.forEach(clearTimeout); ts = []; },
+  };
+  stoppers.push(bag.clear);
+  return bag;
+}
+/* 選択ボタンの列 */
+function picker(root, items, onPick) {
+  root = typeof root === 'string' ? $(root) : root;
+  const lab = root.dataset.label;
+  root.innerHTML = (lab ? `<span class="pk-l">${lab}</span>` : '') +
+    items.map((it, i) => `<button data-i="${i}" class="${it.cls || ''}">${it.label}</button>`).join('');
+  const bs = [...root.querySelectorAll('button')];
+  const set = (i, user = false) => { bs.forEach((b, j) => b.classList.toggle('on', i === j)); onPick(items[i], i, user); };
+  bs.forEach((b, i) => b.addEventListener('click', e => { e.currentTarget.blur(); set(i, true); }));
+  return set;
+}
+/* 横棒グラフ */
+function hbars(root, rows) {
+  root = typeof root === 'string' ? $(root) : root;
+  root.innerHTML = rows.map(r => `<div class="hb"><span class="hb-l math">${r.label}</span><div class="hb-t"><div class="hb-f ${r.cls}"></div><div class="hb-mk"></div></div><span class="hb-v"></span></div>`).join('');
+  const fs = root.querySelectorAll('.hb-f'), vs = root.querySelectorAll('.hb-v'), mks = root.querySelectorAll('.hb-mk');
+  return (vals, texts, marks) => vals.forEach((v, i) => {
+    fs[i].style.width = `${v * 100}%`;
+    vs[i].textContent = texts ? texts[i] : `${Math.round(v * 100)}%`;
+    if (marks) { mks[i].style.display = 'block'; mks[i].style.left = `${marks[i] * 100}%`; }
+  });
+}
+/* 量子状態の平面図（係数を実数に限ったイメージ）：横軸 |0⟩、縦軸 |1⟩、点線の円 = 長さ 1 */
+function qPlane(svg, { W = 300, H = 260, OX = W / 2, OY = H / 2, U = 96 } = {}) {
+  svg = typeof svg === 'string' ? $(svg) : svg;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const defs = el('defs', {}, svg);
+  const gBack = el('g', {}, svg), gMid = el('g', {}, svg), gTop = el('g', {}, svg);
+  el('line', { x1: OX - U - 26, y1: OY, x2: OX + U + 26, y2: OY, stroke: '#d9d4ea', 'stroke-width': 2 }, gBack);
+  el('line', { x1: OX, y1: OY - U - 26, x2: OX, y2: OY + U + 26, stroke: '#d9d4ea', 'stroke-width': 2 }, gBack);
+  const ring = el('circle', { cx: OX, cy: OY, r: U, fill: 'none', stroke: '#1f1a3d', 'stroke-width': 2.5, 'stroke-dasharray': '6 6' }, gBack);
+  const T = (x, y, s, c = '#6b6790', size = 15, g = gTop) => {
+    const e = el('text', { x, y, 'text-anchor': 'middle', 'font-size': size, 'font-weight': 800, fill: c, 'font-family': 'Cambria Math,Times New Roman,serif' }, g);
+    e.textContent = s; return e;
+  };
+  T(OX + U + 16, OY + 20, '|0⟩'); T(OX + 17, OY - U - 12, '|1⟩');
+  const P = (a, b) => [OX + U * a, OY - U * b];
+  function arrow(color, { width = 6, dash = '', label = '', lcolor = color } = {}) {
+    const id = 'ah' + Math.random().toString(36).slice(2, 9);
+    const m = el('marker', { id, viewBox: '0 0 10 10', refX: 7, refY: 5, markerWidth: 4.2, markerHeight: 4.2, orient: 'auto-start-reverse' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', fill: color }, m);
+    const attrs = { x1: OX, y1: OY, x2: OX, y2: OY, stroke: color, 'stroke-width': width, 'stroke-linecap': 'round', 'marker-end': `url(#${id})` };
+    if (dash) attrs['stroke-dasharray'] = dash;
+    const ln = el('line', attrs, gMid);
+    const lt = T(0, 0, label, lcolor, 16);
+    const set = (a, b, lab) => {
+      const [x, y] = P(a, b), len = Math.hypot(a, b);
+      ln.setAttribute('x2', x); ln.setAttribute('y2', y);
+      ln.setAttribute('visibility', len > .04 ? 'visible' : 'hidden');
+      if (lab !== undefined) lt.textContent = lab;
+      const k = len > 1e-6 ? 1 / len : 0;
+      // 半径方向に少し外へ＋少し回した位置に置き、軸の |0⟩・|1⟩ の文字と重ならないようにする
+      lt.setAttribute('x', x + (a * 24 - b * 12) * k); lt.setAttribute('y', y - (b * 20 + a * 12) * k + 5);
+    };
+    set.show = on => { ln.style.display = lt.style.display = on ? '' : 'none'; };
+    set(0, 0);
+    return set;
+  }
+  return { svg, arrow, ring, T, P, OX, OY, U, gBack, gMid, gTop };
+}
+/* ベクトルを円弧に沿って動かす（長さも途中で変える） */
+function tweenVec(from, to, dur, step) {
+  let raf;
+  const t0 = performance.now();
+  const r0 = Math.hypot(...from), r1 = Math.hypot(...to);
+  const a0 = Math.atan2(from[1], from[0]);
+  let da = Math.atan2(to[1], to[0]) - a0;
+  da = Math.atan2(Math.sin(da), Math.cos(da));
+  if (r0 < 1e-6) da = 0;
+  const f = now => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    const r = r0 + (r1 - r0) * e, a = (r0 < 1e-6 ? Math.atan2(to[1], to[0]) : a0) + da * e;
+    step(k < 1 ? [r * Math.cos(a), r * Math.sin(a)] : to, k);
+    if (k < 1) raf = requestAnimationFrame(f);
+  };
+  raf = requestAnimationFrame(f);
+  return () => cancelAnimationFrame(raf);
+}
+const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.classList.add(cls); };
+
+/* ---------- タイトル：量子ゲートで状態が円の上を動き回る ---------- */
+{
+  const pl = qPlane('#titlePlane', { W: 320, H: 290, OY: 150, U: 102 });
+  const trail = el('g', {}, pl.gBack);
+  const ar = pl.arrow('#ff6b1a', { label: '|φ⟩' });
+  const gl = pl.T(pl.OX, 22, '', '#8a5cff', 20);
+  const seq = [['H', [[S2, S2], [S2, -S2]]], ['R(50°)', rot(50)], ['Z', [[1, 0], [0, -1]]], ['X', [[0, 1], [1, 0]]], ['R(−80°)', rot(-80)]];
+  let v = [1, 0], i = 0, cancel = () => {};
+  ar(...v);
+  setInterval(() => {
+    if (document.body.classList.contains('overview') || !document.querySelector('.slide[data-id="title"]').classList.contains('active')) return;
+    const [name, M] = seq[i++ % seq.length];
+    const w = mul(M, v), [x, y] = pl.P(...v);
+    el('circle', { cx: x, cy: y, r: 5, fill: '#8a5cff' }, trail);
+    if (trail.childNodes.length > 7) trail.removeChild(trail.firstChild);
+    [...trail.childNodes].forEach((c, j, all) => c.setAttribute('opacity', (.12 + .5 * j / all.length).toFixed(2)));
+    gl.textContent = `量子ゲート ${name} をかける`;
+    cancel(); cancel = tweenVec(v, w, 900, p => ar(p[0], p[1], 'U|φ⟩'));
+    v = w;
+  }, 2100);
+}
+
+/* ---------- 復習：測定のルール（測定すると状態が |0⟩ か |1⟩ に変わる） ---------- */
+{
+  const pl = qPlane('#mrPlane', { W: 300, H: 270, OX: 140, OY: 150, U: 104 });
+  const ghost = pl.arrow('#b9b5d0', { width: 3, dash: '3 6', label: '' });
+  const ar = pl.arrow('#8a5cff', { label: '|φ⟩' });
+  const res = $('#mrRes'), hist = $('#mrHist'), eq = $('#mrEq');
+  const PHI = [S5, 2 * S5];
+  let v = PHI.slice(), isPhi = true, hs = [], cancel = () => {};
+  const show = () => {
+    eq.innerHTML = isPhi
+      ? `<div>いまの状態 <span class="eq inline">${PHI_H}</span><br><span style="font-size:15px;color:var(--muted)">→ |0⟩ が 20%、|1⟩ が 80%</span></div>`
+      : `<div>いまの状態 <b class="math" style="font-size:22px">|${v[0] > .5 ? 0 : 1}⟩</b>（測定で変化した）<br><span style="font-size:15px;color:var(--muted)">→ もう一度測定すると必ず |${v[0] > .5 ? 0 : 1}⟩</span></div>`;
+  };
+  const moveTo = (w, lab) => { cancel(); const from = v; v = w; cancel = tweenVec(from, w, 650, p => ar(p[0], p[1], lab)); };
+  function measure() {
+    const r = Math.random() < v[0] * v[0] ? 0 : 1;
+    res.textContent = `|${r}⟩`; res.className = 'mket mres r' + r; replay(res, 'hit');
+    hs.push(r); if (hs.length > 14) hs.shift();
+    hist.innerHTML = hs.map(x => `<span class="h${x}">|${x}⟩</span>`).join('');
+    isPhi = false; moveTo(r ? [0, 1] : [1, 0], '測定後'); show();
+  }
+  function prep() {
+    isPhi = true; res.textContent = '?'; res.className = 'mket mres';
+    moveTo(PHI.slice(), '|φ⟩'); show();
+  }
+  let k = 0;
+  const stop = looper('#mrAuto', () => { (k++ % 4 === 0 ? prep : measure)(); }, 1500);
+  $('#mrMeas').addEventListener('click', e => { e.currentTarget.blur(); stop(); measure(); });
+  $('#mrPrep').addEventListener('click', e => { e.currentTarget.blur(); stop(); prep(); });
+  onEnter.mrule = () => { cancel(); hs = []; hist.innerHTML = ''; k = 0; v = PHI.slice(); ghost(...PHI, ''); ar(...v, '|φ⟩'); isPhi = true; res.textContent = '?'; res.className = 'mket mres'; show(); };
+  ghost(...PHI); ar(...v); show();
+}
+
+/* ---------- |0⟩・|1⟩ の測定：10回測定しても毎回同じ ---------- */
+{
+  const states = [
+    { label: '|0⟩', v: [1, 0], eq: `${M_('|0⟩ = <span class="na">1</span>·|0⟩ + <span class="nb">0</span>·|1⟩')}` },
+    { label: '|1⟩', v: [0, 1], eq: `${M_('|1⟩ = <span class="na">0</span>·|0⟩ + <span class="nb">1</span>·|1⟩')}` },
+    { label: '|φ⟩（重ね合わせ）', v: [S5, 2 * S5], eq: PHI_H },
+  ];
+  const bars = hbars('#m01Bars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const shots = $('#m01Shots'), verdict = $('#m01Verdict'), tb = timerBag();
+  let cur = states[0];
+  const resetShots = () => {
+    tb.clear();
+    shots.innerHTML = Array.from({ length: 10 }, () => '<span class="shot"></span>').join('');
+    verdict.className = 'qverdict wait'; verdict.textContent = '10回測定してみよう';
+  };
+  const pick = picker('#m01Pick', states, (s, i, user) => {
+    if (user) stop();
+    cur = s;
+    $('#m01State').innerHTML = s.eq;
+    const p0 = s.v[0] * s.v[0];
+    bars([p0, 1 - p0], [`確率 ${fmt(p0, 1)}`, `確率 ${fmt(1 - p0, 1)}`]);
+    resetShots();
+  });
+  function run() {
+    resetShots();
+    const cells = [...shots.children], out = [];
+    const p0 = cur.v[0] * cur.v[0];
+    cells.forEach((c, j) => tb.later(() => {
+      const r = Math.random() < p0 ? 0 : 1; out.push(r);
+      c.className = 'shot r' + r; c.textContent = `|${r}⟩`;
+      if (j === 9) {
+        const same = out.every(x => x === out[0]);
+        verdict.className = 'qverdict ' + (same ? 'ok' : 'pp');
+        verdict.textContent = same ? `✓ 10回とも |${out[0]}⟩ → 古典ビットと同じ振る舞い` : `🎲 毎回ちがう（|0⟩ ${out.filter(x => !x).length}回・|1⟩ ${out.filter(x => x).length}回）→ 確率的`;
+      }
+    }, 140 + j * 170));
+  }
+  let k = 0;
+  const stop = looper('#m01Auto', () => { pick(k++ % 3); run(); }, 3400);
+  $('#m01Run').addEventListener('click', e => { e.currentTarget.blur(); stop(); run(); });
+  onEnter.meas01 = () => { k = 0; pick(0); };
+  pick(0);
+}
+
+/* ---------- |ψ⟩ = (1/√5)|0⟩ − (2/√5)|1⟩ をたくさん測定する ---------- */
+{
+  const bars = hbars('#psBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const total = $('#psTotal'), hist = $('#psHist');
+  let n0 = 0, n1 = 0, last = [];
+  const draw = () => {
+    const n = n0 + n1, f0 = n ? n0 / n : 0, f1 = n ? n1 / n : 0;
+    bars([f0, f1], [`${n0}回 ${n ? (f0 * 100).toFixed(1) : '−'}%`, `${n1}回 ${n ? (f1 * 100).toFixed(1) : '−'}%`], [.2, .8]);
+    total.innerHTML = `測定回数 <b>${n}</b> 回`;
+    hist.innerHTML = last.map(x => `<span class="h${x}">|${x}⟩</span>`).join('');
+  };
+  const shoot = m => {
+    for (let i = 0; i < m; i++) {
+      const r = Math.random() < .2 ? 0 : 1;
+      r ? n1++ : n0++;
+      last.push(r);
+    }
+    last = last.slice(-16);
+    draw();
+  };
+  const reset = () => { n0 = n1 = 0; last = []; draw(); };
+  const stop = looper('#psAuto', () => {
+    const n = n0 + n1;
+    if (n >= 3000) return reset();
+    shoot(n < 12 ? 1 : n < 100 ? 8 : n < 600 ? 40 : 150);
+  }, 380);
+  [[1, '#ps1'], [10, '#ps10'], [100, '#ps100']].forEach(([m, id]) => $(id).addEventListener('click', e => { e.currentTarget.blur(); stop(); shoot(m); }));
+  $('#psReset').addEventListener('click', e => { e.currentTarget.blur(); stop(); reset(); });
+  onEnter.measpsi = reset;
+  reset();
+}
+
+/* ---------- |φ⟩ と |ψ⟩：ベクトルは違うが測定確率は同じ（補足：H を通すと区別できる） ---------- */
+{
+  const pl = qPlane('#smPlane', { W: 300, H: 250, OX: 130, OY: 125, U: 92 });
+  const projA = el('line', { stroke: '#e04e00', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
+  const projB = el('line', { stroke: '#3b6cff', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
+  const arA = pl.arrow('#ff6b1a', { label: '|φ⟩', lcolor: '#e04e00' });
+  const arB = pl.arrow('#3b6cff', { label: '|ψ⟩' });
+  const H = [[S2, S2], [S2, -S2]];
+  const PHI = [S5, 2 * S5], PSI = [S5, -2 * S5];
+  const barsA = hbars('#smBarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const barsB = hbars('#smBarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const tb = timerBag(), hBtn = $('#smH');
+  let useH = false, va = PHI, vb = PSI, cancels = [];
+  const setProj = (ln, v) => { const [x, y] = pl.P(...v); ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', x); ln.setAttribute('y2', pl.OY); };
+  function place(animate) {
+    cancels.forEach(c => c()); cancels = [];
+    const ta = useH ? mul(H, PHI) : PHI, tb2 = useH ? mul(H, PSI) : PSI;
+    const la = useH ? 'H|φ⟩' : '|φ⟩', lb = useH ? 'H|ψ⟩' : '|ψ⟩';
+    if (!animate) { va = ta; vb = tb2; arA(...va, la); arB(...vb, lb); setProj(projA, va); setProj(projB, vb); }
+    else {
+      cancels.push(tweenVec(va, ta, 800, p => { arA(p[0], p[1], la); setProj(projA, p); }));
+      cancels.push(tweenVec(vb, tb2, 800, p => { arB(p[0], p[1], lb); setProj(projB, p); }));
+      va = ta; vb = tb2;
+    }
+    $('#smMode').innerHTML = useH ? '<span style="color:#8a5cff">H ゲートを通してから測定（補足・教科書外）</span>' : 'そのまま測定';
+    $('#smCapA').textContent = useH ? 'H|φ⟩ を測定' : '|φ⟩ を測定';
+    $('#smCapB').textContent = useH ? 'H|ψ⟩ を測定' : '|ψ⟩ を測定';
+    hBtn.textContent = useH ? '↩ そのまま測定に戻す' : '🔀 H を通してから測定（補足）';
+    clearBars();
+  }
+  const clearBars = () => { tb.clear(); barsA([0, 0], ['0', '0'], [ta0(), 1 - ta0()]); barsB([0, 0], ['0', '0'], [tb0(), 1 - tb0()]); };
+  const ta0 = () => (useH ? mul(H, PHI) : PHI)[0] ** 2, tb0 = () => (useH ? mul(H, PSI) : PSI)[0] ** 2;
+  function run() {
+    clearBars();
+    const pa = ta0(), pb = tb0();
+    let a0 = 0, b0 = 0, n = 0;
+    for (let s = 1; s <= 20; s++) tb.later(() => {
+      for (let i = 0; i < 10; i++) { if (Math.random() < pa) a0++; if (Math.random() < pb) b0++; }
+      n += 10;
+      barsA([a0 / 200, (n - a0) / 200], [`${a0}`, `${n - a0}`], [pa, 1 - pa]);
+      barsB([b0 / 200, (n - b0) / 200], [`${b0}`, `${n - b0}`], [pb, 1 - pb]);
+    }, s * 70);
+  }
+  let k = 0;
+  const stop = looper('#smAuto', () => {
+    const ph = k++ % 4;
+    if (ph === 0) { useH = false; place(true); tb.later(run, 850); }
+    else if (ph === 1) run();
+    else if (ph === 2) { useH = true; place(true); tb.later(run, 850); }
+    else run();
+  }, 2600);
+  $('#smRun').addEventListener('click', e => { e.currentTarget.blur(); stop(); run(); });
+  hBtn.addEventListener('click', e => { e.currentTarget.blur(); stop(); useH = !useH; place(true); tb.later(run, 850); });
+  onEnter.same = () => { k = 0; useH = false; place(false); };
+  place(false);
+}
+
+/* ---------- 古典のゲートと量子ゲート ---------- */
+{
+  const ex = [
+    { c: ['NOT', '0', '1'], q: ['X', '|0⟩', '|1⟩'], note: '古典の NOT は 0 を 1 に。量子ゲート X は |0⟩ を |1⟩ に（NOT に対応）' },
+    { c: ['NOT', '1', '0'], q: ['X', '|1⟩', '|0⟩'], note: 'X は |1⟩ を |0⟩ に。ここまでは古典と同じ' },
+    { c: ['AND', '1 1', '1'], q: ['H', '|0⟩', '(|0⟩+|1⟩)/√2'], note: '量子ゲート H は |0⟩ から <b>重ね合わせ状態</b> をつくれる（古典にはない！）' },
+    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'], note: 'Z は |1⟩ の係数の符号を反転。<b>測定確率は変わらないがベクトルは変わる</b>（さっきの |φ⟩ と |ψ⟩ の関係）' },
+  ];
+  const ids = ['In', 'W1', 'G', 'W2', 'Out'];
+  const C = Object.fromEntries(ids.map(s => [s, $('#gc' + s)])), Q = Object.fromEntries(ids.map(s => [s, $('#gq' + s)]));
+  const tb = timerBag();
+  let k = 0, t = null;
+  function play() {
+    tb.clear();
+    const e = ex[k++ % ex.length];
+    [C, Q].forEach((R, j) => {
+      const [g, a, b] = j ? e.q : e.c;
+      R.G.textContent = g; R.In.textContent = a; R.Out.textContent = b;
+      R.Out.classList.add('hid'); R.G.classList.remove('on'); R.W1.classList.remove('on'); R.W2.classList.remove('on');
+      replay(R.In, 'pop2');
+      tb.later(() => { R.W1.classList.add('on'); }, 250);
+      tb.later(() => { R.G.classList.add('on'); }, 800);
+      tb.later(() => { R.W2.classList.add('on'); }, 1250);
+      tb.later(() => { R.Out.classList.remove('hid'); R.G.classList.remove('on'); }, 1700);
+    });
+    $('#gNote').innerHTML = e.note;
+  }
+  stoppers.push(() => { clearInterval(t); t = null; });
+  onEnter.gates = () => { k = 0; play(); clearInterval(t); t = setInterval(play, 3600); };
+  play();
+}
+
+/* ---------- 定義：ユニタリ発展 U|φ⟩ ---------- */
+{
+  const pl = qPlane('#uPlane', { W: 236, H: 236, U: 82 });
+  const before = pl.arrow('#9a93bd', { width: 4, dash: '2 6', label: '|φ⟩', lcolor: '#6b6790' });
+  const after = pl.arrow('#ff6b1a', { label: 'U|φ⟩', lcolor: '#e04e00' });
+  const Us = [
+    { label: 'X', M: [[0, 1], [1, 0]], show: [['0', '1'], ['1', '0']] },
+    { label: 'Z', M: [[1, 0], [0, -1]], show: [['1', '0'], ['0', '−1']] },
+    { label: 'H', M: [[S2, S2], [S2, -S2]], show: [[FR(1, '√2'), FR(1, '√2')], [FR(1, '√2'), FR('−1', '√2')]] },
+    { label: 'R(30°)', M: rot(30), show: [['cos30°', '−sin30°'], ['sin30°', 'cos30°']] },
+  ];
+  const Ins = [
+    { label: '|0⟩', v: [1, 0] },
+    { label: '|1⟩', v: [0, 1] },
+    { label: '(1/√5, 2/√5)', v: [S5, 2 * S5] },
+  ];
+  let U = Us[0], v = Ins[0].v, cur = [1, 0], cancel = () => {};
+  function draw(animate = true) {
+    const w = mul(U.M, v);
+    before(...v);
+    cancel();
+    if (animate) cancel = tweenVec(v, w, 800, p => after(...p)); else after(...w);
+    cur = w;
+    $('#uEq').innerHTML = `${M_('U|φ⟩ =')}${matH(U.show)}${vecH(fmt(v[0]), fmt(v[1]))}`;
+    $('#uRes').innerHTML = `${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}<span style="font-size:15px;font-weight:700">（長さ² = ${fmt(w[0] ** 2 + w[1] ** 2)}）</span>`;
+    $('#uCheck').innerHTML = `<span class="eq inline">${M_('U<sup>†</sup>U =')}${numMat(mmul(tr(U.M), U.M))}${M_('= I')}</span>　✓ ${U.label} はユニタリ行列`;
+  }
+  const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
+  const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); v = s.v; draw(); });
+  let k = 0;
+  const stop = looper('#uAuto', () => { const j = k++; setIn(Math.floor(j / 4) % 3); setU(j % 4); }, 2300);
+  onEnter.unitary = () => { k = 0; };
+  setU(0); setIn(0);
+}
+
+/* ---------- 巨大なユニタリ行列 ---------- */
+{
+  const cv = $('#hzCanvas'), ctx = cv.getContext('2d'), sl = $('#hzN');
+  const sup = n => String(n).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
+  const sci = x => { const e = Math.floor(Math.log10(x)), m = x / 10 ** e; return `${m.toFixed(1)} × 10${sup(e)}`; };
+  const big = x => (x < 1e9 ? Math.round(x).toLocaleString('ja-JP') : sci(x));
+  const units = ['バイト', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const mem = b => { let i = 0; while (b >= 1000 && i < units.length - 1) { b /= 1000; i++; } return b >= 1000 ? `${sci(b)} ${units[i]}` : `${b < 10 ? b.toFixed(1) : Math.round(b)} ${units[i]}`; };
+  const MAXLOG = Math.log10(16 * 4 ** 40);
+  function draw(n) {
+    const N = 2 ** n, cnt = 4 ** n, bytes = 16 * cnt;
+    $('#hzNv').textContent = n; sl.value = n;
+    $('#hzSize').textContent = N < 1e9 ? `${big(N)} × ${big(N)}` : `2${sup(n)} × 2${sup(n)}`;
+    $('#hzCnt').textContent = big(cnt);
+    $('#hzMem').textContent = mem(bytes);
+    const tag = bytes < 1e9 ? ['📱 スマホでも余裕', '#d9f7e6'] : bytes < 1e12 ? ['💻 パソコンで何とか', '#fff1c2'] : bytes < 1e17 ? ['🏢 スーパーコンピュータ級', '#ffe1c7'] : ['🌍 地球上のどこにも保存できない', '#ffe0e6'];
+    const t = $('#hzTag'); t.textContent = tag[0]; t.style.background = tag[1];
+    $('#hzBar').style.width = `${Math.log10(bytes) / MAXLOG * 100}%`;
+    // 行列の図：2ⁿ × 2ⁿ のマス（細かすぎるときは模様だけ）
+    const S = cv.width;
+    ctx.clearRect(0, 0, S, S);
+    const cells = Math.min(N, 64), c = S / cells;
+    for (let i = 0; i < cells; i++) for (let j = 0; j < cells; j++) {
+      const h = (Math.sin(i * 12.9898 + j * 78.233 + n) * 43758.5453) % 1;
+      ctx.fillStyle = `hsl(${250 + 60 * Math.abs(h)},70%,${70 + 18 * Math.abs(h)}%)`;
+      ctx.fillRect(i * c, j * c, c, c);
+    }
+    if (cells <= 32) {
+      ctx.strokeStyle = '#1f1a3d'; ctx.lineWidth = cells <= 8 ? 3 : 1;
+      for (let i = 0; i <= cells; i++) { ctx.beginPath(); ctx.moveTo(i * c, 0); ctx.lineTo(i * c, S); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, i * c); ctx.lineTo(S, i * c); ctx.stroke(); }
+    }
+    if (N > 64) {
+      ctx.fillStyle = 'rgba(255,250,240,.82)'; ctx.fillRect(0, S / 2 - 46, S, 92);
+      ctx.fillStyle = '#1f1a3d'; ctx.font = '900 34px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('細かすぎて', S / 2, S / 2 - 6); ctx.fillText('描けない！', S / 2, S / 2 + 34);
+    }
+  }
+  sl.addEventListener('input', () => { stop(); draw(+sl.value); });
+  let n = 1;
+  const stop = looper('#hzAuto', () => { n = n >= 40 ? 1 : n + 1; draw(n); }, 420);
+  onEnter.huge = () => { n = 0; draw(1); };
+  draw(1);
+}
+
+/* ---------- 3.4.1：ユニタリなら長さ 1 のまま／ユニタリでない行列だと崩れる ---------- */
+{
+  const pl = qPlane('#kpPlane', { W: 220, H: 220, U: 70 });
+  const before = pl.arrow('#9a93bd', { width: 4, dash: '2 6', label: '|φ⟩', lcolor: '#6b6790' });
+  const after = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const Ms = [
+    { label: 'R(60°)', M: rot(60), ok: true },
+    { label: 'H', M: [[S2, S2], [S2, -S2]], ok: true },
+    { label: '✗ 例1', M: [[1, 1], [0, 1]], ok: false, cls: 'bad' },
+    { label: '✗ 例2', M: [[1, 0], [0, .5]], ok: false, cls: 'bad' },
+  ];
+  const gEl = $('#kpGauge'), gauge = probGauge(gEl), th = $('#kpTh');
+  gEl.classList.add('instant');
+  let M = Ms[0], deg = 30;
+  function draw() {
+    const t = deg * Math.PI / 180, v = [Math.cos(t), Math.sin(t)], w = mul(M.M, v);
+    const name = M.ok ? 'U' : 'M';
+    before(...v); after(...w, `${name}|φ⟩`);
+    pl.ring.setAttribute('stroke', Math.abs(w[0] ** 2 + w[1] ** 2 - 1) < .005 ? '#14a35a' : '#d61f45');
+    th.value = deg; $('#kpThv').textContent = `${Math.round(deg)}°`;
+    $('#kpEq').innerHTML = `<div class="eq kp-eq">${M_(name + '|φ⟩ =')}${numMat(M.M)}${vecH(fmt(v[0]), fmt(v[1]))}</div><div class="eq kp-eq" style="margin-top:6px">${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}</div>`;
+    const D = mmul(tr(M.M), M.M), isI = Math.abs(D[0][0] - 1) + Math.abs(D[0][1]) + Math.abs(D[1][0]) + Math.abs(D[1][1] - 1) < 1e-6;
+    $('#kpDag').innerHTML = `${M_(name + '<sup>†</sup>' + name + ' =')}${numMat(D)}<b style="color:${isI ? '#14a35a' : '#d61f45'}">${isI ? '= I ✓' : '≠ I ✗'}</b>`;
+    const s = w[0] ** 2 + w[1] ** 2, ok = Math.abs(s - 1) < .005;
+    gauge(w[0] ** 2, w[1] ** 2);
+    const vd = $('#kpVerdict');
+    vd.className = 'qverdict ' + (ok ? 'ok' : 'ng');
+    vd.textContent = ok ? '✓ 量子状態' : '✗ 量子状態ではない';
+    $('#kpSum').innerHTML = `|0⟩ の確率 + |1⟩ の確率 = ${fmt(w[0] ** 2)} + ${fmt(w[1] ** 2)} = <b>${fmt(s)}</b>`;
+  }
+  const setM = picker('#kpPick', Ms, (m, i, user) => { if (user) stop(); M = m; draw(); });
+  th.addEventListener('input', () => { stop(); deg = +th.value; draw(); });
+  let tick = 0, mi = 0;
+  const stop = looper('#kpAuto', () => {
+    deg = (deg + 4) % 360; tick++;
+    if (tick % 60 === 0) { mi = (mi + 1) % Ms.length; setM(mi); } else draw();
+  }, 70);
+  onEnter.keep = () => { tick = 0; mi = 0; deg = 30; setM(0); };
+  setM(0);
+}
+
+/* ---------- 3.4.2：決まったゲート G だけで目標に近づく（イメージ） ---------- */
+{
+  const pl = qPlane('#skPlane', { W: 300, H: 260, U: 100 });
+  const dots = el('g', {}, pl.gBack);
+  const target = pl.arrow('#ff4f9a', { width: 4, dash: '4 5', label: '目標', lcolor: '#d61f45' });
+  const best = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const sT = $('#skT'), sN = $('#skN');
+  const G = 1;  // 1 ラジアン（約 57.3°）回す
+  let tdeg = 200, N = 1;
+  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+  function draw() {
+    const ta = tdeg * Math.PI / 180;
+    target(Math.cos(ta), Math.sin(ta));
+    while (dots.firstChild) dots.removeChild(dots.firstChild);
+    let bk = 0, be = Infinity;
+    for (let k = 0; k <= N; k++) {
+      const a = k * G, [x, y] = pl.P(Math.cos(a), Math.sin(a));
+      el('circle', { cx: x, cy: y, r: 3.6, fill: '#8a5cff', opacity: .55 }, dots);
+      const e = Math.abs(wrap(a - ta));
+      if (e < be) { be = e; bk = k; }
+    }
+    best(Math.cos(bk * G), Math.sin(bk * G), `G${bk > 1 ? String(bk).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('') : bk === 1 ? '' : '⁰'}|0⟩`);
+    sT.value = tdeg; sN.value = N;
+    $('#skTv').textContent = `${Math.round(tdeg)}°`; $('#skNv').textContent = N;
+    const ed = be * 180 / Math.PI;
+    $('#skOut').innerHTML = `G を <b>${bk}</b> 回かけるのが一番近い → 目標とのずれ <b style="color:${ed < 2 ? '#14a35a' : ed < 10 ? '#e04e00' : '#d61f45'}">${ed.toFixed(1)}°</b>`;
+  }
+  sT.addEventListener('input', () => { stop(); tdeg = +sT.value; draw(); });
+  sN.addEventListener('input', () => { stop(); N = +sN.value; draw(); });
+  const targets = [200, 75, 310, 140];
+  let ti = 0;
+  const stop = looper('#skAuto', () => {
+    N = N < 10 ? N + 1 : N < 150 ? Math.min(150, Math.round(N * 1.15)) : 1;
+    if (N === 1) { ti = (ti + 1) % targets.length; tdeg = targets[ti]; }
+    draw();
+  }, 480);
+  onEnter.sk = () => { ti = 0; tdeg = targets[0]; N = 0; draw(); };
+  draw();
+}
+
+/* ---------- 3.4.3：U をかけて、逆順に U⁻¹ をかけると元に戻る ---------- */
+{
+  const pl = qPlane('#rvPlane', { W: 300, H: 270, OY: 140, U: 102 });
+  const trail = el('polyline', { fill: 'none', stroke: '#8a5cff', 'stroke-width': 2.5, 'stroke-dasharray': '2 5', opacity: .7 }, pl.gBack);
+  const start = pl.arrow('#9a93bd', { width: 4, dash: '2 6', label: '|φ⟩', lcolor: '#6b6790' });
+  const ar = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const gates = [
+    { n: 'R(40°)', inv: 'R(−40°)', M: rot(40), Mi: rot(-40) },
+    { n: 'H', inv: 'H⁻¹', M: [[S2, S2], [S2, -S2]], Mi: [[S2, S2], [S2, -S2]] },
+    { n: 'Z', inv: 'Z⁻¹', M: [[1, 0], [0, -1]], Mi: [[1, 0], [0, -1]] },
+    { n: 'R(−75°)', inv: 'R(75°)', M: rot(-75), Mi: rot(75) },
+    { n: 'X', inv: 'X⁻¹', M: [[0, 1], [1, 0]], Mi: [[0, 1], [1, 0]] },
+  ];
+  const PHI = [S5, 2 * S5];
+  let v = PHI.slice(), stack = [], pts = [PHI.slice()], cancel = () => {}, gi = 0;
+  const chain = $('#rvChain'), msg = $('#rvMsg');
+  function drawTrail() { trail.setAttribute('points', pts.map(p => pl.P(...p).join(',')).join(' ')); }
+  function render() {
+    chain.innerHTML = stack.length
+      ? stack.slice().reverse().map(g => `<span class="gch">${g.n}</span>`).join('') + '<span>|φ⟩</span>'
+      : '<span style="color:var(--muted);font-size:16px">まだ何もかけていない： |φ⟩</span>';
+  }
+  function move(w) { cancel(); const from = v; v = w; cancel = tweenVec(from, w, 700, p => ar(p[0], p[1], stack.length ? 'いまの状態' : '|φ⟩')); }
+  function apply() {
+    if (stack.length >= 5) return;
+    const g = gates[gi++ % gates.length];
+    stack.push(g); pts.push(mul(g.M, v)); move(mul(g.M, v)); drawTrail(); render();
+    msg.className = 'rv-msg go'; msg.textContent = `${g.n} をかけた（${stack.length} 個目）`;
+  }
+  function undo() {
+    if (!stack.length) return;
+    const g = stack.pop();
+    pts.pop(); move(mul(g.Mi, v)); drawTrail(); render();
+    if (!stack.length) { msg.className = 'rv-msg ok'; msg.innerHTML = '✓ 元に戻った！ U<sup>−1</sup>U|φ⟩ = |φ⟩'; replay(msg, 'pop2'); }
+    else { msg.className = 'rv-msg'; msg.textContent = `${g.n} の逆 ${g.inv} をかけて 1 つ戻した`; }
+  }
+  let k = 0;
+  const stop = looper('#rvAuto', () => { (k++ % 6 < 3 ? apply : undo)(); }, 1500);
+  $('#rvDo').addEventListener('click', e => { e.currentTarget.blur(); stop(); apply(); });
+  $('#rvUndo').addEventListener('click', e => { e.currentTarget.blur(); stop(); undo(); });
+  const reset = () => { cancel(); k = 0; gi = 0; stack = []; v = PHI.slice(); pts = [PHI.slice()]; ar(...v, '|φ⟩'); drawTrail(); render(); msg.className = 'rv-msg'; msg.textContent = '　'; };
+  onEnter.rev = reset;
+  start(...PHI); reset();
+}
+
+/* ---------- 図3.4：古典ビットの AND（出力から入力に戻れる？） ---------- */
+{
+  const c = new Circuit('cAnd', { viewBox: '-70 40 600 180' });
+  c.input('A', 60, 95, '入力1'); c.input('B', 60, 165, '入力2');
+  c.gate('g', 'AND', 200, 130, ['A', 'B']);
+  c.link('A', 'g.in0', 140); c.link('B', 'g.in1', 140);
+  c.output('Q', 380, 130, 'g', '出力');
+  c.link('g', 'Q');
+  truthTable('tAnd', c, [['A', '入力1'], ['B', '入力2']], [['g', '出力']]);
+  const stop = autoplay('pAnd', c);
+  const trs = [...document.querySelectorAll('#tAnd tbody tr')], m = $('#andMsg');
+  const clearBack = () => { trs.forEach(tr => tr.classList.remove('rv')); m.textContent = '　'; };
+  c.onChange(clearBack);
+  [0, 1].forEach(o => $('#andBack' + o).addEventListener('click', e => {
+    e.currentTarget.blur(); stop();
+    const hit = trs.filter(tr => tr.lastElementChild.textContent === String(o));
+    trs.forEach(tr => tr.classList.toggle('rv', hit.includes(tr)));
+    m.innerHTML = hit.length > 1
+      ? `出力 ${o} になる入力は <b style="color:#d61f45">${hit.length} 通り</b>（${hit.map(tr => tr.children[0].textContent + tr.children[1].textContent).join('・')}）→ 1つに決められない`
+      : `出力 ${o} になる入力は 11 の <b style="color:#14a35a">1 通りだけ</b>。でも出力 0 のときは戻せない`;
+  }));
+  onEnter.and = () => { c.set({ A: 0, B: 0 }, false); clearBack(); };
+  c.set({}, false);
+}
+
+/* ---------- 復習問題：カードをクリックすると答えが出る（もう一度押すと隠れる） ---------- */
+{
+  document.querySelectorAll('.qz').forEach(q => q.addEventListener('click', () => {
+    const open = q.classList.toggle('open');
+    q.querySelectorAll('.qgb').forEach(g => g.classList.toggle('shown', open));
+  }));
+  // 図の ? は 1 つずつクリックで開ける。全部開いたら答えの文も出す
+  document.querySelectorAll('.qgb').forEach(g => g.addEventListener('click', e => {
+    e.stopPropagation();
+    g.classList.toggle('shown');
+    const q = g.closest('.qz'), all = [...q.querySelectorAll('.qgb')];
+    q.classList.toggle('open', all.every(x => x.classList.contains('shown')));
+  }));
+  document.querySelectorAll('[data-quiz-all]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation(); b.blur();
+    const qs = [...b.closest('.slide').querySelectorAll('.qz')], open = !qs.every(q => q.classList.contains('open'));
+    qs.forEach(q => { q.classList.toggle('open', open); q.querySelectorAll('.qgb').forEach(g => g.classList.toggle('shown', open)); });
+    b.textContent = open ? '答えをぜんぶ隠す' : '答えをぜんぶ表示';
+  }));
+  // スライドを開くたびに答えを隠した状態に戻す
+  const reset = id => () => {
+    const sl = document.querySelector(`.slide[data-id="${id}"]`);
+    sl.querySelectorAll('.qz').forEach(q => q.classList.remove('open'));
+    sl.querySelectorAll('.qgb').forEach(g => g.classList.remove('shown'));
+    sl.querySelector('[data-quiz-all]').textContent = '答えをぜんぶ表示';
+  };
+  window.onEnter = window.onEnter || {};
+  onEnter.quiz = reset('quiz');
+  // 印刷（配布資料）では答えも見えるようにする
+  addEventListener('beforeprint', () => document.querySelectorAll('.qz, .qgb').forEach(q => q.classList.add(q.classList.contains('qz') ? 'open' : 'shown')));
+}
+
+/* ---------- スライド制御 ---------- */
+const stage = $('#stage');
+function fit() {
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+
+const slides = [...document.querySelectorAll('.slide')];
+slides.forEach((s, i) => { const p = s.querySelector('.pageno'); if (p) p.textContent = `${i + 1} / ${slides.length}`; });
+let cur = 0;
+const frags = s => [...s.querySelectorAll('.frag')];
+function showFrag(f, on) {
+  f.classList.toggle('vis', on);
+  if (f.dataset.slideClass) f.closest('.slide').classList.toggle(f.dataset.slideClass, on);
+}
+function go(n, showAll = false) {
+  if (n < 0 || n >= slides.length) return;
+  stoppers.forEach(f => f());
+  cur = n;
+  slides.forEach((s, i) => { s.classList.toggle('active', i === n); s.classList.toggle('past', i < n); });
+  frags(slides[n]).forEach(f => showFrag(f, showAll));
+  $('#counter').textContent = `${n + 1} / ${slides.length}`;
+  $('#progress').style.width = `${(n + 1) / slides.length * 100}%`;
+  history.replaceState(null, '', '#' + (n + 1));
+  const id = slides[n].dataset.id;
+  if (window.onEnter && onEnter[id]) onEnter[id]();
+  // 自動再生ボタンのあるスライドは、開いた時点で再生を始める（ボタンで停止できる）
+  slides[n].querySelectorAll('[data-autoplay]').forEach(b => b.click());
+  ink.render();
+}
+function next() {
+  const f = frags(slides[cur]).find(x => !x.classList.contains('vis'));
+  if (f) showFrag(f, true); else go(cur + 1);
+}
+function prev() {
+  const v = frags(slides[cur]).filter(x => x.classList.contains('vis'));
+  if (v.length) showFrag(v[v.length - 1], false); else go(cur - 1, true);
+}
+function fullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+}
+let overview = false;
+function layoutOverview() {
+  const cols = innerWidth < 900 ? 2 : innerWidth < 1400 ? 3 : 4;
+  const w = (document.body.clientWidth - 48 - 22 * (cols - 1)) / cols;
+  stage.style.setProperty('--cols', cols);
+  stage.style.setProperty('--z', w / 1280);
+  stage.style.setProperty('--ow', `${w}px`);
+  stage.style.setProperty('--oh', `${w * 720 / 1280}px`);
+}
+function markCurrent() { slides.forEach((s, i) => s.classList.toggle('current', i === cur)); }
+function toggleOverview(on = !overview) {
+  overview = on;
+  document.body.classList.toggle('overview', on);
+  if (on) {
+    stoppers.forEach(f => f());
+    layoutOverview(); markCurrent();
+    slides[cur].scrollIntoView({ block: 'center' });
+  } else {
+    document.body.scrollTop = 0;
+    go(cur);
+  }
+}
+slides.forEach((s, i) => s.addEventListener('click', () => {
+  if (!overview) return;
+  cur = i; toggleOverview(false);
+}));
+addEventListener('resize', () => { if (overview) layoutOverview(); });
+addEventListener('keydown', e => {
+  if (overview) {
+    if (['o', 'O', 'Escape'].includes(e.key)) toggleOverview(false);
+    else if (e.key === 'Enter') { e.preventDefault(); toggleOverview(false); }
+    else if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+      e.preventDefault();
+      cur = Math.max(0, Math.min(slides.length - 1, cur + (e.key === 'ArrowRight' ? 1 : -1)));
+      markCurrent(); slides[cur].scrollIntoView({ block: 'nearest' });
+    }
+    return;
+  }
+  if (e.target.tagName === 'SUMMARY' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'p' || e.key === 'P') return ink.setTool(ink.tool() === 'pen' ? 'laser' : 'pen');
+  if (e.key === 'z' || e.key === 'Z') return ink.undo();
+  if (e.key === 'o' || e.key === 'O') return toggleOverview(true);
+  if (['ArrowRight', 'PageDown', ' ', 'Enter', 'ArrowDown'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace', 'ArrowUp'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(slides.length - 1);
+  else if (e.key === 'f' || e.key === 'F') fullscreen();
+});
+let tx = null;
+// スライダー操作や Apple Pencil のタッチはスワイプのページ送りに使わない
+addEventListener('touchstart', e => tx = laser.blocksSwipe(e.touches[0]) || e.target.closest('input') ? null : e.touches[0].clientX, { passive: true });
+addEventListener('touchend', e => {
+  if (tx === null || overview) return;
+  const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 60) dx < 0 ? next() : prev();
+});
+// Apple Pencil のタッチは、Safari のスクリブル（手書き入力）・スクロール・拡大鏡などの判定に使わせない。
+// これらが働くと、速く書いたときにペンの動きが一瞬ページに届かなくなり、固まって見えるため。
+// タッチの既定の動作を止めるとクリックも起きなくなるので、ペンで軽くタップしたときはこちらでクリックを送る
+let penTap = null;
+const findPen = e => penTap && [...e.changedTouches].find(t => t.identifier === penTap.id);
+stage.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  if (t.touchType !== 'stylus' || overview || e.target.closest('input')) return;
+  e.preventDefault();
+  penTap = { id: t.identifier, x: t.clientX, y: t.clientY, target: e.target, moved: 0 };
+}, { passive: false });
+stage.addEventListener('touchmove', e => {
+  const t = findPen(e);
+  if (!t) return;
+  e.preventDefault();
+  penTap.moved = Math.max(penTap.moved, Math.hypot(t.clientX - penTap.x, t.clientY - penTap.y));
+}, { passive: false });
+stage.addEventListener('touchend', e => {
+  const t = findPen(e);
+  if (!t) return;
+  const { target, moved } = penTap;
+  penTap = null;
+  // ほとんど動かさなかったときはタップとみなしてクリックを送る（ボタン・回路の入力・復習問題のカードなど）
+  if (moved < 8) {
+    if (typeof target.click === 'function') target.click();
+    else target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: t.clientX, clientY: t.clientY }));
+  }
+});
+stage.addEventListener('touchcancel', () => { penTap = null; });
+$('#btnNext').onclick = e => { e.currentTarget.blur(); next(); };
+$('#btnPrev').onclick = e => { e.currentTarget.blur(); prev(); };
+$('#btnFs').onclick = e => { e.currentTarget.blur(); fullscreen(); };
+$('#btnOv').onclick = e => { e.currentTarget.blur(); toggleOverview(true); };
+$('#btnOvClose').onclick = e => { e.currentTarget.blur(); toggleOverview(false); };
+addEventListener('beforeprint', () => slides.forEach(s => frags(s).forEach(f => showFrag(f, true))));
+/* ---------- 黒ペン ----------
+   右下の道具で「黒ペン」を選ぶと、Apple Pencil（パソコンではマウス）でスライドに書き込める。指では書かない（指はスワイプやタップに使う）。
+   ペン先で軽くタップしただけのときは線を残さず、ボタンや入力の丸のクリックとして扱う。
+   書き込みはスライドごとに保持し、ページを戻ると再表示される（再読み込みで消える）。 */
+const ink = (() => {
+  const W = 1280, H = 720, COLOR = '#111';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ink';
+  stage.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const bar = $('#penbar');
+  const pages = slides.map(() => ({ strokes: [], undo: [] }));
+  let tool = 'laser', active = null;
+
+  function resize() {
+    const k = Math.min(4096 / W, stage.getBoundingClientRect().width / W * (devicePixelRatio || 1));
+    canvas.width = Math.round(W * k); canvas.height = Math.round(H * k);
+    render();
+  }
+  // 筆圧で太さを変え、点の中点を結ぶ曲線でなめらかにする。i 番目の区間は p[i-1]・p[i]・p[i+1] で決まる
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  function drawSeg(p, i) {
+    const m0 = i === 1 ? p[0] : mid(p[i - 1], p[i]);
+    const m1 = i === p.length - 1 ? p[i] : mid(p[i], p[i + 1]);
+    ctx.lineWidth = 4 * (.4 + p[i][2] * 1.2);
+    ctx.beginPath(); ctx.moveTo(m0[0], m0[1]); ctx.quadraticCurveTo(p[i][0], p[i][1], m1[0], m1[1]); ctx.stroke();
+  }
+  function drawStroke(p) { for (let i = 1; i < p.length; i++) drawSeg(p, i); }
+  // スライド全体の描き直し（元に戻す・消しゴム・スライド切り替えなどのときだけ）
+  function render() {
+    const k = canvas.width / W;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.strokeStyle = COLOR; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    pages[cur].strokes.forEach(drawStroke);
+    if (active && active.pts) { drawStroke(active.pts); active.drawn = active.pts.length - 2; }
+  }
+  // 書いている途中は、まだ描いていない区間だけを描き足す（毎回全部を描き直すと速く書いたときに固まるため）。
+  // 最後の区間は次の点が来ないと形が決まらないので、ペンを離したときに描く
+  function drawNew(final) {
+    const p = active.pts, upto = final ? p.length - 1 : p.length - 2;
+    for (let i = Math.max(1, active.drawn + 1); i <= upto; i++) drawSeg(p, i);
+    active.drawn = Math.max(active.drawn, upto);
+  }
+  // ペンの点はたくさん届くので、画面の書き換え 1 回につき 1 回だけまとめて描く
+  let queued = false;
+  function flush() {
+    queued = false;
+    if (!active) return;
+    if (active.pts) drawNew(false);
+    else if (active.erase.length) { const qs = active.erase; active.erase = []; if (qs.map(eraseAt).some(Boolean)) render(); }
+  }
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(flush); } };
+  function toStage(e) {
+    const r = stage.getBoundingClientRect();
+    // マウスは筆圧が取れないので 0.5 として扱う
+    const pr = e.pointerType === 'pen' && e.pressure > 0 ? e.pressure : .5;
+    return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H, pr];
+  }
+  function snapshot() { const pg = pages[cur]; pg.undo.push(pg.strokes.slice()); if (pg.undo.length > 100) pg.undo.shift(); }
+  function segDist(q, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const t = L ? Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L)) : 0;
+    return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy);
+  }
+  // q の近くを通る線を消す。消したら true（描き直しは呼び出し側でまとめて行う）
+  function eraseAt(q) {
+    const pg = pages[cur];
+    const keep = pg.strokes.filter(st => !st.some((pt, i) => segDist(q, st[Math.max(0, i - 1)], pt) < 14));
+    if (keep.length === pg.strokes.length) return false;
+    if (!active.erased) { snapshot(); active.erased = true; }
+    pg.strokes = keep;
+    return true;
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    if (overview || active || tool === 'laser' || e.target.closest('input')) return;
+    if (!(e.pointerType === 'pen' || (e.pointerType === 'mouse' && e.button === 0))) return;
+    e.preventDefault();
+    const q = toStage(e);
+    // ペンの消しゴム側（対応ペンのみ）は消しゴムとして扱う
+    const erase = tool === 'eraser' || e.button === 5;
+    active = { id: e.pointerId, start: q, moved: 0, pts: erase ? null : [q], drawn: 0, erase: [] };
+    if (erase) { if (eraseAt(q)) render(); }
+  });
+  addEventListener('pointermove', e => {
+    if (!active || e.pointerId !== active.id) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of evs.length ? evs : [e]) {
+      const q = toStage(ev);
+      active.moved = Math.max(active.moved, Math.hypot(q[0] - active.start[0], q[1] - active.start[1]));
+      if (active.pts) {
+        // ほとんど動いていない点は間引く（見た目は変わらず、描く量が減る）
+        const last = active.pts[active.pts.length - 1];
+        if (Math.hypot(q[0] - last[0], q[1] - last[1]) >= 1.2) active.pts.push(q); else last[2] = Math.max(last[2], q[2]);
+      } else active.erase.push(q);
+    }
+    schedule();
+  }, { passive: false });
+  function end(e) {
+    if (!active || e.pointerId !== active.id) return;
+    flush();
+    // ほとんど動かさなかったペン先はタップ（クリック）として扱い、線は残さない
+    if (active.pts && active.moved >= 4) {
+      drawNew(true); snapshot(); pages[cur].strokes.push(active.pts); active = null;
+    } else { active = null; render(); }
+  }
+  addEventListener('pointerup', end);
+  addEventListener('pointercancel', end);
+
+  function setTool(t) {
+    tool = t;
+    bar.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
+  }
+  function undo() { const pg = pages[cur]; if (pg.undo.length) { pg.strokes = pg.undo.pop(); render(); } }
+  bar.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => { b.blur(); setTool(b.dataset.tool); });
+  $('#inkUndo').onclick = e => { e.currentTarget.blur(); undo(); };
+  $('#inkClear').onclick = e => {
+    e.currentTarget.blur();
+    if (pages[cur].strokes.length) { snapshot(); pages[cur].strokes = []; render(); }
+  };
+  addEventListener('resize', resize);
+  resize();
+  return { render, undo, setTool, tool: () => tool, drawing: () => !!active };
+})();
+
+/* ---------- レーザーポインター ----------
+   Apple Pencil のペン先を画面に当てている間だけ赤く光る点を表示し、なぞった軌跡を光らせる（書き込みは残らない）。
+   軌跡はペンを離してから約1秒で消える。消えきる前にもう一度ペンを当てると、それまでの軌跡は消えずに残り続ける。
+   軽いタップは今までどおり回路の入力やボタンのクリックとして扱う。 */
+const laser = (() => {
+  const W = 1280, H = 720, LIFE = 1000;
+  const canvas = document.createElement('canvas');
+  canvas.id = 'laser';
+  stage.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  // trail は線ごとの点の配列。fadeFrom はペンを離した時刻（ペンを当てている間は null）
+  let trail = [], down = null, raf = 0, fadeFrom = null;
+
+  function resize() {
+    const k = Math.min(4096 / W, stage.getBoundingClientRect().width / W * (devicePixelRatio || 1));
+    canvas.width = Math.round(W * k); canvas.height = Math.round(H * k);
+    kick();
+  }
+  function toStage(e) {
+    const r = stage.getBoundingClientRect();
+    return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H];
+  }
+  const level = () => fadeFrom === null ? 1 : Math.max(0, 1 - (performance.now() - fadeFrom) / LIFE);
+  function frame() {
+    raf = 0;
+    const k = canvas.width / W, f = level();
+    if (!f) trail = [];
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // 影のぼかし（shadowBlur）は重いので使わず、太い半透明の線の上に細い線を重ねて光って見せる
+    const path = new Path2D();
+    trail.forEach(line => { path.moveTo(line[0][0], line[0][1]); line.forEach(q => path.lineTo(q[0], q[1])); });
+    ctx.strokeStyle = `rgba(255,40,70,${.18 * f})`; ctx.lineWidth = 6 + 14 * f; ctx.stroke(path);
+    ctx.strokeStyle = `rgba(255,40,70,${.8 * f})`; ctx.lineWidth = 2 + 5 * f; ctx.stroke(path);
+    if (down) {
+      const [x, y] = down.pos, g = ctx.createRadialGradient(x, y, 0, x, y, 13);
+      g.addColorStop(0, '#fff'); g.addColorStop(.35, '#ff5a6e'); g.addColorStop(1, 'rgba(255,30,60,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2); ctx.fill();
+    }
+    if (fadeFrom !== null && trail.length) kick();
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+  function add(q) {
+    const line = trail[trail.length - 1], last = line[line.length - 1];
+    // ほとんど動いていない点は間引く
+    if (!last || Math.hypot(q[0] - last[0], q[1] - last[1]) >= 1.5) line.push(q);
+    down.pos = q;
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    if (overview || e.pointerType !== 'pen' || down || e.target.closest('input') || ink.tool() !== 'laser') return;
+    e.preventDefault();
+    // 前の軌跡が消えきっていなければ残したまま続ける
+    if (!level()) trail = [];
+    fadeFrom = null; down = { id: e.pointerId, pos: null };
+    trail.push([]); add(toStage(e)); kick();
+  });
+  addEventListener('pointermove', e => {
+    if (!down || e.pointerId !== down.id) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    (evs.length ? evs : [e]).forEach(ev => add(toStage(ev)));
+    kick();
+  }, { passive: false });
+  const up = e => { if (down && e.pointerId === down.id) { down = null; fadeFrom = performance.now(); kick(); } };
+  addEventListener('pointerup', up);
+  addEventListener('pointercancel', up);
+  addEventListener('resize', resize);
+  resize();
+
+  // Apple Pencil のタッチはスワイプのページ送りに使わない
+  return { blocksSwipe: t => t.touchType === 'stylus' || !!down };
+})();
+
+go(Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1)) || 1) - 1)));
+</script>
+</body>
+</html>
