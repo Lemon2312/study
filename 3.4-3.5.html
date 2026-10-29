@@ -647,10 +647,6 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .c3f span{font:900 44px Consolas,Menlo,monospace;color:var(--pink);opacity:0;transition:opacity .3s}
 .slide.c3marked .c3f span{opacity:1}
 /* 3.5.3 */
-.zp-main{display:grid;grid-template-columns:1fr 200px;gap:8px;align-items:center}
-.zp-side{display:flex;flex-direction:column;gap:8px}
-#zpPresets{grid-template-columns:repeat(2,1fr)}
-.zp-vals{font-size:16px;line-height:1.7;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:4px 10px}
 .in-row{display:flex;flex-direction:column;gap:2px;padding:6px 0;border-bottom:1.5px dashed #e3dcf2}
 .in-row:last-child{border-bottom:0}
 .in-row .eq.inline{font-size:19px}
@@ -668,6 +664,14 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .sch-p.on{background:var(--yellow);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
 .sch-exp{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:center;min-height:170px;background:#fffaf0;border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;font-size:17px;line-height:1.65}
 .sch-k{font-size:34px;text-align:center;font-family:"Cambria Math","Times New Roman",serif}
+
+/* ブロッホ球を使う部品 */
+.zp-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+.zp-ctl{display:flex;gap:10px;align-items:center;margin-top:4px}
+.zp-ctl .bpresets{flex:none;grid-template-columns:repeat(4,auto)}
+.zp-ctl .bpresets button{padding:3px 8px;white-space:nowrap}
+.zp-vals{display:flex;gap:14px;justify-content:center;font-size:15px;margin-top:4px}
+.se-main{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;margin-top:4px}
 
 </style>
 </head>
@@ -691,7 +695,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     </div>
     <div class="card pop" style="--d:.4s">
       <svg class="plane" id="titlePlane" style="height:330px"></svg>
-      <div class="hint" style="text-align:center">量子ゲートは量子状態を動かす。でも <b>円の上からは外れない</b></div>
+      <div class="hint" style="text-align:center">量子ゲートはブロッホ球の上で状態を回す。でも <b>球面からは外れない</b></div>
     </div>
   </div>
 </section>
@@ -713,7 +717,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       <p style="margin:0 0 8px;font-weight:700">このスライドの使い方</p>
       <ul>
         <li style="font-size:19px"><b class="kb">黄色いボタン</b> で測定やゲートを実際に試せます（スライドを開くと自動再生）</li>
-        <li style="font-size:19px">矢印は量子状態のベクトル。<b class="k">点線の円 = 量子状態でいられる場所</b></li>
+        <li style="font-size:19px">量子状態は <b class="k">ブロッホ球の上の点</b> で表し、ゲートによる変化は <b class="k">球の上の動き</b> で見せます</li>
         <li style="font-size:19px">← → キー / スペースでページ送り、F キーで全画面、O キーで一覧</li>
         <li style="font-size:19px">右上のペンで書き込み・レーザーポインター</li>
       </ul>
@@ -734,7 +738,34 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="pageno"></div>
 </section>
 
-<!-- 扉：PART 2 量子ゲート -->
+<!-- ブロッホ球の見方（補足） -->
+<section class="slide" data-id="bintro">
+  <div class="chap">第3章 量子コンピュータの基本ルール ／ この資料での量子状態の見せ方</div>
+  <h2>ブロッホ球で量子状態を見る<small>補足（教科書外）</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
+    <div>
+      <div class="point pop" style="margin-top:0;font-size:17px;padding:8px 14px">1量子ビットの量子状態は、2つの角度 <span class="math">θ</span>（0〜180°）と <span class="math">φ</span>（0〜360°）で
+        <div class="eq" style="font-size:21px;margin:4px 0"><span class="math">|ψ⟩ = cos</span><span class="frac"><span>θ</span><span>2</span></span><span class="math">|0⟩ + e<sup>iφ</sup> sin</span><span class="frac"><span>θ</span><span>2</span></span><span class="math">|1⟩</span></div>
+        と書ける。θ を緯度、φ を経度とみなすと <b class="k">半径 1 の球面上の 1 点</b>（ブロッホ球）</div>
+      <ul style="margin-top:8px">
+        <li class="pop" style="--d:.1s;font-size:17px;margin:3px 0"><b>北極が |0⟩、南極が |1⟩</b>。赤道の +x が <span class="math">|+⟩ = (|0⟩+|1⟩)/√2</span>、−x が <span class="math">|−⟩ = (|0⟩−|1⟩)/√2</span></li>
+        <li class="frag" style="font-size:17px;margin:3px 0"><b>高さで測定確率が決まる</b>：|0⟩ を得る確率 = (1 + 高さ)/2（北極なら 1、赤道なら 1/2）</li>
+        <li class="frag" style="font-size:17px;margin:3px 0">量子ゲート（ユニタリ発展）は <b class="k">ブロッホ球を回転させる操作</b>。この資料では、状態の変化を <b>球の上の点の動き</b> で見せる</li>
+        <li class="frag" style="font-size:17px;margin:3px 0">全体にかかる数（|z| = 1 の z）は球の上に現れない → <b>3.5 の「区別できない」</b> の話につながる</li>
+      </ul>
+    </div>
+    <div class="card pop" style="--d:.2s;padding:10px 16px">
+      <svg class="plane" id="biSphere" style="height:290px"></svg>
+      <div class="bpresets" id="biPresets" style="grid-template-columns:repeat(6,1fr)"></div>
+      <div class="eq" id="biEq" style="font-size:19px;margin-top:6px"></div>
+      <div class="hbars" id="biBars"></div>
+      <div class="btns" style="justify-content:center;margin-top:0"><button class="b" id="biAuto" data-autoplay>▶ 自動再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- 扉：PART 1 量子ゲート -->
 <section class="slide door" style="--c:var(--purple)">
   <div class="door-bg">1</div>
   <div class="door-wrap">
@@ -886,7 +917,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
         <li class="pop" style="--d:.2s;font-size:18px;color:var(--muted)">詳しい説明は本書の範囲を越える（巻末の参考文献 [8][9][10]）</li>
       </ul>
       <div class="point blue frag" style="font-size:18px">イメージ：<b>決まった少しの種類のゲート</b> を何個もつなげると、<b>どんなユニタリ発展にも、いくらでも近づける</b></div>
-      <div class="point frag" style="font-size:17px">右の例：使えるのは <b>G（約57.3°回す回転）だけ</b>。<br>G を何回かければ目標に一番近いか探す。<b>使える個数を増やすほど、ずれが小さくなる</b></div>
+      <div class="point frag" style="font-size:17px">右の例：使えるのは <b>G（ブロッホ球を y 軸のまわりに約57.3°回す回転）だけ</b>。<br>G を何回かければ目標に一番近いか探す。<b>使える個数を増やすほど、ずれが小さくなる</b></div>
     </div>
     <div class="card pop" style="--d:.2s;padding:12px 16px">
       <svg class="plane" id="skPlane" style="height:260px"></svg>
@@ -920,6 +951,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       <svg class="plane" id="rvPlane" style="height:270px"></svg>
       <div class="rv-chain" id="rvChain"></div>
       <div class="rv-msg" id="rvMsg"></div>
+      <div class="hint" style="text-align:center;margin:0">※ R(θ)・S・H・X は例（S は |1⟩ の係数に i をかけるゲート）。紫の線が通った道すじ</div>
       <div class="btns" style="justify-content:center"><button class="b" id="rvDo">▶ U をかける</button><button class="b" id="rvUndo">◀ U⁻¹ で戻す</button><button class="b" id="rvAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
@@ -1098,15 +1130,13 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     </div>
     <div class="card pop" style="--d:.2s;padding:10px 16px">
       <div class="zp-main">
-        <svg class="plane" id="zpPlane" style="height:250px"></svg>
-        <div class="zp-side">
-          <div class="bpresets" id="zpPresets"></div>
-          <label class="qslider" style="grid-template-columns:22px 1fr 50px"><span class="qs-name">θ</span><input type="range" id="zpTh" min="0" max="360" step="any"><span class="qs-val" id="zpThv"></span></label>
-          <div class="zp-vals" id="zpVals"></div>
-        </div>
+        <div><div class="sm-cap" style="color:#8a5cff">係数 z・za・zb（複素数平面）</div><svg class="plane" id="zpPlane" style="height:190px"></svg></div>
+        <div><div class="sm-cap" style="color:#e04e00">ブロッホ球の上の z|φ⟩</div><svg class="plane" id="zpBloch" style="height:190px"></svg></div>
       </div>
+      <div class="zp-ctl"><div class="bpresets" id="zpPresets"></div><label class="qslider" style="grid-template-columns:22px 1fr 50px;flex:1"><span class="qs-name">θ</span><input type="range" id="zpTh" min="0" max="360" step="any"><span class="qs-val" id="zpThv"></span></label></div>
+      <div class="zp-vals" id="zpVals"></div>
       <div class="hbars" id="zpBars"></div>
-      <div class="hint" style="margin-top:0">複素数平面（横 = 実部、縦 = 虚部）。<span class="math">z = cos θ + i sin θ</span>（|z| = 1）。例として <span class="math">a = 0.6, b = 0.8</span>。<b>za, zb は回るだけで長さは変わらない</b></div>
+      <div class="hint" style="margin-top:0">複素数平面（横 = 実部、縦 = 虚部）。<span class="math">z = cos θ + i sin θ</span>（|z| = 1）。例として <span class="math">a = 0.6, b = 0.8</span>。<b>za, zb は回るだけで長さは変わらない → ブロッホ球の上の点は動かない</b></div>
       <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="zpAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
@@ -1248,11 +1278,16 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     </div>
     <div class="card pop" style="--d:.2s;padding:12px 16px">
       <div class="eq" style="font-size:16px;margin-bottom:4px">例（補足）：<span class="math">ħ = 1</span>、<span class="math">Ĥ =</span><span class="vec m2"><span>0</span><span>1</span><span>1</span><span>0</span></span>、<span class="math">|φ(0)⟩ = |0⟩</span></div>
-      <div class="eq" id="seU" style="font-size:17px"></div>
-      <div class="eq" id="seV" style="font-size:17px;margin-top:6px"></div>
-      <label class="qslider" style="grid-template-columns:70px 1fr 64px;margin-top:6px"><span style="font-size:15px">時間 t</span><input type="range" id="seT" min="0" max="6.2832" step="any"><span class="qs-val" id="seTv"></span></label>
-      <div class="hbars" id="seBars"></div>
-      <div class="qb-row" style="margin-top:2px"><div class="pgauge" id="seGauge"></div><div class="qverdict ok" style="width:auto">✓ 合計はずっと 1</div></div>
+      <div class="eq" id="seU" style="font-size:16px"></div>
+      <div class="eq" id="seV" style="font-size:16px;margin-top:4px"></div>
+      <div class="se-main">
+        <svg class="plane" id="seSphere" style="height:210px"></svg>
+        <div>
+          <label class="qslider" style="grid-template-columns:56px 1fr 46px"><span style="font-size:15px">時間 t</span><input type="range" id="seT" min="0" max="6.2832" step="any"><span class="qs-val" id="seTv"></span></label>
+          <div class="hbars mini" id="seBars"></div>
+          <div class="qverdict ok" style="font-size:15px;padding:3px">✓ 球面の上を回るだけ<br>（確率の合計はずっと 1）</div>
+        </div>
+      </div>
       <div class="btns" style="justify-content:center;margin-top:0"><button class="b" id="seAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
@@ -1613,26 +1648,205 @@ function tweenVec(from, to, dur, step) {
 }
 const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.classList.add(cls); };
 
-/* ---------- タイトル：量子ゲートで状態が円の上を動き回る ---------- */
+
+/* ---------- 共通：複素数の 2 次元ベクトル・行列 ---------- */
+const toC = x => (Array.isArray(x) ? x : [x, 0]);
+const cm = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
+const ca = (a, b) => [a[0] + b[0], a[1] + b[1]];
+const conj = a => [a[0], -a[1]];
+const cvec = v => v.map(toC);
+const cmat = M => M.map(r => r.map(toC));
+const cmulv = (M, v) => { M = cmat(M); v = cvec(v); return [ca(cm(M[0][0], v[0]), cm(M[0][1], v[1])), ca(cm(M[1][0], v[0]), cm(M[1][1], v[1]))]; };
+const cmm = (A, B) => { A = cmat(A); B = cmat(B); return [0, 1].map(i => [0, 1].map(j => ca(cm(A[i][0], B[0][j]), cm(A[i][1], B[1][j])))); };
+const cdag = M => { M = cmat(M); return [[conj(M[0][0]), conj(M[1][0])], [conj(M[0][1]), conj(M[1][1])]]; };
+const isUnit = M => { const D = cmm(cdag(M), M).flat(); return Math.hypot(D[0][0] - 1, D[0][1], ...D[1], ...D[2], D[3][0] - 1, D[3][1]) < 1e-6; };
+/* 量子状態 a|0⟩ + b|1⟩ のブロッホ球の上の点。長さ 1 でないベクトルは、長さ |a|² + |b|² の点になる */
+const bvec = v => { v = cvec(v); const p = cm(conj(v[0]), v[1]); return [2 * p[0], 2 * p[1], v[0][0] ** 2 + v[0][1] ** 2 - v[1][0] ** 2 - v[1][1] ** 2]; };
+/* ユニタリ行列が表す回転（回転軸 n と角度 θ）。全体にかかる位相は取り除く */
+function rotOf(M) {
+  M = cmat(M);
+  const det = ca(cm(M[0][0], M[1][1]), cm([-1, 0], cm(M[0][1], M[1][0])));
+  const h = -Math.atan2(det[1], det[0]) / 2, s = [Math.cos(h), Math.sin(h)];
+  let a = cm(M[0][0], s), b = cm(M[0][1], s);
+  if (a[0] < 0) { a = [-a[0], -a[1]]; b = [-b[0], -b[1]]; }
+  const th = 2 * Math.acos(Math.min(1, a[0])), sn = Math.sin(th / 2);
+  if (sn < 1e-9) return { n: [0, 0, 1], th: 0 };
+  return { n: [-b[1] / sn, -b[0] / sn, -a[1] / sn], th };
+}
+const vlen = v => Math.hypot(...v);
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const rodr = (v, n, t) => { const c = Math.cos(t), s = Math.sin(t), k = cross(n, v), d = dot3(n, v); return [0, 1, 2].map(i => v[i] * c + k[i] * s + n[i] * d * (1 - c)); };
+function animB(f, dur, step) {
+  let raf;
+  const t0 = performance.now();
+  const g = now => {
+    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    step(f(k < 1 ? e : 1), k);
+    if (k < 1) raf = requestAnimationFrame(g);
+  };
+  raf = requestAnimationFrame(g);
+  return () => cancelAnimationFrame(raf);
+}
+/* 状態 v0 に行列 M をかける様子：ユニタリなら本当の回転軸のまわりに回し、そうでなければまっすぐ動かす */
+function gateAnim(v0, M, dur, step) {
+  const b0 = bvec(v0), b1 = bvec(cmulv(M, v0)), r = isUnit(M) ? rotOf(M) : null;
+  return animB(e => (e >= 1 ? b1 : r ? rodr(b0, r.n, r.th * e) : b0.map((c, i) => c + (b1[i] - c) * e)), dur, step);
+}
+/* ブロッホ球の上の点 b0 から b1 へ、球面に沿って動かす */
+function moveB(b0, b1, dur, step) {
+  const l0 = vlen(b0), l1 = vlen(b1);
+  if (l0 < 1e-9 || l1 < 1e-9) return animB(e => b0.map((c, i) => c + (b1[i] - c) * e), dur, step);
+  const u0 = b0.map(c => c / l0), u1 = b1.map(c => c / l1);
+  let ax = cross(u0, u1);
+  const ang = Math.atan2(vlen(ax), dot3(u0, u1));
+  if (vlen(ax) < 1e-9) ax = Math.abs(u0[1]) < .9 ? cross(u0, [0, 1, 0]) : cross(u0, [1, 0, 0]);
+  const al = vlen(ax); ax = ax.map(c => c / al);
+  return animB(e => (e >= 1 ? b1 : rodr(u0, ax, ang * e).map(c => c * (l0 + (l1 - l0) * e))), dur, step);
+}
+
+/* ---------- 共通：ブロッホ球（北極 |0⟩・南極 |1⟩、+x が |+⟩、+y が |+i⟩） ---------- */
+function blochSphere(svg, { W = 300, H = 290, CX = W / 2, CY = H / 2, R = 100, maxLen = 1.5, axes = true } = {}) {
+  svg = typeof svg === 'string' ? $(svg) : svg;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const rad = d => d * Math.PI / 180, VA = rad(250), VE = rad(20);  // 眺める向き（x 軸が手前、y 軸が右）
+  // 球の上の点 (x, y, z) を画面の座標と奥行き（正なら手前）に変換する
+  const proj = (x, y, z) => {
+    const x1 = x * Math.cos(VA) - y * Math.sin(VA), y1 = x * Math.sin(VA) + y * Math.cos(VA);
+    return [CX + R * x1, CY - R * (y1 * Math.sin(VE) + z * Math.cos(VE)), -y1 * Math.cos(VE) + z * Math.sin(VE)];
+  };
+  const uid = () => 'b' + Math.random().toString(36).slice(2, 9);
+  const FONT = 'Cambria Math,Times New Roman,serif';
+  const defs = el('defs', {}, svg);
+  const gid = uid(), grad = el('radialGradient', { id: gid, cx: '38%', cy: '32%', r: '75%' }, defs);
+  el('stop', { offset: '0%', 'stop-color': '#ffffff' }, grad);
+  el('stop', { offset: '100%', 'stop-color': '#dcd2ff' }, grad);
+  const sphere = el('circle', { cx: CX, cy: CY, r: R, fill: `url(#${gid})`, stroke: '#1f1a3d', 'stroke-width': 2.5 }, svg);
+  const gBack = el('g', {}, svg), gTrail = el('g', {}, svg), gTop = el('g', {}, svg);
+  // 点の列を、手前は実線・奥は点線のパスにする
+  const pathD = pts => {
+    let f = '', b = '', prev = null, last = null;
+    for (const p of pts) {
+      const [x, y, d] = proj(...p), vis = d >= 0, xy = x.toFixed(1) + ',' + y.toFixed(1);
+      if (prev !== vis && last) { if (vis) f += 'M' + last; else b += 'M' + last; }
+      if (vis) f += (prev === true ? 'L' : 'M') + xy; else b += (prev === false ? 'L' : 'M') + xy;
+      prev = vis; last = xy;
+    }
+    return [f, b];
+  };
+  const great = (fn, color, w) => {
+    const pts = []; for (let t = 0; t <= 360; t += 4) pts.push(fn(rad(t)));
+    const [f, b] = pathD(pts);
+    el('path', { d: b, fill: 'none', stroke: color, 'stroke-width': w - .5, 'stroke-dasharray': '4 4', opacity: .6 }, gBack);
+    el('path', { d: f, fill: 'none', stroke: color, 'stroke-width': w }, gBack);
+  };
+  great(t => [Math.cos(t), Math.sin(t), 0], '#8a5cff', 2);
+  great(t => [Math.sin(t), 0, Math.cos(t)], '#b9b5d0', 1.8);
+  const names = [[[0, 0, 1], '|0⟩'], [[0, 0, -1], '|1⟩'], [[1, 0, 0], '|+⟩'], [[-1, 0, 0], '|−⟩'], [[0, 1, 0], '|+i⟩'], [[0, -1, 0], '|−i⟩']];
+  names.forEach(([v]) => { const [x, y] = proj(...v); el('line', { x1: CX, y1: CY, x2: x, y2: y, stroke: '#9a93bd', 'stroke-width': 1.5, 'stroke-dasharray': '3 4' }, gBack); });
+  names.forEach(([v, name]) => {
+    const [x, y] = proj(...v.map(c => c * (v[2] ? 1.2 : (c > 0 ? .74 : 1.3))));
+    const t = el('text', { x, y: y + 6, 'text-anchor': 'middle', 'font-size': name.length > 3 ? 14 : 17, 'font-weight': 800, fill: v[2] ? '#1f1a3d' : '#6b6790',
+      'font-family': FONT, stroke: '#fffaf0', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' }, gBack);
+    t.textContent = name;
+  });
+  if (axes) {
+    const ah = uid(), m = el('marker', { id: ah, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#e04e00' }, m);
+    [[[1, 0, 0], 'x', 1.7], [[0, 1, 0], 'y', 1.45]].forEach(([v, n, k]) => {
+      const [x1, y1] = proj(...v), [x2, y2] = proj(...v.map(c => c * k)), [lx, ly] = proj(...v.map(c => c * (k + .14)));
+      el('line', { x1, y1, x2, y2, stroke: '#e04e00', 'stroke-width': 2, 'marker-end': `url(#${ah})` }, gBack);
+      const t = el('text', { x: lx, y: ly + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-style': 'italic', 'font-weight': 700, fill: '#e04e00', 'font-family': FONT }, gBack);
+      t.textContent = n;
+    });
+  }
+  // 状態を表す矢印と点。長さが maxLen を超える分は先を白抜きにして縮めて描く
+  function point(color, { label = '', width = 4, dash = '', r = 7, lcolor = color } = {}) {
+    const id = uid(), m = el('marker', { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 3.6, markerHeight: 3.6, orient: 'auto' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', fill: color }, m);
+    const g = el('g', {}, gTop);
+    const attrs = { x1: CX, y1: CY, x2: CX, y2: CY, stroke: color, 'stroke-width': width, 'stroke-linecap': 'round', 'marker-end': `url(#${id})` };
+    if (dash) attrs['stroke-dasharray'] = dash;
+    const ln = el('line', attrs, g);
+    const dt = el('circle', { r, fill: color, stroke: '#1f1a3d', 'stroke-width': 2.5 }, g);
+    const lt = el('text', { 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 800, fill: lcolor, 'font-family': FONT, stroke: '#fffaf0', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' }, g);
+    lt.textContent = label;
+    const set = (b, lab) => {
+      const L = vlen(b), over = L > maxLen, q = over ? b.map(c => c * maxLen / L) : b;
+      const [x, y, d] = proj(...q);
+      ln.setAttribute('x2', x); ln.setAttribute('y2', y);
+      ln.setAttribute('visibility', L > .04 ? 'visible' : 'hidden');
+      dt.setAttribute('cx', x); dt.setAttribute('cy', y); dt.setAttribute('fill', over ? '#fff' : color);
+      g.setAttribute('opacity', d >= -0.05 ? 1 : .55);
+      if (lab !== undefined) lt.textContent = lab;
+      const Lq = vlen(q) || 1, [lx, ly] = proj(...q.map(c => c / Lq * (Lq + .26)));
+      lt.setAttribute('x', lx + (lx >= CX ? 30 : -30)); lt.setAttribute('y', ly + 6);
+    };
+    set.show = on => { g.style.display = on ? '' : 'none'; };
+    set([0, 0, 1]);
+    return set;
+  }
+  // 通った道すじ
+  function trail(color, { width = 3 } = {}) {
+    const bk = el('path', { fill: 'none', stroke: color, 'stroke-width': width - 1, 'stroke-dasharray': '3 4', opacity: .5 }, gTrail);
+    const fr = el('path', { fill: 'none', stroke: color, 'stroke-width': width, 'stroke-linecap': 'round', opacity: .85 }, gTrail);
+    return pts => { const [f, b] = pathD(pts); fr.setAttribute('d', f); bk.setAttribute('d', b); };
+  }
+  const dot = (b, attrs, parent = gTrail) => {
+    const [x, y, d] = proj(...b);
+    return el('circle', { cx: x, cy: y, r: 4, ...attrs, opacity: d >= 0 ? (attrs.opacity ?? .8) : .3 }, parent);
+  };
+  return { svg, proj, point, trail, dot, sphere, gBack, gTrail, gTop, CX, CY, R };
+}
+
+const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
+
+/* ---------- タイトル：量子ゲートをかけるたびに、ブロッホ球の上を状態が動く ---------- */
 {
-  const pl = qPlane('#titlePlane', { W: 320, H: 290, OY: 150, U: 102 });
-  const trail = el('g', {}, pl.gBack);
-  const ar = pl.arrow('#ff6b1a', { label: '|φ⟩' });
-  const gl = pl.T(pl.OX, 22, '', '#8a5cff', 20);
-  const seq = [['H', [[S2, S2], [S2, -S2]]], ['R(50°)', rot(50)], ['Z', [[1, 0], [0, -1]]], ['X', [[0, 1], [1, 0]]], ['R(−80°)', rot(-80)]];
-  let v = [1, 0], i = 0, cancel = () => {};
-  ar(...v);
+  const bs = blochSphere('#titlePlane', { W: 330, H: 310, CX: 160, CY: 165, R: 108 });
+  const tr = bs.trail('#8a5cff');
+  const pt = bs.point('#ff6b1a', { label: '|φ⟩', lcolor: '#e04e00' });
+  const gl = el('text', { x: 165, y: 22, 'text-anchor': 'middle', 'font-size': 19, 'font-weight': 800, fill: '#8a5cff' }, bs.svg);
+  const Hm = [[S2, S2], [S2, -S2]], Sm = [[1, 0], [0, [0, 1]]];
+  const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['R(50°)', rot(50)], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
+  let v = cvec([1, 0]), i = 0, pts = [bvec(v)], cancel = () => {};
+  pt(bvec(v));
   setInterval(() => {
     if (document.body.classList.contains('overview') || !document.querySelector('.slide[data-id="title"]').classList.contains('active')) return;
     const [name, M] = seq[i++ % seq.length];
-    const w = mul(M, v), [x, y] = pl.P(...v);
-    el('circle', { cx: x, cy: y, r: 5, fill: '#8a5cff' }, trail);
-    if (trail.childNodes.length > 7) trail.removeChild(trail.firstChild);
-    [...trail.childNodes].forEach((c, j, all) => c.setAttribute('opacity', (.12 + .5 * j / all.length).toFixed(2)));
     gl.textContent = `量子ゲート ${name} をかける`;
-    cancel(); cancel = tweenVec(v, w, 900, p => ar(p[0], p[1], 'U|φ⟩'));
-    v = w;
-  }, 2100);
+    cancel(); pts = pts.slice(-90);
+    cancel = gateAnim(v, M, 1100, b => { pt(b, 'U|φ⟩'); pts.push(b); tr(pts); });
+    v = cmulv(M, v);
+  }, 2300);
+}
+
+/* ---------- ブロッホ球の見方（補足） ---------- */
+{
+  const bs = blochSphere('#biSphere', { W: 320, H: 300, CX: 155, CY: 155, R: 108 });
+  const tr = bs.trail('#8a5cff');
+  const hl = el('line', { stroke: '#e04e00', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, bs.gTrail);
+  const pt = bs.point('#ff6b1a', { label: '|ψ⟩', lcolor: '#e04e00' });
+  const bars = hbars('#biBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
+  const P = [['|0⟩', [0, 0, 1]], ['|+⟩', [1, 0, 0]], ['|1⟩', [0, 0, -1]], ['|−⟩', [-1, 0, 0]], ['|+i⟩', [0, 1, 0]], ['|−i⟩', [0, -1, 0]]];
+  let b = [0, 0, 1], cancel = () => {}, pts = [];
+  function show(q) {
+    pt(q);
+    const [x, y] = bs.proj(...q), [x2, y2] = bs.proj(0, 0, q[2]);
+    hl.setAttribute('x1', x); hl.setAttribute('y1', y); hl.setAttribute('x2', x2); hl.setAttribute('y2', y2);
+    const th = Math.acos(Math.max(-1, Math.min(1, q[2]))), ph = (Math.atan2(q[1], q[0]) * 180 / Math.PI + 360) % 360;
+    const c = Math.cos(th / 2), s = Math.sin(th / 2);
+    $('#biEq').innerHTML = `<span class="math">|ψ⟩ = <span class="na">${c.toFixed(2)}</span>|0⟩ + e<sup>i·${s < .01 ? 0 : Math.round(ph)}°</sup><span class="nb">${s.toFixed(2)}</span>|1⟩</span>`;
+    bars([(1 + q[2]) / 2, (1 - q[2]) / 2], [`${((1 + q[2]) / 2).toFixed(2)}`, `${((1 - q[2]) / 2).toFixed(2)}`]);
+  }
+  const go2 = t => { cancel(); pts = [b]; cancel = moveB(b, t, 900, q => { b = q; show(q); pts.push(q); tr(pts); }); };
+  const box = $('#biPresets');
+  box.innerHTML = P.map(([n], i) => `<button data-i="${i}">${n}</button>`).join('');
+  box.querySelectorAll('button').forEach(btn => btn.addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(P[+btn.dataset.i][1]); }));
+  let k = 0;
+  const stop = looper('#biAuto', () => go2(P[++k % P.length][1]), 1800);
+  onEnter.bintro = () => { cancel(); k = 0; b = [0, 0, 1]; pts = []; tr(pts); show(b); };
+  show(b);
 }
 
 /* ---------- 古典のゲートと量子ゲート ---------- */
@@ -1667,11 +1881,12 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   play();
 }
 
-/* ---------- 定義：ユニタリ発展 U|φ⟩ ---------- */
+/* ---------- 定義：ユニタリ発展 U|φ⟩（U はブロッホ球を回す） ---------- */
 {
-  const pl = qPlane('#uPlane', { W: 236, H: 236, U: 82 });
-  const before = pl.arrow('#9a93bd', { width: 4, dash: '2 6', label: '|φ⟩', lcolor: '#6b6790' });
-  const after = pl.arrow('#ff6b1a', { label: 'U|φ⟩', lcolor: '#e04e00' });
+  const bs = blochSphere('#uPlane', { W: 260, H: 255, CX: 125, CY: 130, R: 86, axes: false });
+  const tr = bs.trail('#ff6b1a');
+  const before = bs.point('#9a93bd', { width: 3, dash: '2 5', r: 5, label: '|φ⟩', lcolor: '#6b6790' });
+  const after = bs.point('#ff6b1a', { label: 'U|φ⟩', lcolor: '#e04e00' });
   const Us = [
     { label: 'X', M: [[0, 1], [1, 0]], show: [['0', '1'], ['1', '0']] },
     { label: 'Z', M: [[1, 0], [0, -1]], show: [['1', '0'], ['0', '−1']] },
@@ -1683,16 +1898,16 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
     { label: '|1⟩', v: [0, 1] },
     { label: '(1/√5, 2/√5)', v: [S5, 2 * S5] },
   ];
-  let U = Us[0], v = Ins[0].v, cur = [1, 0], cancel = () => {};
-  function draw(animate = true) {
+  let U = Us[0], v = Ins[0].v, cancel = () => {};
+  function draw() {
     const w = mul(U.M, v);
-    before(...v);
+    before(bvec(v));
     cancel();
-    if (animate) cancel = tweenVec(v, w, 800, p => after(...p)); else after(...w);
-    cur = w;
+    const pts = [];
+    cancel = gateAnim(v, U.M, 1000, b => { after(b); pts.push(b); tr(pts); });
     $('#uEq').innerHTML = `${M_('U|φ⟩ =')}${matH(U.show)}${vecH(fmt(v[0]), fmt(v[1]))}`;
     $('#uRes').innerHTML = `${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}<span style="font-size:15px;font-weight:700">（長さ² = ${fmt(w[0] ** 2 + w[1] ** 2)}）</span>`;
-    $('#uCheck').innerHTML = `<span class="eq inline">${M_('U<sup>†</sup>U =')}${numMat(mmul(tr(U.M), U.M))}${M_('= I')}</span>　✓ ${U.label} はユニタリ行列`;
+    $('#uCheck').innerHTML = `<span class="eq inline">${M_('U<sup>†</sup>U =')}${numMat(mmul(tr2(U.M), U.M))}${M_('= I')}</span>　✓ ${U.label} はユニタリ行列 → <b>球を回すだけ</b>`;
   }
   const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
   const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); v = s.v; draw(); });
@@ -1746,11 +1961,13 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   draw(1);
 }
 
-/* ---------- 3.4.1：ユニタリなら長さ 1 のまま／ユニタリでない行列だと崩れる ---------- */
+/* ---------- 3.4.1：ユニタリなら球面の上のまま／ユニタリでない行列だと球面から外れる ---------- */
 {
-  const pl = qPlane('#kpPlane', { W: 220, H: 220, U: 70 });
-  const before = pl.arrow('#9a93bd', { width: 4, dash: '2 6', label: '|φ⟩', lcolor: '#6b6790' });
-  const after = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const bs = blochSphere('#kpPlane', { W: 250, H: 250, CX: 125, CY: 128, R: 70, axes: false, maxLen: 1.6 });
+  const before = bs.point('#9a93bd', { width: 3, dash: '2 5', r: 5, label: '|φ⟩', lcolor: '#6b6790' });
+  const after = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const note = el('text', { x: 125, y: 246, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800 }, bs.svg);
+  bs.sphere.setAttribute('stroke-width', 3.5);
   const Ms = [
     { label: 'R(60°)', M: rot(60), ok: true },
     { label: 'H', M: [[S2, S2], [S2, -S2]], ok: true },
@@ -1762,14 +1979,15 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   let M = Ms[0], deg = 30;
   function draw() {
     const t = deg * Math.PI / 180, v = [Math.cos(t), Math.sin(t)], w = mul(M.M, v);
-    const name = M.ok ? 'U' : 'M';
-    before(...v); after(...w, `${name}|φ⟩`);
-    pl.ring.setAttribute('stroke', Math.abs(w[0] ** 2 + w[1] ** 2 - 1) < .005 ? '#14a35a' : '#d61f45');
+    const name = M.ok ? 'U' : 'M', s = w[0] ** 2 + w[1] ** 2, ok = Math.abs(s - 1) < .005;
+    before(bvec(v)); after(bvec(w), `${name}|φ⟩`);
+    bs.sphere.setAttribute('stroke', ok ? '#14a35a' : '#d61f45');
+    note.textContent = ok ? '球面の上 → 量子状態' : s < 1 ? '球の内側へ → 量子状態ではない' : '球の外側へ → 量子状態ではない';
+    note.setAttribute('fill', ok ? '#14a35a' : '#d61f45');
     th.value = deg; $('#kpThv').textContent = `${Math.round(deg)}°`;
     $('#kpEq').innerHTML = `<div class="eq kp-eq">${M_(name + '|φ⟩ =')}${numMat(M.M)}${vecH(fmt(v[0]), fmt(v[1]))}</div><div class="eq kp-eq" style="margin-top:6px">${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}</div>`;
-    const D = mmul(tr(M.M), M.M), isI = Math.abs(D[0][0] - 1) + Math.abs(D[0][1]) + Math.abs(D[1][0]) + Math.abs(D[1][1] - 1) < 1e-6;
+    const D = mmul(tr2(M.M), M.M), isI = Math.abs(D[0][0] - 1) + Math.abs(D[0][1]) + Math.abs(D[1][0]) + Math.abs(D[1][1] - 1) < 1e-6;
     $('#kpDag').innerHTML = `${M_(name + '<sup>†</sup>' + name + ' =')}${numMat(D)}<b style="color:${isI ? '#14a35a' : '#d61f45'}">${isI ? '= I ✓' : '≠ I ✗'}</b>`;
-    const s = w[0] ** 2 + w[1] ** 2, ok = Math.abs(s - 1) < .005;
     gauge(w[0] ** 2, w[1] ** 2);
     const vd = $('#kpVerdict');
     vd.className = 'qverdict ' + (ok ? 'ok' : 'ng');
@@ -1780,8 +1998,8 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   th.addEventListener('input', () => { stop(); deg = +th.value; draw(); });
   let tick = 0, mi = 0;
   const stop = looper('#kpAuto', () => {
-    deg = (deg + 4) % 360; tick++;
-    if (tick % 60 === 0) { mi = (mi + 1) % Ms.length; setM(mi); } else draw();
+    deg = (deg + 3) % 360; tick++;
+    if (tick % 70 === 0) { mi = (mi + 1) % Ms.length; setM(mi); } else draw();
   }, 70);
   onEnter.keep = () => { tick = 0; mi = 0; deg = 30; setM(0); };
   setM(0);
@@ -1789,26 +2007,27 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
 
 /* ---------- 3.4.2：決まったゲート G だけで目標に近づく（イメージ） ---------- */
 {
-  const pl = qPlane('#skPlane', { W: 300, H: 260, U: 100 });
-  const dots = el('g', {}, pl.gBack);
-  const target = pl.arrow('#ff4f9a', { width: 4, dash: '4 5', label: '目標', lcolor: '#d61f45' });
-  const best = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const bs = blochSphere('#skPlane', { W: 300, H: 280, CX: 145, CY: 145, R: 104 });
+  const dots = el('g', {}, bs.gTrail);
+  const target = bs.point('#ff4f9a', { width: 3, dash: '4 4', r: 6, label: '目標', lcolor: '#d61f45' });
+  const best = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
   const sT = $('#skT'), sN = $('#skN');
-  const G = 1;  // 1 ラジアン（約 57.3°）回す
-  let tdeg = 200, N = 1;
+  // G はブロッホ球を y 軸のまわりに 1 ラジアン（約 57.3°）回す。|0⟩ から始めると x-z の大円の上を進む
+  const B = a => [Math.sin(a), 0, Math.cos(a)];
   const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+  const sup = n => String(n).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
+  let tdeg = 200, N = 1;
   function draw() {
     const ta = tdeg * Math.PI / 180;
-    target(Math.cos(ta), Math.sin(ta));
+    target(B(ta));
     while (dots.firstChild) dots.removeChild(dots.firstChild);
     let bk = 0, be = Infinity;
     for (let k = 0; k <= N; k++) {
-      const a = k * G, [x, y] = pl.P(Math.cos(a), Math.sin(a));
-      el('circle', { cx: x, cy: y, r: 3.6, fill: '#8a5cff', opacity: .55 }, dots);
-      const e = Math.abs(wrap(a - ta));
+      bs.dot(B(k), { r: 3.6, fill: '#8a5cff', opacity: .6 }, dots);
+      const e = Math.abs(wrap(k - ta));
       if (e < be) { be = e; bk = k; }
     }
-    best(Math.cos(bk * G), Math.sin(bk * G), `G${bk > 1 ? String(bk).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('') : bk === 1 ? '' : '⁰'}|0⟩`);
+    best(B(bk), `G${sup(bk)}|0⟩`);
     sT.value = tdeg; sN.value = N;
     $('#skTv').textContent = `${Math.round(tdeg)}°`; $('#skNv').textContent = N;
     const ed = be * 180 / Math.PI;
@@ -1827,39 +2046,43 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   draw();
 }
 
-/* ---------- 3.4.3：U をかけて、逆順に U⁻¹ をかけると元に戻る ---------- */
+/* ---------- 3.4.3：U をかけて、逆順に U⁻¹ をかけると元に戻る（ブロッホ球の上を行って帰る） ---------- */
 {
-  const pl = qPlane('#rvPlane', { W: 300, H: 270, OY: 140, U: 102 });
-  const trail = el('polyline', { fill: 'none', stroke: '#8a5cff', 'stroke-width': 2.5, 'stroke-dasharray': '2 5', opacity: .7 }, pl.gBack);
-  const start = pl.arrow('#9a93bd', { width: 4, dash: '2 6', label: '|φ⟩', lcolor: '#6b6790' });
-  const ar = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const bs = blochSphere('#rvPlane', { W: 300, H: 275, CX: 145, CY: 142, R: 102 });
+  const tr = bs.trail('#8a5cff');
+  const start = bs.point('#9a93bd', { width: 3, dash: '2 5', r: 5, label: '|φ⟩', lcolor: '#6b6790' });
+  const ar = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const Hm = [[S2, S2], [S2, -S2]];
   const gates = [
     { n: 'R(40°)', inv: 'R(−40°)', M: rot(40), Mi: rot(-40) },
-    { n: 'H', inv: 'H⁻¹', M: [[S2, S2], [S2, -S2]], Mi: [[S2, S2], [S2, -S2]] },
-    { n: 'Z', inv: 'Z⁻¹', M: [[1, 0], [0, -1]], Mi: [[1, 0], [0, -1]] },
-    { n: 'R(−75°)', inv: 'R(75°)', M: rot(-75), Mi: rot(75) },
+    { n: 'S', inv: 'S⁻¹', M: [[1, 0], [0, [0, 1]]], Mi: [[1, 0], [0, [0, -1]]] },
+    { n: 'H', inv: 'H⁻¹', M: Hm, Mi: Hm },
     { n: 'X', inv: 'X⁻¹', M: [[0, 1], [1, 0]], Mi: [[0, 1], [1, 0]] },
+    { n: 'R(−75°)', inv: 'R(75°)', M: rot(-75), Mi: rot(75) },
   ];
-  const PHI = [S5, 2 * S5];
-  let v = PHI.slice(), stack = [], pts = [PHI.slice()], cancel = () => {}, gi = 0;
+  const PHI = cvec([S5, 2 * S5]);
+  let v = PHI, stack = [], pts = [], cancel = () => {}, gi = 0;
   const chain = $('#rvChain'), msg = $('#rvMsg');
-  function drawTrail() { trail.setAttribute('points', pts.map(p => pl.P(...p).join(',')).join(' ')); }
   function render() {
     chain.innerHTML = stack.length
       ? stack.slice().reverse().map(g => `<span class="gch">${g.n}</span>`).join('') + '<span>|φ⟩</span>'
       : '<span style="color:var(--muted);font-size:16px">まだ何もかけていない： |φ⟩</span>';
   }
-  function move(w) { cancel(); const from = v; v = w; cancel = tweenVec(from, w, 700, p => ar(p[0], p[1], stack.length ? 'いまの状態' : '|φ⟩')); }
+  function move(M) {
+    cancel();
+    const from = v; v = cmulv(M, from);
+    cancel = gateAnim(from, M, 850, b => { ar(b, stack.length ? 'いまの状態' : '|φ⟩'); pts.push(b); if (pts.length > 800) pts.shift(); tr(pts); });
+  }
   function apply() {
     if (stack.length >= 5) return;
     const g = gates[gi++ % gates.length];
-    stack.push(g); pts.push(mul(g.M, v)); move(mul(g.M, v)); drawTrail(); render();
+    stack.push(g); move(g.M); render();
     msg.className = 'rv-msg go'; msg.textContent = `${g.n} をかけた（${stack.length} 個目）`;
   }
   function undo() {
     if (!stack.length) return;
     const g = stack.pop();
-    pts.pop(); move(mul(g.Mi, v)); drawTrail(); render();
+    move(g.Mi); render();
     if (!stack.length) { msg.className = 'rv-msg ok'; msg.innerHTML = '✓ 元に戻った！ U<sup>−1</sup>U|φ⟩ = |φ⟩'; replay(msg, 'pop2'); }
     else { msg.className = 'rv-msg'; msg.textContent = `${g.n} の逆 ${g.inv} をかけて 1 つ戻した`; }
   }
@@ -1867,9 +2090,9 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   const stop = looper('#rvAuto', () => { (k++ % 6 < 3 ? apply : undo)(); }, 1500);
   $('#rvDo').addEventListener('click', e => { e.currentTarget.blur(); stop(); apply(); });
   $('#rvUndo').addEventListener('click', e => { e.currentTarget.blur(); stop(); undo(); });
-  const reset = () => { cancel(); k = 0; gi = 0; stack = []; v = PHI.slice(); pts = [PHI.slice()]; ar(...v, '|φ⟩'); drawTrail(); render(); msg.className = 'rv-msg'; msg.textContent = '　'; };
+  const reset = () => { cancel(); k = 0; gi = 0; stack = []; v = PHI; pts = [bvec(PHI)]; tr(pts); ar(bvec(PHI), '|φ⟩'); render(); msg.className = 'rv-msg'; msg.textContent = '　'; };
   onEnter.rev = reset;
-  start(...PHI); reset();
+  start(bvec(PHI)); reset();
 }
 
 /* ---------- 図3.4：古典ビットの AND（出力から入力に戻れる？） ---------- */
@@ -1927,20 +2150,21 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   draw(false);
 }
 
-/* ---------- 3.5.1 区別できる例：(|0⟩ ± |1⟩)/√2 は H をかけてから測ると区別できる ---------- */
+/* ---------- 3.5.1 区別できる例：|±⟩ は H をかけると北極・南極に分かれる ---------- */
 {
-  const pl = qPlane('#smPlane', { W: 300, H: 250, OX: 130, OY: 125, U: 92 });
-  const projA = el('line', { stroke: '#e04e00', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
-  const projB = el('line', { stroke: '#3b6cff', 'stroke-width': 2, 'stroke-dasharray': '3 4', opacity: .7 }, pl.gBack);
-  const arA = pl.arrow('#ff6b1a', { label: '|+⟩', lcolor: '#e04e00' });
-  const arB = pl.arrow('#3b6cff', { label: '|−⟩' });
+  const bs = blochSphere('#smPlane', { W: 300, H: 265, CX: 145, CY: 138, R: 98, axes: false });
+  const hA = el('line', { stroke: '#e04e00', 'stroke-width': 2.5, 'stroke-dasharray': '3 4' }, bs.gTrail);
+  const hB = el('line', { stroke: '#3b6cff', 'stroke-width': 2.5, 'stroke-dasharray': '3 4' }, bs.gTrail);
+  const trA = bs.trail('#ff6b1a'), trB = bs.trail('#3b6cff');
+  const arA = bs.point('#ff6b1a', { label: '|+⟩', lcolor: '#e04e00' });
+  const arB = bs.point('#3b6cff', { label: '|−⟩' });
   const H = [[S2, S2], [S2, -S2]];
   const PHI = [S2, S2], PSI = [S2, -S2];
   const barsA = hbars('#smBarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
   const barsB = hbars('#smBarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
   const tb = timerBag(), hBtn = $('#smH'), vd = $('#smVerdict');
-  let useH = false, va = PHI, vb = PSI, cancels = [];
-  const setProj = (ln, v) => { const [x, y] = pl.P(...v); ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', x); ln.setAttribute('y2', pl.OY); };
+  let useH = false, shownH = false, cancels = [];
+  const setH = (ln, b) => { const [x, y] = bs.proj(...b), [x2, y2] = bs.proj(0, 0, b[2]); ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2); };
   const ta0 = () => (useH ? mul(H, PHI) : PHI)[0] ** 2, tb0 = () => (useH ? mul(H, PSI) : PSI)[0] ** 2;
   const clearBars = () => {
     tb.clear(); barsA([0, 0], ['0', '0'], [ta0(), 1 - ta0()]); barsB([0, 0], ['0', '0'], [tb0(), 1 - tb0()]);
@@ -1948,15 +2172,18 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   };
   function place(animate) {
     cancels.forEach(c => c()); cancels = [];
-    const ta = useH ? mul(H, PHI) : PHI, tb2 = useH ? mul(H, PSI) : PSI;
     const la = useH ? 'H|+⟩' : '|+⟩', lb = useH ? 'H|−⟩' : '|−⟩';
-    if (!animate) { va = ta; vb = tb2; arA(...va, la); arB(...vb, lb); setProj(projA, va); setProj(projB, vb); }
-    else {
-      cancels.push(tweenVec(va, ta, 800, p => { arA(p[0], p[1], la); setProj(projA, p); }));
-      cancels.push(tweenVec(vb, tb2, 800, p => { arB(p[0], p[1], lb); setProj(projB, p); }));
-      va = ta; vb = tb2;
+    if (animate && shownH !== useH) {
+      // H をかける（H をもう一度かけると元に戻る）様子を、本当の回転として見せる
+      const fa = shownH ? mul(H, PHI) : PHI, fb = shownH ? mul(H, PSI) : PSI, pa = [], pb = [];
+      cancels.push(gateAnim(fa, H, 1000, b => { arA(b, la); setH(hA, b); pa.push(b); trA(pa); }));
+      cancels.push(gateAnim(fb, H, 1000, b => { arB(b, lb); setH(hB, b); pb.push(b); trB(pb); }));
+    } else {
+      const a = bvec(useH ? mul(H, PHI) : PHI), b = bvec(useH ? mul(H, PSI) : PSI);
+      arA(a, la); arB(b, lb); setH(hA, a); setH(hB, b); trA([]); trB([]);
     }
-    $('#smMode').innerHTML = useH ? '<span style="color:#8a5cff">アダマール行列 H をかけてから測定</span>' : 'そのまま測定';
+    shownH = useH;
+    $('#smMode').innerHTML = useH ? '<span style="color:#8a5cff">アダマール行列 H をかけてから測定</span>' : 'そのまま測定（どちらも赤道の上 → 高さが同じ）';
     $('#smCapA').textContent = useH ? 'H|+⟩ を測定' : '|+⟩ を測定';
     $('#smCapB').textContent = useH ? 'H|−⟩ を測定' : '|−⟩ を測定';
     hBtn.textContent = useH ? '↩ そのまま測定に戻す' : '🔀 H をかけてから測定';
@@ -1980,13 +2207,13 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   let k = 0;
   const stop = looper('#smAuto', () => {
     const ph = k++ % 4;
-    if (ph === 0) { useH = false; place(true); tb.later(run, 850); }
+    if (ph === 0) { useH = false; place(true); tb.later(run, 1050); }
     else if (ph === 1) run();
-    else if (ph === 2) { useH = true; place(true); tb.later(run, 850); }
+    else if (ph === 2) { useH = true; place(true); tb.later(run, 1050); }
     else run();
-  }, 2600);
+  }, 2800);
   $('#smRun').addEventListener('click', e => { e.currentTarget.blur(); stop(); run(); });
-  hBtn.addEventListener('click', e => { e.currentTarget.blur(); stop(); useH = !useH; place(true); tb.later(run, 850); });
+  hBtn.addEventListener('click', e => { e.currentTarget.blur(); stop(); useH = !useH; place(true); tb.later(run, 1050); });
   onEnter.dist1 = () => { k = 0; useH = false; place(false); };
   place(false);
 }
@@ -2036,7 +2263,7 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
     cancelAnimationFrame(raf);
     const step = now => {
       const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
-      rx = from + (target - from) * e; shapes[1].r.setAttribute('rx', rx);
+      rx = Math.max(0, from + (target - from) * e); shapes[1].r.setAttribute('rx', rx);
       if (k < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
@@ -2055,11 +2282,14 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   set(false);
 }
 
-/* ---------- 3.5.2 区別できない例：|+⟩ と −|+⟩ はどの U をかけても確率が同じ ---------- */
+/* ---------- 3.5.2 区別できない例：|+⟩ と −|+⟩ はブロッホ球の上で同じ点。どの U をかけても一緒に動く ---------- */
 {
-  const pl = qPlane('#d2Plane', { W: 300, H: 220, U: 82 });
-  const arA = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
-  const arB = pl.arrow('#3b6cff', { label: '' });
+  const bs = blochSphere('#d2Plane', { W: 300, H: 262, CX: 140, CY: 120, R: 86, axes: false });
+  const trA = bs.trail('#ff6b1a');
+  const arA = bs.point('#ff6b1a', { width: 6, r: 10, label: '', lcolor: '#e04e00' });
+  const arB = bs.point('#3b6cff', { width: 2.5, r: 5, label: '' });
+  const cap = el('text', { x: 150, y: 256, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800, fill: '#8a5cff' }, bs.svg);
+  cap.textContent = '2つの状態はいつも同じ点に重なる';
   const A = [S2, S2], B = [-S2, -S2];
   const barsA = hbars('#d2BarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
   const barsB = hbars('#d2BarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
@@ -2071,17 +2301,18 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
     { label: 'Z', n: 'Z', M: () => [[1, 0], [0, -1]] },
     { label: 'R(θ)', n: 'R', M: () => rot(deg) },
   ];
-  let U = Us[0], deg = 40, va = A, vb = B, cancels = [];
+  let U = Us[0], deg = 40, prevM = [[1, 0], [0, 1]], cancel = () => {};
   function draw(animate = true) {
-    const M = U.M(), wa = mul(M, A), wb = mul(M, B);
+    const M = U.M(), wa = cmulv(M, A), wb = cmulv(M, B);
     const la = (U.n ? U.n : '') + '|+⟩', lb = (U.n ? U.n : '') + '(−|+⟩)';
-    cancels.forEach(c => c()); cancels = [];
+    cancel();
     if (animate) {
-      cancels.push(tweenVec(va, wa, 700, p => arA(p[0], p[1], la)));
-      cancels.push(tweenVec(vb, wb, 700, p => arB(p[0], p[1], lb)));
-    } else { arA(...wa, la); arB(...wb, lb); }
-    va = wa; vb = wb;
-    const pa = wa[0] ** 2, pb = wb[0] ** 2;
+      // いま表示している状態から新しい状態への変化 = M・(前の M)⁻¹ を回転として見せる
+      const from = cmulv(prevM, A), step = cmm(M, cdag(prevM)), pts = [];
+      cancel = gateAnim(from, step, 800, b => { arA(b); arB(b); pts.push(b); trA(pts); });
+    } else { arA(bvec(wa)); arB(bvec(wb)); trA([]); }
+    prevM = M;
+    const pa = bvec(wa)[2] / 2 + .5, pb = bvec(wb)[2] / 2 + .5;
     barsA([pa, 1 - pa], [`${Math.round(pa * 100)}%`, `${Math.round((1 - pa) * 100)}%`]);
     barsB([pb, 1 - pb], [`${Math.round(pb * 100)}%`, `${Math.round((1 - pb) * 100)}%`]);
     $('#d2CapA').textContent = `${la} を測定`; $('#d2CapB').textContent = `${lb} を測定`;
@@ -2096,26 +2327,31 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
     if (j < 4) setU(j);
     else { if (j === 4) { deg = -150; setU(4); } else { deg += 30; draw(); } }
   }, 1300);
-  onEnter.dist2 = () => { k = 0; deg = 40; va = A; vb = B; setU(0); };
+  onEnter.dist2 = () => { k = 0; deg = 40; prevM = [[1, 0], [0, 1]]; U = Us[0]; setU(0); draw(false); };
   setU(0);
 }
 
-/* ---------- 3.5.3：z|φ⟩（|z| = 1）は係数が回るだけで、確率は変わらない ---------- */
+/* ---------- 3.5.3：z|φ⟩（|z| = 1）は係数が回るだけ。ブロッホ球の上では |φ⟩ と同じ点のまま ---------- */
 {
-  const pl = qPlane('#zpPlane', { W: 270, H: 250, U: 100, labels: ['実部', '虚部'] });
+  const pl = qPlane('#zpPlane', { W: 240, H: 230, U: 92, labels: ['実部', '虚部'] });
   [.6, .8].forEach((r, i) => el('circle', { cx: pl.OX, cy: pl.OY, r: pl.U * r, fill: 'none', stroke: i ? '#3b6cff' : '#ff6b1a', 'stroke-width': 1.5, 'stroke-dasharray': '2 5', opacity: .7 }, pl.gBack));
   const arZ = pl.arrow('#8a5cff', { width: 4, label: 'z', lcolor: '#8a5cff' });
   const arB = pl.arrow('#3b6cff', { label: '' });
   const arA = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  const bs = blochSphere('#zpBloch', { W: 250, H: 230, CX: 115, CY: 118, R: 82, axes: false });
+  const bP = bs.point('#9a93bd', { width: 7, r: 11, label: '' });
+  const bZ = bs.point('#ff6b1a', { label: 'z|φ⟩ = |φ⟩ の点', lcolor: '#e04e00' });
   const th = $('#zpTh');
   const bars = hbars('#zpBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
   const cx = (re, im) => `${fmt(re)} ${im < -5e-3 ? '−' : '+'} ${fmt(Math.abs(im))}i`;
   let deg = 0, raf = 0;
+  bP(bvec([.6, .8]));
   function draw() {
     const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t);
     arZ(c, s); arA(.6 * c, .6 * s); arB(.8 * c, .8 * s);
+    bZ(bvec([[.6 * c, .6 * s], [.8 * c, .8 * s]]));
     th.value = deg; $('#zpThv').textContent = `${Math.round(deg)}°`;
-    $('#zpVals').innerHTML = `<div><span class="math">z = ${cx(c, s)}</span></div><div class="na"><span class="math">za = ${cx(.6 * c, .6 * s)}</span></div><div class="nb"><span class="math">zb = ${cx(.8 * c, .8 * s)}</span></div>`;
+    $('#zpVals').innerHTML = `<span><span class="math">z = ${cx(c, s)}</span></span><span class="na"><span class="math">za = ${cx(.6 * c, .6 * s)}</span></span><span class="nb"><span class="math">zb = ${cx(.8 * c, .8 * s)}</span></span>`;
     bars([.36, .64], ['|za|² = 0.36', '|zb|² = 0.64']);
   }
   const P = $('#zpPresets');
@@ -2208,24 +2444,27 @@ const replay = (e, cls) => { e.classList.remove(cls); void e.offsetWidth; e.clas
   show('i');
 }
 
-/* ---------- コラム：|φ(t)⟩ = e^{−iĤt/ħ}|φ(0)⟩ の例（ħ = 1, Ĥ = X, |φ(0)⟩ = |0⟩） ---------- */
+/* ---------- コラム：|φ(t)⟩ = e^{−iĤt/ħ}|φ(0)⟩ の例（ħ = 1, Ĥ = X, |φ(0)⟩ = |0⟩）。ブロッホ球の上を x 軸のまわりに回る ---------- */
 {
   const sl = $('#seT'), bars = hbars('#seBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const gEl = $('#seGauge'), gauge = probGauge(gEl);
-  gEl.classList.add('instant');
+  const bs = blochSphere('#seSphere', { W: 250, H: 245, CX: 120, CY: 125, R: 86 });
+  const orbit = []; for (let a = 0; a <= 360; a += 4) { const r = a * Math.PI / 180; orbit.push([0, -Math.sin(r), Math.cos(r)]); }
+  bs.trail('#b9b5d0', { width: 2 })(orbit);
+  const tr = bs.trail('#8a5cff');
+  const pt = bs.point('#ff6b1a', { label: '|φ(t)⟩', lcolor: '#e04e00' });
   const cx = (re, im) => (Math.abs(im) < 5e-3 ? fmt(re) : Math.abs(re) < 5e-3 ? `${fmt(im)}i` : `${fmt(re)}${im < 0 ? '−' : '+'}${fmt(Math.abs(im))}i`);
-  let t = 0;
+  let t = 0, pts = [];
   function draw() {
-    const c = Math.cos(t), s = Math.sin(t);
+    const c = Math.cos(t), s = Math.sin(t), b = [0, -Math.sin(2 * t), Math.cos(2 * t)];
+    pt(b); pts.push(b); if (pts.length > 140) pts.shift(); tr(pts);
     sl.value = t; $('#seTv').textContent = t.toFixed(2);
     $('#seU').innerHTML = `${M_('e<sup>−iĤt</sup> =')}${matH([[fmt(c), cx(0, -s)], [cx(0, -s), fmt(c)]])}<span style="font-size:13px;color:var(--muted)">（ユニタリ）</span>`;
     $('#seV').innerHTML = `${M_('|φ(t)⟩ =')}${matH([[fmt(c), cx(0, -s)], [cx(0, -s), fmt(c)]])}${vecH(1, 0)}${M_('=')}${vecH(fmt(c), cx(0, -s), 'na', 'nb')}`;
     bars([c * c, s * s], [`${(c * c).toFixed(2)}`, `${(s * s).toFixed(2)}`]);
-    gauge(c * c, s * s);
   }
-  sl.addEventListener('input', () => { stop(); t = +sl.value; draw(); });
-  const stop = looper('#seAuto', () => { t = (t + .04) % (2 * Math.PI); draw(); }, 50);
-  onEnter.col2 = () => { t = 0; draw(); };
+  sl.addEventListener('input', () => { stop(); t = +sl.value; pts = []; draw(); });
+  const stop = looper('#seAuto', () => { t = (t + .03) % (2 * Math.PI); draw(); }, 50);
+  onEnter.col2 = () => { t = 0; pts = []; draw(); };
   draw();
 }
 
