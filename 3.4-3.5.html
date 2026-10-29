@@ -673,6 +673,28 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .zp-vals{display:flex;gap:14px;justify-content:center;font-size:15px;margin-top:4px}
 .se-main{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;margin-top:4px}
 
+/* ---------- アニメーションをゆっくりにする（全体で約 1.7 倍） ---------- */
+.slide{transition:opacity .75s ease,transform 1s cubic-bezier(.3,1.5,.5,1)}
+.slide.active .pop{animation:pop 1.2s cubic-bezier(.3,1.6,.5,1) both;animation-delay:calc(var(--d,0s) * 1.7)}
+.frag{transition:opacity .7s ease,transform .85s cubic-bezier(.3,1.6,.5,1)}
+.slide.active h2::before{animation-duration:1.7s}
+.slide.active .door-num{animation-duration:1.5s}
+.wire{transition:stroke .45s}
+.flow.on{animation-duration:.95s}
+.dot{transition:fill .45s}
+.gate path,.gate circle,.lamp circle,table.tt td{transition-duration:.5s}
+.pg-seg,.pg-gap,.pg-over{transition:left .5s,width .5s}
+.qz.open .qz-ans{animation-duration:.7s}
+#progress{transition:width .7s}
+.hb-f{transition:width .8s cubic-bezier(.2,.8,.3,1)}
+.shot.r0,.shot.r1,.rv-chain .gch{animation-duration:.7s}
+.pop2{animation-duration:.75s}
+.tok{transition:opacity .6s,transform .75s cubic-bezier(.3,1.6,.5,1)}
+.pwire.on{animation-duration:.8s}
+.gbox{transition:background .5s,transform .5s cubic-bezier(.3,1.6,.5,1)}
+.c3f span{transition:opacity .5s}
+.f35-tag,.hz-bar div{transition-duration:.5s}
+
 </style>
 </head>
 <body>
@@ -734,33 +756,6 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     <div class="pd-no pop" style="--d:.05s">第 3 章</div>
     <h1 class="pd-title pop" style="--d:.15s">量子コンピュータの<br>基本ルール</h1>
     <div class="pd-secs pop" style="--d:.3s"><span>3.4 ビットの状態を変化させる「量子ゲート」（pp.91–94）</span><span>3.5 量子状態の区別がつくとき、つかないとき（pp.94–99）</span><span>コラム：どうして量子コンピュータの演算はユニタリ行列なのか（pp.100–102）</span></div>
-  </div>
-  <div class="pageno"></div>
-</section>
-
-<!-- ブロッホ球の見方（補足） -->
-<section class="slide" data-id="bintro">
-  <div class="chap">第3章 量子コンピュータの基本ルール ／ この資料での量子状態の見せ方</div>
-  <h2>ブロッホ球で量子状態を見る<small>補足（教科書外）</small></h2>
-  <div class="body cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
-    <div>
-      <div class="point pop" style="margin-top:0;font-size:17px;padding:8px 14px">1量子ビットの量子状態は、2つの角度 <span class="math">θ</span>（0〜180°）と <span class="math">φ</span>（0〜360°）で
-        <div class="eq" style="font-size:21px;margin:4px 0"><span class="math">|ψ⟩ = cos</span><span class="frac"><span>θ</span><span>2</span></span><span class="math">|0⟩ + e<sup>iφ</sup> sin</span><span class="frac"><span>θ</span><span>2</span></span><span class="math">|1⟩</span></div>
-        と書ける。θ を緯度、φ を経度とみなすと <b class="k">半径 1 の球面上の 1 点</b>（ブロッホ球）</div>
-      <ul style="margin-top:8px">
-        <li class="pop" style="--d:.1s;font-size:17px;margin:3px 0"><b>北極が |0⟩、南極が |1⟩</b>。赤道の +x が <span class="math">|+⟩ = (|0⟩+|1⟩)/√2</span>、−x が <span class="math">|−⟩ = (|0⟩−|1⟩)/√2</span></li>
-        <li class="frag" style="font-size:17px;margin:3px 0"><b>高さで測定確率が決まる</b>：|0⟩ を得る確率 = (1 + 高さ)/2（北極なら 1、赤道なら 1/2）</li>
-        <li class="frag" style="font-size:17px;margin:3px 0">量子ゲート（ユニタリ発展）は <b class="k">ブロッホ球を回転させる操作</b>。この資料では、状態の変化を <b>球の上の点の動き</b> で見せる</li>
-        <li class="frag" style="font-size:17px;margin:3px 0">全体にかかる数（|z| = 1 の z）は球の上に現れない → <b>3.5 の「区別できない」</b> の話につながる</li>
-      </ul>
-    </div>
-    <div class="card pop" style="--d:.2s;padding:10px 16px">
-      <svg class="plane" id="biSphere" style="height:290px"></svg>
-      <div class="bpresets" id="biPresets" style="grid-template-columns:repeat(6,1fr)"></div>
-      <div class="eq" id="biEq" style="font-size:19px;margin-top:6px"></div>
-      <div class="hbars" id="biBars"></div>
-      <div class="btns" style="justify-content:center;margin-top:0"><button class="b" id="biAuto" data-autoplay>▶ 自動再生</button></div>
-    </div>
   </div>
   <div class="pageno"></div>
 </section>
@@ -1529,6 +1524,8 @@ function probGauge(el) {
 }
 
 window.onEnter = window.onEnter || {};
+// アニメーション全体の速さ（大きいほどゆっくり）
+const SLOW = 1.7;
 
 /* ---------- 共通：2×2 行列（実数）とベクトル ---------- */
 const S2 = Math.SQRT1_2, S5 = 1 / Math.sqrt(5);
@@ -1553,7 +1550,7 @@ function looper(btn, step, interval) {
     btn.blur();
     if (t) return stop();
     btn.textContent = '■ 停止'; btn.classList.add('playing');
-    step(); t = setInterval(step, interval);
+    step(); t = setInterval(step, interval * SLOW);
   });
   stoppers.push(stop);
   return stop;
@@ -1562,7 +1559,7 @@ function looper(btn, step, interval) {
 function timerBag() {
   let ts = [];
   const bag = {
-    later(f, ms) { ts.push(setTimeout(f, ms)); },
+    later(f, ms) { ts.push(setTimeout(f, ms * SLOW)); },
     clear() { ts.forEach(clearTimeout); ts = []; },
   };
   stoppers.push(bag.clear);
@@ -1638,7 +1635,7 @@ function tweenVec(from, to, dur, step) {
   da = Math.atan2(Math.sin(da), Math.cos(da));
   if (r0 < 1e-6) da = 0;
   const f = now => {
-    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    const k = Math.min(1, (now - t0) / (dur * SLOW)), e = 1 - Math.pow(1 - k, 3);
     const r = r0 + (r1 - r0) * e, a = (r0 < 1e-6 ? Math.atan2(to[1], to[0]) : a0) + da * e;
     step(k < 1 ? [r * Math.cos(a), r * Math.sin(a)] : to, k);
     if (k < 1) raf = requestAnimationFrame(f);
@@ -1681,7 +1678,7 @@ function animB(f, dur, step) {
   let raf;
   const t0 = performance.now();
   const g = now => {
-    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const k = Math.min(1, (now - t0) / (dur * SLOW)), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
     step(f(k < 1 ? e : 1), k);
     if (k < 1) raf = requestAnimationFrame(g);
   };
@@ -1818,35 +1815,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     cancel(); pts = pts.slice(-90);
     cancel = gateAnim(v, M, 1100, b => { pt(b, 'U|φ⟩'); pts.push(b); tr(pts); });
     v = cmulv(M, v);
-  }, 2300);
-}
-
-/* ---------- ブロッホ球の見方（補足） ---------- */
-{
-  const bs = blochSphere('#biSphere', { W: 320, H: 300, CX: 155, CY: 155, R: 108 });
-  const tr = bs.trail('#8a5cff');
-  const hl = el('line', { stroke: '#e04e00', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, bs.gTrail);
-  const pt = bs.point('#ff6b1a', { label: '|ψ⟩', lcolor: '#e04e00' });
-  const bars = hbars('#biBars', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const P = [['|0⟩', [0, 0, 1]], ['|+⟩', [1, 0, 0]], ['|1⟩', [0, 0, -1]], ['|−⟩', [-1, 0, 0]], ['|+i⟩', [0, 1, 0]], ['|−i⟩', [0, -1, 0]]];
-  let b = [0, 0, 1], cancel = () => {}, pts = [];
-  function show(q) {
-    pt(q);
-    const [x, y] = bs.proj(...q), [x2, y2] = bs.proj(0, 0, q[2]);
-    hl.setAttribute('x1', x); hl.setAttribute('y1', y); hl.setAttribute('x2', x2); hl.setAttribute('y2', y2);
-    const th = Math.acos(Math.max(-1, Math.min(1, q[2]))), ph = (Math.atan2(q[1], q[0]) * 180 / Math.PI + 360) % 360;
-    const c = Math.cos(th / 2), s = Math.sin(th / 2);
-    $('#biEq').innerHTML = `<span class="math">|ψ⟩ = <span class="na">${c.toFixed(2)}</span>|0⟩ + e<sup>i·${s < .01 ? 0 : Math.round(ph)}°</sup><span class="nb">${s.toFixed(2)}</span>|1⟩</span>`;
-    bars([(1 + q[2]) / 2, (1 - q[2]) / 2], [`${((1 + q[2]) / 2).toFixed(2)}`, `${((1 - q[2]) / 2).toFixed(2)}`]);
-  }
-  const go2 = t => { cancel(); pts = [b]; cancel = moveB(b, t, 900, q => { b = q; show(q); pts.push(q); tr(pts); }); };
-  const box = $('#biPresets');
-  box.innerHTML = P.map(([n], i) => `<button data-i="${i}">${n}</button>`).join('');
-  box.querySelectorAll('button').forEach(btn => btn.addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(P[+btn.dataset.i][1]); }));
-  let k = 0;
-  const stop = looper('#biAuto', () => go2(P[++k % P.length][1]), 1800);
-  onEnter.bintro = () => { cancel(); k = 0; b = [0, 0, 1]; pts = []; tr(pts); show(b); };
-  show(b);
+  }, 2300 * SLOW);
 }
 
 /* ---------- 古典のゲートと量子ゲート ---------- */
@@ -1877,7 +1846,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     $('#gNote').innerHTML = e.note;
   }
   stoppers.push(() => { clearInterval(t); t = null; });
-  onEnter.gates = () => { k = 0; play(); clearInterval(t); t = setInterval(play, 3600); };
+  onEnter.gates = () => { k = 0; play(); clearInterval(t); t = setInterval(play, 3600 * SLOW); };
   play();
 }
 
@@ -2097,14 +2066,14 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- 図3.4：古典ビットの AND（出力から入力に戻れる？） ---------- */
 {
-  const c = new Circuit('cAnd', { viewBox: '-70 40 600 180' });
+  const c = new Circuit('cAnd', { viewBox: '-70 40 600 180', delay: 330 * SLOW });
   c.input('A', 60, 95, '入力1'); c.input('B', 60, 165, '入力2');
   c.gate('g', 'AND', 200, 130, ['A', 'B']);
   c.link('A', 'g.in0', 140); c.link('B', 'g.in1', 140);
   c.output('Q', 380, 130, 'g', '出力');
   c.link('g', 'Q');
   truthTable('tAnd', c, [['A', '入力1'], ['B', '入力2']], [['g', '出力']]);
-  const stop = autoplay('pAnd', c);
+  const stop = autoplay('pAnd', c, 1900 * SLOW);
   const trs = [...document.querySelectorAll('#tAnd tbody tr')], m = $('#andMsg');
   const clearBack = () => { trs.forEach(tr => tr.classList.remove('rv')); m.textContent = '　'; };
   c.onChange(clearBack);
@@ -2262,7 +2231,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     const target = side ? 38 : 0, from = rx, t0 = performance.now();
     cancelAnimationFrame(raf);
     const step = now => {
-      const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
+      const k = Math.min(1, (now - t0) / (700 * SLOW)), e = 1 - Math.pow(1 - k, 3);
       rx = Math.max(0, from + (target - from) * e); shapes[1].r.setAttribute('rx', rx);
       if (k < 1) raf = requestAnimationFrame(step);
     };
@@ -2359,7 +2328,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const go2 = d => {
     cancelAnimationFrame(raf);
     const from = deg, to = from + ((((d - from) % 360) + 540) % 360 - 180), t0 = performance.now();
-    const step = now => { const k = Math.min(1, (now - t0) / 600), e = 1 - Math.pow(1 - k, 3); deg = ((from + (to - from) * e) % 360 + 360) % 360; draw(); if (k < 1) raf = requestAnimationFrame(step); };
+    const step = now => { const k = Math.min(1, (now - t0) / (600 * SLOW)), e = 1 - Math.pow(1 - k, 3); deg = ((from + (to - from) * e) % 360 + 360) % 360; draw(); if (k < 1) raf = requestAnimationFrame(step); };
     raf = requestAnimationFrame(step);
   };
   P.querySelectorAll('button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(+b.dataset.d); }));
