@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>レオロジーの全体像</title>
+<style>
+:root{
+  --ink:#1f1a3d; --muted:#6b6790; --line:#1f1a3d; --bg:#fffaf0;
+  --accent:#ff6b1a; --accent-d:#e04e00; --accent-l:#fff1c2;
+  --blue:#3b6cff; --blue-l:#dfe8ff; --green:#14a35a;
+  --off:#b9b5d0; --pink:#ff4f9a; --yellow:#ffd53d; --purple:#8a5cff;
+  --hard:4px 4px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;height:100%;background:#1e293b;overflow:hidden;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;color:var(--ink)}
+#viewport{position:fixed;inset:0}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center;
+  background:var(--bg);box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;padding:44px 64px 50px;opacity:0;pointer-events:none;
+  transform:translateX(60px);transition:opacity .55s ease,transform .55s ease;display:flex;flex-direction:column}
+.slide.past{transform:translateX(-60px)}
+.slide.active{opacity:1;transform:none;pointer-events:auto}
+.slide::before{content:"";position:absolute;left:0;top:0;right:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#facc15 50%,var(--blue))}
+.chap{font-size:15px;color:var(--muted);letter-spacing:.05em}
+h2{font-size:38px;margin:6px 0 22px;padding-left:16px;border-left:10px solid var(--accent);line-height:1.25}
+h2 small{font-size:22px;color:var(--muted);font-weight:500;margin-left:12px}
+.pageno{position:absolute;right:30px;bottom:16px;font-size:14px;color:var(--muted)}
+.body{flex:1;min-height:0}
+p,li{font-size:23px;line-height:1.6}
+ul{margin:0;padding-left:1.2em}
+li{margin:6px 0}
+b.k{color:var(--accent-d)}
+b.kb{color:var(--blue)}
+.muted{color:var(--muted)}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:30px;align-items:center;height:100%}
+.cols.even{grid-template-columns:1fr 1fr}
+.cols.wide{grid-template-columns:1.7fr 1fr}
+.card{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(15,23,42,.08);padding:18px 22px}
+.point{background:var(--accent-l);border-left:7px solid var(--accent);padding:12px 18px;border-radius:10px;font-size:22px;line-height:1.55;margin-top:14px}
+.point.blue{background:var(--blue-l);border-left-color:var(--blue)}
+.hint{font-size:16px;color:var(--muted);margin-top:6px}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:30px;background:#fff;border-radius:12px;
+  padding:10px 20px;display:inline-block;box-shadow:0 3px 12px rgba(15,23,42,.08)}
+sub{font-size:.65em}
+.center{display:flex;justify-content:center;align-items:center}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+button.b{font:inherit;font-size:16px;padding:7px 16px;border-radius:999px;border:2px solid var(--blue);background:#fff;color:var(--blue);cursor:pointer;font-weight:700}
+button.b:hover{background:var(--blue-l)}
+button.b.playing{background:var(--blue);color:#fff}
+
+/* fragments & entrance animations */
+.frag{opacity:0;transform:translateY(18px);transition:opacity .45s ease,transform .45s ease}
+.frag.vis{opacity:1;transform:none}
+.slide.active .pop{animation:pop .6s cubic-bezier(.2,.8,.3,1.2) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+
+/* bars */
+.barrow{display:grid;grid-template-columns:190px 1fr;align-items:center;gap:10px;margin:8px 0;font-size:18px}
+.bar-bg{background:#e2e8f0;border-radius:8px;height:30px;overflow:hidden}
+.bar-fill{height:100%;width:0;border-radius:8px;transition:width 1.2s cubic-bezier(.2,.8,.3,1);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#fff;font-weight:800}
+.slide.active .bar-fill{width:var(--w)}
+.bar-fill.o{background:var(--off)}
+.bar-fill.a{background:var(--accent)}
+
+/* title */
+.title-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center;height:100%}
+.title-wrap h1{font-size:54px;line-height:1.25;margin:0 0 14px}
+.title-wrap .sub{font-size:30px;color:var(--accent-d);font-weight:700;margin-bottom:34px}
+.title-wrap .meta{font-size:20px;color:var(--muted);line-height:1.8}
+.agenda li{font-size:27px;margin:16px 0;list-style:none;display:flex;align-items:center;gap:16px}
+.agenda .num{width:46px;height:46px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.agenda .new{background:var(--accent)}
+.tag{font-size:15px;background:var(--accent);color:#fff;border-radius:999px;padding:2px 12px;font-weight:700}
+details{background:#fff;border-radius:12px;padding:10px 18px;margin:10px 0;box-shadow:0 3px 12px rgba(15,23,42,.06);font-size:22px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{color:var(--accent-d)}
+details div{margin-top:8px;line-height:1.6;color:#334155}
+
+/* ---------- UI ---------- */
+#ui{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;
+  color:#cbd5e1;font-size:14px;opacity:.25;transition:opacity .3s;z-index:10}
+#ui:hover{opacity:1}
+#ui button{background:#334155;color:#fff;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+#progress{position:fixed;left:0;bottom:0;height:4px;background:var(--accent);transition:width .4s;z-index:11}
+
+/* ---------- 一覧モード ---------- */
+#ovHead{display:none}
+body.overview{overflow:auto}
+body.overview #viewport{position:static;padding:64px 24px 60px}
+body.overview #ovHead{display:flex;position:fixed;left:0;right:0;top:0;height:52px;align-items:center;gap:16px;padding:0 24px;
+  background:#0f172a;color:#e2e8f0;font-size:16px;z-index:12}
+body.overview #ovHead b{font-size:18px}
+body.overview #ovHead b,body.overview #ovHead button{white-space:nowrap}
+@media (max-width:900px){body.overview #ovHead span{display:none}}
+body.overview #ovHead button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit;font-weight:700;margin-left:auto}
+body.overview #stage{position:static;transform:none!important;width:auto;height:auto;overflow:visible;background:none;box-shadow:none;
+  display:grid;grid-template-columns:repeat(var(--cols,4),var(--ow,256px));gap:22px}
+/* 縮小は zoom ではなく transform で行う（iPad の Safari は zoom の扱いが異なり、中身の位置がずれるため）。
+   transform は並べるときの大きさに影響しないので、負の余白で縮小後の大きさ（--ow × --oh）に合わせる */
+body.overview .slide{position:relative;inset:auto;width:1280px;height:720px;opacity:1;pointer-events:auto;
+  transform:scale(var(--z,.2));transform-origin:0 0;margin:0 calc(var(--ow,256px) - 1280px) calc(var(--oh,144px) - 720px) 0;
+  cursor:pointer;background:var(--bg);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);outline:0 solid var(--accent);transition:outline-width .15s}
+body.overview .slide *{pointer-events:none}
+body.overview .slide:hover{outline-width:14px}
+body.overview .slide.current{outline-width:22px}
+body.overview .frag{opacity:1;transform:none}
+body.overview .bar-fill{width:var(--w);transition:none}
+body.overview .slide{overflow:hidden}
+/* 一覧ではページ番号を右下の札にして、中身と重なっても読めるようにする */
+body.overview .slide .pageno{font-size:40px;font-weight:900;color:#fff;background:var(--ink);border-radius:16px;padding:2px 20px;bottom:14px;right:14px;z-index:6}
+body.overview #ui,body.overview #progress{display:none}
+
+/* ---------- ポップ調デザイン（太枠・ずらし影・弾むアニメ） ---------- */
+html,body{background:#2a2350}
+#stage{background:
+  radial-gradient(circle at 92% 8%,#ffd6e8 0 120px,transparent 121px),
+  radial-gradient(circle at 4% 96%,#d4f4ff 0 150px,transparent 151px),
+  radial-gradient(circle at 98% 92%,#fff0b3 0 70px,transparent 71px),
+  radial-gradient(#e9e2cf 1.4px,transparent 1.6px) 0 0/22px 22px,
+  var(--bg)}
+.slide{transition:opacity .45s ease,transform .6s cubic-bezier(.3,1.5,.5,1)}
+.slide::before{height:10px;background:repeating-linear-gradient(90deg,var(--accent) 0 80px,var(--yellow) 80px 160px,var(--pink) 160px 240px,var(--blue) 240px 320px)}
+.chap{font-weight:700;color:var(--pink);letter-spacing:.08em}
+h2{border-left:none;padding-left:54px;position:relative}
+h2::before{content:"";position:absolute;left:0;top:50%;width:34px;height:34px;margin-top:-17px;border-radius:10px;
+  background:linear-gradient(135deg,var(--yellow),var(--accent) 55%,var(--pink));border:3px solid var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink)}
+.slide.active h2::before{animation:wiggle 1s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes wiggle{from{transform:rotate(-120deg) scale(.3)}to{transform:rotate(-12deg)}}
+h2 small{white-space:nowrap;background:var(--accent-l);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:2px 14px;font-size:18px;font-weight:700;vertical-align:middle}
+b.k{color:var(--accent-d);background:linear-gradient(transparent 62%,#ffe58a 62%)}
+b.kb{color:var(--blue);background:linear-gradient(transparent 62%,#cfe0ff 62%)}
+.card{border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink)}
+.point{border:2.5px solid var(--ink);border-left:10px solid var(--accent);border-radius:16px;box-shadow:var(--hard)}
+.point.blue{border-left-color:var(--blue)}
+.formula{border:2.5px solid var(--ink);box-shadow:var(--hard)}
+button.b{border:2.5px solid var(--ink);background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+button.b:hover{background:#ffe06b;transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+button.b:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+button.b.playing{background:var(--pink);color:#fff}
+.slide.active .pop{animation:pop .7s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:translateY(30px) scale(.85) rotate(-2deg)}to{opacity:1;transform:none}}
+.frag{transform:translateY(18px) scale(.95);transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.6,.5,1)}
+
+
+.bar-bg{background:#ece6ff;border:2px solid var(--ink)}
+.bar-fill.a{background:linear-gradient(90deg,var(--accent),var(--pink))}
+
+.title-wrap h1{font-size:64px;background:linear-gradient(transparent 70%,#ffe58a 70%) no-repeat;display:inline;line-height:1.3;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.title-wrap .sub{color:var(--pink);margin-top:18px;margin-bottom:22px;font-size:23px;white-space:nowrap}
+.tchaps{display:flex;flex-direction:column;gap:12px}
+.tchap{display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 var(--ink);padding:6px 14px 6px 6px}
+.tchap .tno{background:var(--c);color:#fff;font-weight:900;border:2px solid var(--ink);border-radius:10px;padding:2px 10px;font-size:18px;flex:none}
+.tchap .tname{font-weight:900;font-size:21px}
+.tchap .tsec{margin-left:auto;font-size:14px;color:var(--muted);font-weight:700;white-space:nowrap}
+.agenda .num{border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--blue)}
+.agenda li:nth-child(3) .num{background:var(--pink)}
+.agenda li:nth-child(4) .num{background:var(--green)}
+.agenda li:nth-child(6) .num{background:var(--purple)}
+.agenda li:nth-child(7) .num{background:var(--accent)}
+.agenda .new{background:var(--accent)}
+.tag{background:var(--pink);border:2px solid var(--ink);white-space:nowrap;flex:none}
+
+/* 目次の教科書の章見出し */
+.agenda li.agroup{font-size:17px;font-weight:900;color:var(--pink);letter-spacing:.06em;margin:14px 0 -4px;border-bottom:2.5px dashed #e3dcf2;padding-bottom:4px}
+.agenda li.agroup:first-child{margin-top:0}
+
+/* 教科書の章の扉（本の章扉風） */
+.partdoor .pd-wrap{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:40px}
+.pd-src{font-size:18px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+.pd-no{margin-top:14px;font-size:30px;font-weight:900;color:#fff;background:var(--c);border:3px solid var(--ink);border-radius:999px;padding:4px 26px;box-shadow:4px 4px 0 var(--ink);letter-spacing:.12em}
+.pd-title{font-size:68px;line-height:1.25;margin:22px 0 26px;background:linear-gradient(transparent 70%,#ffe58a 70%);display:inline;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.pd-secs{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:22px}
+.pd-secs span{background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 18px;font-size:19px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+.pd-secs span.add{background:var(--accent-l)}
+.pd-bg{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;color:var(--c);opacity:.13;font-size:84px;pointer-events:none}
+.pd-bg .eq{font-size:50px;gap:14px}
+.pd-bg .vec{border-width:5px;border-radius:40px;padding:4px 26px;line-height:1.15}
+
+/* 復習問題：カードをクリックすると答えが出る */
+.quiz{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px 16px;align-content:center}
+.qz{display:flex;flex-direction:column;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:10px 14px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.qz:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.qz-q{display:flex;gap:10px;align-items:flex-start;font-size:17px;line-height:1.5;font-weight:600}
+.qz-no{flex:none;background:var(--blue);color:#fff;font-weight:900;font-size:14px;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;margin-top:2px}
+.qz-a{margin-top:auto;padding-top:8px;min-height:40px;display:flex;align-items:center;border-top:2px dashed #e3dcf2;font-size:17px;line-height:1.5}
+.qz-hide{color:var(--muted);font-weight:800;font-size:15px}
+.qz-ans{display:none;color:#1f1a3d}
+.qz.open{background:#fffaf0}
+.qz.open .qz-no{background:var(--green)}
+.qz.open .qz-hide{display:none}
+.qz.open .qz-ans{display:inline;animation:qzIn .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes qzIn{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+.quiz.q2{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:auto}
+/* 章の扉スライド */
+.door-wrap{position:relative;display:grid;grid-template-columns:auto 1fr;gap:64px;align-items:center;height:100%;padding:0 40px}
+.door-num{width:210px;height:210px;border-radius:46px;background:var(--c);color:#fff;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:140px;font-weight:900;font-family:Consolas,Menlo,monospace;transform:rotate(-6deg)}
+.slide.active .door-num{animation:doorIn .9s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes doorIn{from{opacity:0;transform:rotate(-120deg) scale(.3)}to{opacity:1;transform:rotate(-6deg)}}
+.door-label{font-size:22px;font-weight:900;letter-spacing:.14em;color:var(--c)}
+.door-label .door-book{display:block;font-size:16px;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.door-label .tag{font-size:15px;letter-spacing:0;vertical-align:middle;margin-left:8px}
+.door h1{font-size:80px;line-height:1.15;margin:6px 0 4px}
+.door-lead{font-size:32px;font-weight:700;color:var(--muted);margin:0 0 30px}
+.door-topics{display:flex;flex-wrap:wrap;gap:12px}
+.door-topics span{background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 18px;font-size:19px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+.door-bg{position:absolute;right:-20px;bottom:-150px;font-size:600px;font-weight:900;line-height:1;color:var(--c);opacity:.09;
+  font-family:Consolas,Menlo,monospace;pointer-events:none}
+#progress{height:6px;background:linear-gradient(90deg,var(--accent),var(--pink),var(--blue))}
+
+/* ---------- レーザーポインター（Apple Pencil） ---------- */
+#stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body:not(.overview) #stage{touch-action:none}
+#laser{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;z-index:5}
+body.overview #laser{display:none}
+/* 黒ペン（Apple Pencil で書き込み） */
+#ink{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;z-index:4}
+#penbar{position:fixed;right:12px;top:14px;z-index:20;display:flex;align-items:center;gap:4px;background:#fff;border:2.5px solid var(--ink);
+  border-radius:999px;box-shadow:3px 3px 0 var(--ink);padding:4px;touch-action:manipulation;opacity:.85}
+#penbar:hover{opacity:1}
+#penbar button{height:38px;min-width:38px;border-radius:999px;border:2px solid transparent;background:none;font:inherit;font-size:14px;font-weight:800;
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px}
+#penbar button.on{background:var(--accent-l);border-color:var(--ink)}
+#penbar .sep{width:2px;height:24px;background:#e3dcf2;border-radius:1px}
+body.overview #ink,body.overview #penbar{display:none}
+
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{overflow:visible;background:#fff}
+  #viewport{position:static}
+  #stage{position:static;transform:none!important;box-shadow:none;width:auto;height:auto;overflow:visible;background:none}
+  .slide{position:relative;width:1280px;height:720px;opacity:1;transform:none;page-break-after:always;background:var(--bg)}
+  .frag{opacity:1;transform:none}
+  #ui,#progress,.btns,.hint,#laser,#penbar{display:none}
+}
+
+/* ---------- レオロジー用の部品 ---------- */
+:root{--teal:#0ea5a4;--teal-l:#d5f5f3;--pink-l:#ffe0ee;--green-l:#d9f7e6;--purple-l:#ece6ff}
+.plot{width:100%;height:auto;display:block;user-select:none;overflow:visible}
+.plot text{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif}
+.plot .tk{font-size:13px;fill:var(--muted);font-weight:700}
+.plot .ax{stroke:var(--ink);stroke-width:2.5;fill:none;stroke-linejoin:round}
+.plot .axh{fill:var(--ink)}
+.plot .gd{stroke:#ece7f6;stroke-width:1.2}
+.plot .al{font-size:15px;font-weight:800;fill:var(--ink)}
+.plot .bg{fill:#fff;stroke:none}
+.plot .note{font-size:14px;font-weight:800}
+.plot .lab{font-size:16px;font-weight:900;fill:var(--ink)}
+.plot .labm{font-size:14px;font-weight:700;fill:var(--muted)}
+.cv{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:opacity .3s}
+.cv.thin{stroke-width:2.5}
+.cv.dash{stroke-dasharray:7 6}
+.c-or{stroke:var(--accent)}.c-bl{stroke:var(--blue)}.c-pk{stroke:var(--pink)}.c-gr{stroke:var(--green)}.c-pu{stroke:var(--purple)}.c-ink{stroke:var(--ink)}.c-tl{stroke:var(--teal)}.c-mu{stroke:#b9b5d0}
+.f-or{fill:var(--accent)}.f-bl{fill:var(--blue)}.f-pk{fill:var(--pink)}.f-gr{fill:var(--green)}.f-pu{fill:var(--purple)}.f-ink{fill:var(--ink)}.f-tl{fill:var(--teal)}
+.t-or{color:var(--accent-d)}.t-bl{color:var(--blue)}.t-pk{color:var(--pink)}.t-gr{color:var(--green)}.t-pu{color:var(--purple)}.t-tl{color:var(--teal)}
+.dim{opacity:.15}
+.mk{stroke:var(--ink);stroke-width:2.5}
+
+/* 切り替えボタン（セグメント） */
+.seg{display:inline-flex;flex-wrap:wrap;border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:3px 3px 0 var(--ink);background:#fff}
+.seg button{font:inherit;font-size:15px;font-weight:800;border:0;background:none;padding:6px 13px;cursor:pointer;color:var(--ink);border-right:2px solid var(--ink);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--accent-l)}
+.seg button.on{background:var(--yellow)}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:16px;font-weight:800}
+.ctl input[type=range]{flex:1;min-width:120px;accent-color:var(--accent);height:28px;touch-action:none}
+.ro{font-family:Consolas,Menlo,monospace;font-weight:800;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:1px 10px;white-space:nowrap}
+.math{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.mini{font-size:18px;line-height:1.6}
+.mini li{font-size:18px;line-height:1.55;margin:4px 0}
+.cardt{font-weight:900;font-size:19px;margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.cardt .tag{font-size:13px}
+.lead{font-size:22px;font-weight:700;margin:0 0 10px;line-height:1.55}
+.verdict{display:inline-block;font-weight:900;font-size:19px;border:2.5px solid var(--ink);border-radius:12px;padding:3px 14px;box-shadow:3px 3px 0 var(--ink);background:#fff;transition:background .3s}
+.verdict.solid{background:var(--blue-l);color:var(--blue)}
+.verdict.liquid{background:#ffe1c7;color:var(--accent-d)}
+.verdict.mid{background:var(--purple-l);color:var(--purple)}
+.eqbox{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:26px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:var(--hard);padding:6px 16px;display:inline-block;line-height:1.4}
+.eqbox small{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;font-size:15px;color:var(--muted);font-weight:700}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:1px 12px;font-size:15px;font-weight:800}
+.gauge{height:20px;border:2px solid var(--ink);border-radius:8px;background:#f4f1fb;overflow:hidden}
+.gauge>div{height:100%;width:0;transition:width .25s}
+.glab{display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin:6px 0 3px}
+.card.tight{padding:12px 16px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+/* 固体〜液体のスペクトル */
+.spec{position:relative;height:290px;margin:6px 10px 0}
+.spec-bar{position:absolute;left:0;right:0;top:118px;height:32px;border:3px solid var(--ink);border-radius:999px;box-shadow:4px 4px 0 var(--ink);
+  background:linear-gradient(90deg,var(--blue),var(--purple) 50%,var(--accent))}
+.spec-end{position:absolute;top:121px;font-weight:900;font-size:17px;color:#fff;z-index:1;padding:0 18px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.spec-item{position:absolute;transform:translateX(-50%);text-align:center;width:120px}
+.spec-item .ic{font-size:44px;line-height:1}
+.spec-item .nm{font-size:17px;font-weight:900;margin-top:2px}
+.spec-item .ds{font-size:13px;color:var(--muted);font-weight:700}
+.spec-item.up{top:0}
+.spec-item.dn{top:166px}
+.spec-item::after{content:"";position:absolute;left:50%;width:3px;background:var(--ink);margin-left:-1.5px}
+.spec-item.up::after{top:92px;height:24px}
+.spec-item.up:first-of-type{}
+.spec-item.dn::after{top:-20px;height:20px}
+.spec-mid{position:absolute;left:14%;right:14%;top:262px;text-align:center;font-weight:900;color:var(--purple);font-size:18px;border-top:3px dashed var(--purple);padding-top:4px}
+
+/* せん断速度のものさし */
+.gs{display:grid;grid-template-columns:230px 1fr;gap:5px 10px;align-items:center}
+.gs .nm{font-size:16px;font-weight:800;text-align:right;white-space:nowrap}
+.gs .tr{position:relative;height:24px;background:repeating-linear-gradient(90deg,#f1ecfa 0 1px,transparent 1px calc(100%/13))}
+.gs .bar{position:absolute;top:2px;bottom:2px;border:2px solid var(--ink);border-radius:8px;transform-origin:left center}
+.slide.active .gs .bar{animation:grow .7s cubic-bezier(.3,1.4,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes grow{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
+.gs .ax{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--muted);font-family:Consolas,Menlo,monospace}
+.gs .sep{grid-column:1/-1;border-top:2.5px dashed #d9d4ea;margin:2px 0}
+
+/* 応用カード */
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.app{background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:8px 12px;cursor:pointer;transition:transform .12s,box-shadow .12s,background .2s}
+.app:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.app .ah{display:flex;align-items:center;gap:8px;font-weight:900;font-size:19px}
+.app .ah .ic{font-size:28px}
+.app .ak{font-size:14.5px;color:var(--muted);font-weight:700;margin-top:2px;line-height:1.45}
+.app .ad{display:none;font-size:15px;line-height:1.5;margin-top:4px;border-top:2px dashed #e3dcf2;padding-top:4px}
+.app.open{background:#fffaf0}
+.app.open .ad{display:block;animation:qzIn .35s cubic-bezier(.3,1.6,.5,1)}
+.app .lnk{font-size:12px;font-weight:900;color:#fff;background:var(--c,var(--blue));border-radius:999px;padding:0 8px;margin-left:auto;white-space:nowrap}
+
+/* 高分子の4領域：説明パネル */
+.rinfo{min-height:150px}
+.rinfo .rt{font-weight:900;font-size:21px;margin-bottom:4px}
+.rinfo .rd{font-size:17px;line-height:1.6}
+.rinfo .rm{font-size:30px;margin-right:6px}
+
+/* まとめマップ */
+.map .nd rect{fill:#fff;stroke:var(--ink);stroke-width:2.5}
+.map .nd text{font-size:16px;font-weight:800;fill:var(--ink);text-anchor:middle}
+.map .nd .sm{font-size:12.5px;font-weight:700;fill:var(--muted)}
+.map .lk{stroke:var(--ink);stroke-width:2.5;fill:none;stroke-dasharray:5 5}
+.map .ce rect{fill:var(--yellow)}
+.map .ce text{font-size:24px;font-weight:900}
+.slide.active .map .nd,.slide.active .map .lk{animation:pop .6s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+.map .nd{transform-box:fill-box;transform-origin:center}
+
+.quote{display:block;background:#fff;border:2.5px solid var(--ink);border-left:8px solid var(--blue);border-radius:12px;padding:8px 14px;box-shadow:3px 3px 0 var(--ink)}
+.quote small{display:block;text-align:right;font-size:14px;color:var(--muted)}
+.apps{height:100%;grid-auto-rows:1fr}
+.app{padding:12px 16px}
+.app .ah{font-size:22px}
+.app .ah .ic{font-size:34px}
+.app .ak{font-size:16px}
+.app .ad{font-size:16px}
+/* 文献 */
+.refs li{font-size:16px;line-height:1.5;margin:6px 0}
+.refs a{color:var(--blue);word-break:break-all}
+.quiz.q4{grid-auto-rows:auto}
+.quiz.q4 .qz{min-height:96px}
+.quiz.q4 .qz-q{font-size:16.5px}
+.quiz.q4 .qz-a{font-size:15.5px;min-height:30px}
+</style>
+</head>
+<body>
+<div id="ovHead"><b>スライド一覧</b><span>クリックでそのスライドへ ／ ← → で選択、Enter で開く、O / Esc で戻る</span><button id="btnOvClose">一覧を閉じる</button></div>
+<div id="viewport"><div id="stage">
+
+<!-- タイトル -->
+<section class="slide" data-id="title">
+  <div class="title-wrap">
+    <div>
+      <div class="chap pop">ゼミ資料 ／ レオロジー入門</div>
+      <h1 class="pop" style="--d:.1s">レオロジーの<br>全体像</h1>
+      <div class="sub pop" style="--d:.2s">― モノはなぜ「流れ」、なぜ「戻る」のか ―</div>
+      <div class="tchaps">
+        <div class="tchap pop" style="--d:.25s;--c:var(--blue)"><span class="tno">1</span><span class="tname">レオロジーとは</span><span class="tsec">固体と液体のあいだ・デボラ数</span></div>
+        <div class="tchap pop" style="--d:.3s;--c:var(--pink)"><span class="tno">2</span><span class="tname">弾性と粘性</span><span class="tsec">ばね と ダッシュポット</span></div>
+        <div class="tchap pop" style="--d:.35s;--c:var(--green)"><span class="tno">3</span><span class="tname">非ニュートン流体</span><span class="tsec">粘度は一定じゃない</span></div>
+        <div class="tchap pop" style="--d:.4s;--c:var(--purple)"><span class="tno">4</span><span class="tname">粘弾性</span><span class="tsec">緩和・動的粘弾性・時間温度換算</span></div>
+        <div class="tchap pop" style="--d:.45s;--c:var(--accent)"><span class="tno">5</span><span class="tname">ゴムのレオロジー</span><span class="tsec">エントロピー弾性・tanδ</span></div>
+        <div class="tchap pop" style="--d:.5s;--c:var(--teal)"><span class="tno">6</span><span class="tname">測る・使う</span><span class="tsec">レオメーター・応用</span></div>
+      </div>
+    </div>
+    <div class="card pop" style="--d:.3s">
+      <svg class="plot" id="titleAnim" viewBox="0 0 480 380"></svg>
+      <div class="hint" style="text-align:center">同じ「シリコーンパテ」でも、速くぶつけると弾み、待つと流れる</div>
+    </div>
+  </div>
+</section>
+
+<!-- 本日の流れ -->
+<section class="slide">
+  <div class="chap">Agenda</div>
+  <h2>本日の流れ</h2>
+  <div class="body cols" style="grid-template-columns:1.45fr 1fr">
+    <ul class="agenda">
+      <li class="pop" style="--d:.05s"><span class="num">1</span>レオロジーとは：固体と液体のあいだ</li>
+      <li class="pop" style="--d:.1s"><span class="num" style="background:var(--pink)">2</span>2つの理想：弾性（ばね）と粘性（ダッシュポット）</li>
+      <li class="pop" style="--d:.15s"><span class="num" style="background:var(--green)">3</span>非ニュートン流体：粘度が変わる液体</li>
+      <li class="pop" style="--d:.2s"><span class="num" style="background:var(--purple)">4</span>粘弾性：緩和・G′ と G″・時間と温度</li>
+      <li class="pop" style="--d:.25s"><span class="num" style="background:var(--accent)">5</span>ゴムのレオロジー：エントロピー弾性・タイヤ</li>
+      <li class="pop" style="--d:.3s"><span class="num" style="background:var(--teal)">6</span>測る・使う：レオメーターと応用</li>
+    </ul>
+    <div class="card pop" style="--d:.4s">
+      <p style="margin:0 0 8px;font-weight:900">このスライドの使い方</p>
+      <ul>
+        <li style="font-size:18px">ほぼ全ページが <b class="k">動くシミュレーション</b>。ボタン・スライダーを触ってみよう</li>
+        <li style="font-size:18px">図の中の <b class="kb">切り替えボタン</b> で材料や条件を変えられます</li>
+        <li style="font-size:18px">← → / Space でページ送り、F で全画面、O で一覧</li>
+        <li style="font-size:18px">右上のペンで書き込み（Apple Pencil 対応）</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 1 ===== -->
+<section class="slide door" style="--c:var(--blue)">
+  <div class="door-bg">1</div>
+  <div class="door-wrap">
+    <div class="door-num">1</div>
+    <div>
+      <div class="door-label pop">PART 1</div>
+      <h1 class="pop" style="--d:.1s">レオロジーとは</h1>
+      <p class="door-lead pop" style="--d:.2s">「流れ」と「変形」の科学</p>
+      <div class="door-topics pop" style="--d:.3s"><span>名前の由来</span><span>固体と液体のあいだ</span><span>デボラ数</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide">
+  <div class="chap">PART 1 レオロジーとは ／ 定義</div>
+  <h2>レオロジー ＝ 変形と流動の科学<small>rheology</small></h2>
+  <div class="body cols" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <p class="lead pop">物質に力を加えたとき、<b class="k">どう変形し、どう流れるか</b>を調べる学問。</p>
+      <ul>
+        <li class="pop" style="--d:.1s;font-size:21px">ギリシャ語 <b class="kb">rheo（流れる）</b>＋ logy（学）。1929年に米国のビンガムが命名</li>
+        <li class="pop" style="--d:.2s;font-size:21px">標語は <b class="k">πάντα ῥεῖ（パンタ・レイ）</b>＝「万物は流転する」</li>
+        <li class="pop" style="--d:.3s;font-size:21px">固体力学（弾性）と流体力学（粘性）の<b class="k">あいだ</b>を埋める</li>
+        <li class="pop" style="--d:.4s;font-size:21px">対象：高分子・ゴム・食品・塗料・血液・土砂・マントル…</li>
+      </ul>
+      <div class="point frag">キーワードは 3 つ：<b>応力</b>（どれだけ押すか）・<b>ひずみ</b>（どれだけ変形したか）・<b>時間</b>（どれだけの速さで）</div>
+    </div>
+    <div class="card pop" style="--d:.2s">
+      <svg class="plot" viewBox="0 0 440 330">
+        <g font-weight="900" text-anchor="middle">
+          <rect x="20" y="20" width="180" height="110" rx="18" fill="#dfe8ff" stroke="#1f1a3d" stroke-width="3"/>
+          <text x="110" y="62" font-size="22" fill="#3b6cff">固体力学</text>
+          <text x="110" y="92" font-size="15" fill="#6b6790">弾性：力 ∝ 変形</text>
+          <text x="110" y="114" font-size="15" fill="#6b6790">フックの法則</text>
+          <rect x="240" y="20" width="180" height="110" rx="18" fill="#ffe1c7" stroke="#1f1a3d" stroke-width="3"/>
+          <text x="330" y="62" font-size="22" fill="#e04e00">流体力学</text>
+          <text x="330" y="92" font-size="15" fill="#6b6790">粘性：力 ∝ 変形の速さ</text>
+          <text x="330" y="114" font-size="15" fill="#6b6790">ニュートンの粘性法則</text>
+          <path d="M110 136 L190 200 M330 136 L250 200" stroke="#1f1a3d" stroke-width="3" fill="none" marker-end="url(#arr1)"/>
+          <rect x="90" y="200" width="260" height="110" rx="22" fill="#fff1c2" stroke="#1f1a3d" stroke-width="3.5"/>
+          <text x="220" y="246" font-size="28" fill="#1f1a3d">レオロジー</text>
+          <text x="220" y="276" font-size="15" fill="#6b6790">両方の性質をもつ「粘弾性体」や</text>
+          <text x="220" y="296" font-size="15" fill="#6b6790">粘度が変わる「非ニュートン流体」</text>
+        </g>
+        <defs><marker id="arr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1f1a3d"/></marker></defs>
+      </svg>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide">
+  <div class="chap">PART 1 レオロジーとは ／ 身のまわりの物質</div>
+  <h2>固体と液体のあいだ<small>ほとんどの物質は「中間」</small></h2>
+  <div class="body">
+    <div class="spec">
+      <div class="spec-bar pop"></div>
+      <div class="spec-end pop" style="left:0">← 弾性固体</div>
+      <div class="spec-end pop" style="right:0">粘性液体 →</div>
+      <div class="spec-item up pop" style="left:6%;--d:.1s"><div class="ic">🔩</div><div class="nm">鋼</div><div class="ds">押すと戻る</div></div>
+      <div class="spec-item dn pop" style="left:20%;--d:.2s"><div class="ic">🛞</div><div class="nm">ゴム</div><div class="ds">大きく伸びて戻る</div></div>
+      <div class="spec-item up pop" style="left:36%;--d:.3s"><div class="ic">🍞</div><div class="nm">パン生地</div><div class="ds">少し戻る・ゆっくり伸びる</div></div>
+      <div class="spec-item dn pop" style="left:52%;--d:.4s"><div class="ic">🫧</div><div class="nm">スライム</div><div class="ds">弾むのに流れる</div></div>
+      <div class="spec-item up pop" style="left:67%;--d:.5s"><div class="ic">🥫</div><div class="nm">ケチャップ</div><div class="ds">振ると流れる</div></div>
+      <div class="spec-item dn pop" style="left:82%;--d:.6s"><div class="ic">🍯</div><div class="nm">はちみつ</div><div class="ds">ねっとり流れる</div></div>
+      <div class="spec-item up pop" style="left:94%;--d:.7s"><div class="ic">💧</div><div class="nm">水</div><div class="ds">さらさら流れる</div></div>
+      <div class="spec-mid pop" style="--d:.8s">粘弾性体（固体と液体の性質を両方もつ）</div>
+    </div>
+    <div class="point frag" style="margin-top:20px">ただし、この並び順は<b>固定ではない</b>。同じ物質でも <b class="k">「どれくらいの時間で見るか」</b> によって固体にも液体にもなる → 次のページ</div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="debo">
+  <div class="chap">PART 1 レオロジーとは ／ 時間スケール</div>
+  <h2>デボラ数：固体か液体かを決めるもの<small>De = λ / t</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1.1fr">
+    <div class="stack">
+      <div class="eqbox pop">De ＝ <span class="t-pu">λ</span> ／ <span class="t-or">t</span>　<small>λ：物質の緩和時間　t：観察時間</small></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.1s"><b>De ≫ 1</b>（速く見る）→ 分子が追いつけず <b class="kb">固体</b>のよう</li>
+        <li class="pop" style="--d:.2s"><b>De ≪ 1</b>（ゆっくり見る）→ 分子が並び替わり <b class="k">液体</b>のよう</li>
+      </ul>
+      <div class="quote pop" style="--d:.3s;font-size:17px;line-height:1.5">「山々は主の前に流れた」（旧約聖書・士師記 デボラの歌）<br>神の長い時間で見れば山も流れる ― レイナー（1964）の命名<small>M. Reiner, Physics Today (1964)</small></div>
+      <div class="point blue frag" style="font-size:18px;margin-top:0">マントルは地震波（数秒）には<b>固体</b>として振る舞い、数百万年かけて<b>対流</b>する。</div>
+    </div>
+    <div class="card pop" style="--d:.2s">
+      <div class="row" style="justify-content:space-between"><div class="seg" id="deMat"><button data-l="-12">💧 水</button><button data-l="0" class="on">🫧 パテ</button><button data-l="10.1">🌋 マントル</button></div><span class="pill">λ ≈ <span id="deLam"></span></span></div>
+      <svg class="plot" id="debo" viewBox="0 0 520 268" style="overflow:hidden"></svg>
+      <div class="ctl">観察時間 t<input type="range" id="deT" min="-6" max="15" step="0.05" value="0"><span class="ro" id="deTv"></span></div>
+      <div class="row" style="justify-content:space-between;margin-top:6px"><span class="ro" id="deDe"></span><span class="verdict" id="deVerdict"></span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 2 ===== -->
+<section class="slide door" style="--c:var(--pink)">
+  <div class="door-bg">2</div>
+  <div class="door-wrap">
+    <div class="door-num">2</div>
+    <div>
+      <div class="door-label pop">PART 2</div>
+      <h1 class="pop" style="--d:.1s">弾性と粘性</h1>
+      <p class="door-lead pop" style="--d:.2s">2つの「理想の物質」から始めよう</p>
+      <div class="door-topics pop" style="--d:.3s"><span>応力・ひずみ</span><span>ばね（フック）</span><span>ダッシュポット（ニュートン）</span><span>粘度のものさし</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="shear">
+  <div class="chap">PART 2 弾性と粘性 ／ ことばの準備</div>
+  <h2>応力・ひずみ・ひずみ速度<small>せん断変形で考える</small></h2>
+  <div class="body cols" style="grid-template-columns:1.15fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="shearDef" viewBox="0 0 540 330"></svg>
+      <div class="hint">上の板を力 F で右へ引くと、試料は層ごとにずれていく（赤い線＝試料に引いた目印）</div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="--d:.1s">応力 σ ＝ F ／ A　<small>[Pa]　面積あたりの力</small></div>
+      <div class="eqbox pop" style="--d:.2s">ひずみ γ ＝ Δx ／ h　<small>[―]　どれだけ傾いたか</small></div>
+      <div class="eqbox pop" style="--d:.3s">ひずみ速度 γ̇ ＝ V ／ h　<small>[1/s]　傾く速さ</small></div>
+      <div class="point frag" style="margin-top:4px;font-size:19px">固体は <b class="kb">σ と γ</b> が結びつき、液体は <b class="k">σ と γ̇</b> が結びつく。<br>レオロジーは「σ・γ・γ̇・時間」の関係（<b>構成方程式</b>）を探す学問。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="sd">
+  <div class="chap">PART 2 弾性と粘性 ／ 2つの理想物質</div>
+  <h2>ばね と ダッシュポット<small>一定の力をかけて、離す</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1fr">
+    <div class="stack">
+      <div class="card tight pop">
+        <div class="cardt t-bl">ばね ＝ 弾性固体 <span class="eqbox" style="font-size:20px;padding:0 10px;box-shadow:none">σ ＝ G γ</span></div>
+        <div class="mini">力をかけた<b>瞬間</b>に伸び、離すと<b>すぐ戻る</b>。エネルギーを<b>蓄える</b>。G：弾性率 [Pa]</div>
+      </div>
+      <div class="card tight pop" style="--d:.1s">
+        <div class="cardt t-or">ダッシュポット ＝ 粘性液体 <span class="eqbox" style="font-size:20px;padding:0 10px;box-shadow:none">σ ＝ η γ̇</span></div>
+        <div class="mini">油の中のピストン。力の間<b>ずっと動き続け</b>、離しても<b>戻らない</b>。エネルギーは<b>熱になって消える</b>。η：粘度 [Pa·s]</div>
+      </div>
+      <svg class="plot pop" id="sdModels" viewBox="0 0 540 190" style="--d:.2s"></svg>
+    </div>
+    <div class="card pop" style="--d:.2s">
+      <svg class="plot" id="sdChart" viewBox="0 0 520 380"></svg>
+      <div class="btns"><button class="b" id="sdPlay" data-autoplay>▶ 再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="visc">
+  <div class="chap">PART 2 弾性と粘性 ／ 粘度のものさし</div>
+  <h2>粘度は 26 桁もちがう<small>η [Pa·s]（おおよその値）</small></h2>
+  <div class="body cols" style="grid-template-columns:1.6fr 1fr">
+    <div class="card pop"><svg class="plot" id="viscChart" viewBox="0 0 700 440"></svg></div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.2s">
+        <div class="cardt">🕰️ ピッチドロップ実験</div>
+        <div class="mini">1927年にクイーンズランド大学で始まった世界一長い実験。漏斗のピッチ（タール）は<b>ハンマーで叩くと割れる</b>のに、約 10 年に 1 滴ずつ落ちる。粘度は水の約 <b class="k">2000億倍</b>。</div>
+      </div>
+      <div class="point frag" style="font-size:18px;margin-top:0">「固体に見える」ことと「流れない」ことは違う。<b>十分長く待てば流れる</b>ものは、とても粘い液体。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 3 ===== -->
+<section class="slide door" style="--c:var(--green)">
+  <div class="door-bg">3</div>
+  <div class="door-wrap">
+    <div class="door-num">3</div>
+    <div>
+      <div class="door-label pop">PART 3</div>
+      <h1 class="pop" style="--d:.1s">非ニュートン流体</h1>
+      <p class="door-lead pop" style="--d:.2s">粘度は一定じゃない</p>
+      <div class="door-topics pop" style="--d:.3s"><span>流動曲線</span><span>シアシニング</span><span>降伏応力</span><span>チキソトロピー</span><span>法線応力効果</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="flow">
+  <div class="chap">PART 3 非ニュートン流体 ／ 流動曲線</div>
+  <h2>流動曲線で液体を分類する<small>σ と γ̇ の関係</small></h2>
+  <div class="body cols" style="grid-template-columns:1.55fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="flowSel"><button data-k="newton">ニュートン</button><button data-k="thin" class="on">シアシニング</button><button data-k="thick">シアシックニング</button><button data-k="bingham">ビンガム</button><button data-k="all">全部</button></div>
+      <svg class="plot" id="flowPlot" viewBox="0 0 760 330" style="margin-top:6px"></svg>
+      <div class="ctl">かき混ぜる速さ γ̇<input type="range" id="flowG" min="0.2" max="10" step="0.05" value="3"><span class="ro" id="flowRo"></span></div>
+    </div>
+    <div class="card pop" style="--d:.15s" id="flowInfo"></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="chains">
+  <div class="chap">PART 3 非ニュートン流体 ／ なぜ粘度が下がる？</div>
+  <h2>高分子のシアシニング<small>からまった糸が流れにそろう</small></h2>
+  <div class="body cols" style="grid-template-columns:1.1fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="chainBox" viewBox="0 0 540 300" style="overflow:hidden"></svg>
+      <div class="ctl">ずり速度 γ̇<input type="range" id="chG" min="-3" max="3" step="0.02" value="-2"><span class="ro" id="chGv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.15s"><svg class="plot" id="crossPlot" viewBox="0 0 470 280"></svg></div>
+      <div class="point frag" style="margin-top:0;font-size:18px">ゆっくり：糸まり状で<b>からみ合い</b> → 粘度は一定（<b>零せん断粘度 η₀</b>）<br>速く：糸が<b>流れ方向に伸びてそろう</b> → すべりやすく粘度が下がる</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="thixo">
+  <div class="chap">PART 3 非ニュートン流体 ／ 時間で変わる粘度</div>
+  <h2>チキソトロピーと降伏応力<small>こわれる構造・もどる構造</small></h2>
+  <div class="body cols" style="grid-template-columns:1.15fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="thixoBox" viewBox="0 0 540 300"></svg>
+      <div class="btns"><button class="b" id="thStir">🥄 かき混ぜる</button><span class="hint" style="margin:0;align-self:center">押すとかき混ぜ、もう一度押すと止めて静置</span></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s">
+        <div class="cardt t-gr">チキソトロピー</div>
+        <div class="mini">かき混ぜると内部の<b>網目構造がこわれて</b>流れやすくなり、静置すると<b>時間をかけて回復</b>する。<br>例：ペンキ（塗るとのび、塗った後はたれない）・ヨーグルト・マヨネーズ</div>
+      </div>
+      <div class="card tight pop" style="--d:.2s">
+        <div class="cardt t-pk"><span>降伏応力 σ<sub>y</sub></span></div>
+        <div class="mini">ある力（σ<sub>y</sub>）を超えるまでは<b>流れない</b>。歯みがき粉が歯ブラシの上で形を保ち、ケチャップがびんから出にくい理由。</div>
+      </div>
+      <div class="point blue frag" style="margin-top:0;font-size:17px">シアシニングは「速さ」で、チキソトロピーは「時間（履歴）」で粘度が変わる。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="weis">
+  <div class="chap">PART 3 非ニュートン流体 ／ 弾性をもつ液体</div>
+  <h2>法線応力効果<small>液体が棒をよじ登る</small></h2>
+  <div class="body">
+    <div class="card pop">
+      <div class="row" style="justify-content:space-between"><div class="seg" id="weSel"><button data-k="0">💧 水（ニュートン流体）</button><button data-k="1" class="on">🧵 高分子溶液</button></div><span class="hint" style="margin:0">切り替えて違いを比べよう</span></div>
+      <svg class="plot" id="weisBox" viewBox="0 0 1100 300"></svg>
+    </div>
+    <div class="cols even" style="height:auto;margin-top:12px;gap:16px">
+      <div class="point frag" style="margin-top:0;font-size:18px"><b>ワイセンベルグ効果</b>：回転で引き伸ばされた高分子が<b>輪ゴムのように中心を締めつけ</b>、液体を棒に沿って押し上げる。水は遠心力で外側へ逃げ中央がくぼむ。</div>
+      <div class="point blue frag" style="margin-top:0;font-size:18px"><b>ダイスウェル（押出膨張）</b>：細い口で押し縮められた高分子が<b>出口で元の形に戻ろうとして</b>太くなる。押出成形の寸法設計で重要。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 4 ===== -->
+<section class="slide door" style="--c:var(--purple)">
+  <div class="door-bg">4</div>
+  <div class="door-wrap">
+    <div class="door-num">4</div>
+    <div>
+      <div class="door-label pop">PART 4</div>
+      <h1 class="pop" style="--d:.1s">粘弾性</h1>
+      <p class="door-lead pop" style="--d:.2s">固体と液体を「組み合わせる」</p>
+      <div class="door-topics pop" style="--d:.3s"><span>マクスウェル・フォークト模型</span><span>応力緩和</span><span>G′ と G″</span><span>高分子の4領域</span><span>時間‐温度換算則</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="mv">
+  <div class="chap">PART 4 粘弾性 ／ 力学模型</div>
+  <h2>ばね＋ダッシュポット＝粘弾性<small>クリープ（一定の力）</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1fr">
+    <div class="stack">
+      <div class="card tight pop">
+        <div class="cardt t-pk">マクスウェル模型（直列）＝ 粘弾性<b>液体</b></div>
+        <div class="mini">瞬間にばねが伸び、その後ダッシュポットが<b>流れ続ける</b>。離すとばねの分だけ戻る。</div>
+      </div>
+      <div class="card tight pop" style="--d:.1s">
+        <div class="cardt t-gr">フォークト模型（並列）＝ 粘弾性<b>固体</b></div>
+        <div class="mini">ダッシュポットがじゃまをして<b>じわじわ伸び</b>、離すと<b>じわじわ全部戻る</b>。</div>
+      </div>
+      <svg class="plot pop" id="mvModels" viewBox="0 0 540 200" style="--d:.2s"></svg>
+    </div>
+    <div class="card pop" style="--d:.2s">
+      <svg class="plot" id="mvChart" viewBox="0 0 520 380"></svg>
+      <div class="btns"><button class="b" id="mvPlay" data-autoplay>▶ 再生</button><span class="hint" style="margin:0;align-self:center">点線：ばね・ダッシュポット単体（前ページ）</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="relax">
+  <div class="chap">PART 4 粘弾性 ／ 応力緩和</div>
+  <h2>応力緩和と緩和時間 λ<small>伸ばして止めると、力が抜けていく</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1fr">
+    <div class="stack">
+      <div class="eqbox pop">σ(t) ＝ σ₀ e<sup>−t/λ</sup>　,　λ ＝ η ／ G</div>
+      <svg class="plot pop" id="rxModel" viewBox="0 0 540 120" style="--d:.1s"></svg>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s">引き伸ばして<b>長さを固定</b>。はじめはばねが力を受けもつ</li>
+        <li class="pop" style="--d:.3s">ダッシュポットがじわじわ伸び、ばねが<b>縮んで力が抜ける</b></li>
+        <li class="pop" style="--d:.4s">t ＝ λ で力は 1/e（約 37%）に。<b>λ は物質の「記憶の長さ」</b></li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:18px">デボラ数の λ はこれ。輪ゴム（架橋ゴム）は λ → ∞ で力が抜けない。</div>
+    </div>
+    <div class="card pop" style="--d:.2s">
+      <svg class="plot" id="rxChart" viewBox="0 0 520 330"></svg>
+      <div class="ctl">粘度 η（ダッシュポットの重さ）<input type="range" id="rxEta" min="1" max="8" step="0.1" value="3"><span class="ro" id="rxLam"></span></div>
+      <div class="btns"><button class="b" id="rxPlay" data-autoplay>▶ 再生</button></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="dyn">
+  <div class="chap">PART 4 粘弾性 ／ 動的粘弾性</div>
+  <h2>ゆらして測る：G′ と G″<small>位相のずれ δ</small></h2>
+  <div class="body">
+    <div class="card pop">
+      <div class="row" style="justify-content:space-between"><div class="seg" id="dynSel"><button data-d="0">🔩 弾性体 0°</button><button data-d="6">🛞 ゴム 6°</button><button data-d="35" class="on">🍞 パン生地 35°</button><button data-d="65">🫧 スライム 65°</button><button data-d="90">🍯 はちみつ 90°</button></div>
+        <div class="ctl" style="margin:0;min-width:260px">δ<input type="range" id="dynD" min="0" max="90" step="1" value="35"><span class="ro" id="dynDv"></span></div></div>
+      <svg class="plot" id="dynBox" viewBox="0 0 1100 300"></svg>
+    </div>
+    <div class="cols" style="grid-template-columns:1fr 1fr 1.2fr;height:auto;margin-top:12px;gap:14px;align-items:stretch">
+      <div class="card tight pop" style="--d:.1s"><div class="glab"><span class="t-bl">G′ 貯蔵弾性率</span><span class="ro" id="dynGp"></span></div><div class="gauge"><div id="dynGpB" style="background:var(--blue)"></div></div><div class="mini" style="font-size:15px;margin-top:4px">ひずみと同じ位相＝<b>ばね成分</b>（蓄えて返す）</div></div>
+      <div class="card tight pop" style="--d:.15s"><div class="glab"><span class="t-or">G″ 損失弾性率</span><span class="ro" id="dynGpp"></span></div><div class="gauge"><div id="dynGppB" style="background:var(--accent)"></div></div><div class="mini" style="font-size:15px;margin-top:4px">90° ずれた成分＝<b>ダッシュポット成分</b>（熱になる）</div></div>
+      <div class="point pop" style="--d:.2s;margin-top:0;font-size:17px">tan δ ＝ G″ ／ G′ ＝ <b id="dynTan"></b><br>右のだ円の<b>面積</b>＝1周期で熱になるエネルギー。ゴムの発熱・制振性能の目安。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="mxf">
+  <div class="chap">PART 4 粘弾性 ／ 周波数でみる</div>
+  <h2>マクスウェル模型の周波数応答<small>速くゆらすほど固体</small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="mxfPlot" viewBox="0 0 640 380"></svg>
+      <div class="ctl">ゆらす速さ ωλ<input type="range" id="mxfW" min="-2" max="2" step="0.02" value="-1"><span class="ro" id="mxfWv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="font-size:22px">G′ ＝ G (ωλ)² ／ (1＋(ωλ)²)<br>G″ ＝ G ωλ ／ (1＋(ωλ)²)</div>
+      <div class="card tight pop" style="--d:.1s"><div class="row" style="justify-content:space-between"><span class="ro" id="mxfRo"></span><span class="verdict" id="mxfV"></span></div></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s"><b>ωλ ≪ 1</b>：G″ ＞ G′　→ 液体的（流れる）</li>
+        <li class="pop" style="--d:.25s"><b>ωλ ＝ 1</b>：G′ ＝ G″ の<b>交点</b>。ここから λ が読める</li>
+        <li class="pop" style="--d:.3s"><b>ωλ ≫ 1</b>：G′ ＞ G″　→ 固体的（弾む）</li>
+      </ul>
+      <div class="point blue frag" style="margin-top:0;font-size:17px">ωλ はまさに<b>デボラ数</b>。周波数を変えることは「観察時間」を変えること。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="master">
+  <div class="chap">PART 4 粘弾性 ／ 高分子の粘弾性スペクトル</div>
+  <h2>高分子の4つの顔<small>領域をクリック</small></h2>
+  <div class="body cols" style="grid-template-columns:1.65fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="masterPlot" viewBox="0 0 760 400"></svg>
+      <div class="ctl"><span>分子量 M／M<sub>e</sub></span><input type="range" id="msM" min="0.3" max="1.7" step="0.01" value="1.3"><span class="ro" id="msMv"></span><button class="b" id="msX" style="margin:0">🔗 架橋する</button></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop rinfo" id="msInfo" style="--d:.15s"></div>
+      <div class="point frag" style="margin-top:0;font-size:17px">流れ始めるまでの時間（最長緩和時間）は <b>τ<sub>d</sub> ∝ M<sup>3.4</sup></b>。分子量が 2 倍なら約 10 倍長くゴム状にふるまう。<b>架橋</b>すると平坦域が永久に続く＝ゴム製品。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="tts">
+  <div class="chap">PART 4 粘弾性 ／ 時間‐温度換算則</div>
+  <h2>温度を上げる ＝ 時間を早送り<small>マスターカーブ</small></h2>
+  <div class="body cols" style="grid-template-columns:1.65fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="ttsPlot" viewBox="0 0 760 390"></svg>
+      <div class="btns"><button class="b" id="ttsGo">▶ 横にずらして重ねる</button><span class="hint" style="margin:0;align-self:center">測定できる周波数は 3 桁だけ（灰色の帯）</span></div>
+    </div>
+    <div class="stack">
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">装置で測れる周波数は限られる（0.1〜100 rad/s）</li>
+        <li class="pop" style="--d:.15s">温度を変えて測ると、曲線の<b>形は同じ</b>で<b>横にずれる</b>だけ</li>
+        <li class="pop" style="--d:.2s">ずらし量 a<sub>T</sub> で重ねると、<b>十数桁</b>にわたる<b>マスターカーブ</b>ができる</li>
+      </ul>
+      <div class="eqbox pop" style="--d:.25s;font-size:21px">WLF式　log a<sub>T</sub> ＝ − C₁(T−T<sub>r</sub>) ／ (C₂＋T−T<sub>r</sub>)<br><small>T<sub>r</sub>＝T<sub>g</sub> のとき C₁ ≈ 17.4, C₂ ≈ 51.6 K（ウィリアムズ・ランデル・フェリー, 1955）</small></div>
+      <div class="point frag" style="margin-top:0;font-size:17px">高温の測定 ＝ 長時間の挙動。<b>低温の測定 ＝ 高速の挙動</b>（→ タイヤ設計で使う）</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 5 ===== -->
+<section class="slide door" style="--c:var(--accent)">
+  <div class="door-bg">5</div>
+  <div class="door-wrap">
+    <div class="door-num">5</div>
+    <div>
+      <div class="door-label pop">PART 5</div>
+      <h1 class="pop" style="--d:.1s">ゴムのレオロジー</h1>
+      <p class="door-lead pop" style="--d:.2s">よく伸び、よく戻り、熱をうむ</p>
+      <div class="door-topics pop" style="--d:.3s"><span>エントロピー弾性</span><span>応力‐ひずみ曲線</span><span>タイヤと tanδ</span><span>フィラー補強</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="rubChain">
+  <div class="chap">PART 5 ゴムのレオロジー ／ なぜ縮む？</div>
+  <h2>ゴム弾性はエントロピー弾性<small>形の「数」がつくる力</small></h2>
+  <div class="body cols" style="grid-template-columns:1.2fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="rcBox" viewBox="0 0 560 270"></svg>
+      <div class="ctl">伸ばす<input type="range" id="rcR" min="0.12" max="0.9" step="0.01" value="0.3"><span class="ro" id="rcRv"></span></div>
+      <div class="ctl">温度<input type="range" id="rcT" min="0.5" max="1.5" step="0.01" value="1"><span class="ro" id="rcTv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s">
+        <div class="glab"><span>とりうる形の数（エントロピー S）</span></div><div class="gauge"><div id="rcS" style="background:var(--purple)"></div></div>
+        <div class="glab"><span>縮もうとする力 f</span></div><div class="gauge"><div id="rcF" style="background:var(--accent)"></div></div>
+      </div>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s">鎖は熱運動で<b>くしゃくしゃ</b>な形が一番「数が多い」</li>
+        <li class="pop" style="--d:.25s">伸ばすと形の数が減る → <b>元の乱雑さへ戻ろう</b>とする力</li>
+        <li class="pop" style="--d:.3s">弾性率 <b>G ＝ νkT</b>（ν：網目鎖の数密度）は<b>温度に比例</b></li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:17px">輪ゴムを急に伸ばして唇に当てると<b>温かい</b>。温めた伸びたゴムは<b>縮む</b>（グー・ジュール効果）。金属のばねとは正反対！</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="rubSS">
+  <div class="chap">PART 5 ゴムのレオロジー ／ 大変形</div>
+  <h2>ゴムの応力‐ひずみ曲線<small>フックの法則は使えない</small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="ssPlot" viewBox="0 0 640 400"></svg>
+      <div class="ctl">伸長比 λ<input type="range" id="ssL" min="1" max="6.8" step="0.01" value="2"><span class="ro" id="ssLv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="font-size:22px">σ ＝ G (λ − 1/λ²)　<small>ネオ・フック（理想ゴム）</small></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">小さなひずみでは E ＝ 3G のフック則と一致</li>
+        <li class="pop" style="--d:.15s">中くらいの伸びでは<b>やわらかくなる</b></li>
+        <li class="pop" style="--d:.2s">大きく伸ばすと鎖が<b>伸び切り</b>（天然ゴムは<b>伸長結晶化</b>も）で急に硬くなる</li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:17px">鎖をつなぐ<b>架橋</b>（加硫：1839年 グッドイヤー）がないと、ゴムは流れてしまう（PART 4 の「流動域」）。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="tire">
+  <div class="chap">PART 5 ゴムのレオロジー ／ 応用：タイヤ</div>
+  <h2>低燃費タイヤは tanδ で設計する<small>時間‐温度換算の応用</small></h2>
+  <div class="body cols" style="grid-template-columns:1.4fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="tireSel"><button data-k="A">ゴム A（従来）</button><button data-k="B">ゴム B（低燃費）</button><button data-k="AB" class="on">くらべる</button></div>
+      <svg class="plot" id="tirePlot" viewBox="0 0 660 360" style="margin-top:4px"></svg>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s">
+        <div class="cardt t-bl">🌧️ ウェットグリップ ＝ 0 ℃ の tanδ（高いほど◎）</div>
+        <div class="mini" style="font-size:15.5px">路面の細かな凹凸でゴムが<b>超高速（10⁴〜10⁶ Hz）</b>に変形 → 換算則で<b>低温</b>の挙動に対応。エネルギーを熱に変えるほど止まりやすい。</div>
+      </div>
+      <div class="card tight pop" style="--d:.2s">
+        <div class="cardt t-or">⛽ 転がり抵抗 ＝ 60 ℃ の tanδ（低いほど◎）</div>
+        <div class="mini" style="font-size:15.5px">タイヤ 1 回転ごとの<b>ゆっくりした変形（10〜100 Hz）</b>を走行時の温度（50〜70 ℃）で。熱になる分がそのまま燃費のロス。</div>
+      </div>
+      <div class="point frag" style="margin-top:0;font-size:17px">シリカ配合などで tanδ の山を<b>動かして</b>「止まる」と「省エネ」を両立。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="payne">
+  <div class="chap">PART 5 ゴムのレオロジー ／ フィラー補強</div>
+  <h2>カーボンブラック・シリカで強くする<small>ペイン効果</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1.2fr">
+    <div class="card pop">
+      <svg class="plot" id="payNet" viewBox="0 0 520 260"></svg>
+      <div class="hint" style="margin-top:0">黒い粒＝フィラー。線＝粒どうしのネットワーク</div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s">
+        <svg class="plot" id="payPlot" viewBox="0 0 560 270"></svg>
+        <div class="ctl">ゆらす大きさ γ₀<input type="range" id="payA" min="-4" max="0" step="0.02" value="-3.5"><span class="ro" id="payAv"></span></div>
+      </div>
+      <div class="point frag" style="margin-top:0;font-size:16.5px"><b>ペイン効果</b>：ひずみを大きくするとフィラーの網目がこわれ G′ が急低下（小さくすると戻る）。<b>マリンズ効果</b>：一度伸ばしたゴムは2回目からやわらかくなる。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 6 ===== -->
+<section class="slide door" style="--c:var(--teal)">
+  <div class="door-bg">6</div>
+  <div class="door-wrap">
+    <div class="door-num">6</div>
+    <div>
+      <div class="door-label pop">PART 6</div>
+      <h1 class="pop" style="--d:.1s">測る・使う</h1>
+      <p class="door-lead pop" style="--d:.2s">レオメトリーと応用の世界</p>
+      <div class="door-topics pop" style="--d:.3s"><span>レオメーター</span><span>せん断速度のものさし</span><span>応用マップ</span><span>MR流体</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="rheo">
+  <div class="chap">PART 6 測る・使う ／ レオメトリー</div>
+  <h2>レオメーターのしくみ<small>トルクと回転角 → σ と γ</small></h2>
+  <div class="body cols" style="grid-template-columns:1.1fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="rhSel"><button data-k="pp">平行円板</button><button data-k="cp" class="on">コーン・プレート</button></div>
+      <svg class="plot" id="rhBox" viewBox="0 0 560 300" style="margin-top:4px"></svg>
+      <div class="hint" style="margin-top:0">色＝せん断速度 γ̇ ＝ Ωr ／ h(r)。コーンは h ∝ r なので<b>全体で一様</b></div>
+    </div>
+    <div class="stack" style="gap:9px">
+      <div class="card tight pop" style="--d:.1s"><div class="cardt">🔄 回転型レオメーター</div><div class="mini" style="font-size:15.5px">コーン・プレート／平行円板／二重円筒。定常流（粘度）も<b>振動（G′, G″）</b>も測れる万能選手</div></div>
+      <div class="card tight pop" style="--d:.15s"><div class="cardt">💉 キャピラリーレオメーター</div><div class="mini" style="font-size:15.5px">細管から押し出し、圧力と流量から粘度。射出・押出に近い<b>高せん断速度</b>まで</div></div>
+      <div class="card tight pop" style="--d:.2s"><div class="cardt">🌡️ 動的粘弾性測定（DMA）</div><div class="mini" style="font-size:15.5px">固体を引っ張り・曲げでゆらし、<b>温度を変えながら</b> E′, E″, tanδ（タイヤの評価）</div></div>
+      <div class="card tight pop" style="--d:.25s"><div class="cardt">⚙️ ムーニー粘度計</div><div class="mini" style="font-size:15.5px">未加硫ゴムをローターで回す工業規格。加工しやすさの目安</div></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="gscale">
+  <div class="chap">PART 6 測る・使う ／ どの速さで使われるか</div>
+  <h2>せん断速度のものさし<small>γ̇ [1/s]</small></h2>
+  <div class="body">
+    <div class="card pop" id="gsBox"></div>
+    <div class="point frag" style="font-size:18px">同じ材料でも「どの γ̇ で使うか」で必要な物性が変わる。ペンキなら<b>たれ（10⁻²）</b>では高粘度、<b>はけ塗り（10³〜10⁴）</b>では低粘度がほしい → シアシニング設計。</div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="apps">
+  <div class="chap">PART 6 測る・使う ／ 応用マップ</div>
+  <h2>レオロジーが活躍する世界<small>カードをクリック</small></h2>
+  <div class="body">
+    <div class="apps">
+      <div class="app pop" style="--d:.0s;--c:var(--pink)"><div class="ah"><span class="ic">🍮</span>食品<span class="lnk">PART 3</span></div><div class="ak">食感・のどごし・とろみ</div><div class="ad">かたさ・付着性・弾力を数値化。嚥下（えんげ）調整食は<b>とろみ</b>の粘度を規格化し、むせにくくする。</div></div>
+      <div class="app pop" style="--d:.05s;--c:var(--green)"><div class="ah"><span class="ic">🎨</span>塗料・インク<span class="lnk">PART 3</span></div><div class="ak">のびる・たれない・平らになる</div><div class="ad">塗るときは<b>シアシニング</b>で軽く、塗った後は<b>チキソトロピー・降伏応力</b>でたれない。刷毛目が消える<b>レベリング</b>も粘度で決まる。</div></div>
+      <div class="app pop" style="--d:.1s;--c:var(--green)"><div class="ah"><span class="ic">🧴</span>化粧品・医薬<span class="lnk">PART 3</span></div><div class="ak">塗り心地・分離しない</div><div class="ad">肌の上で<b>高せん断（10⁴〜10⁵ s⁻¹）</b>になるとのび、容器の中では降伏応力で成分が沈まない。</div></div>
+      <div class="app pop" style="--d:.15s;--c:var(--purple)"><div class="ah"><span class="ic">🏭</span>成形加工<span class="lnk">PART 3・4</span></div><div class="ak">射出成形・押出・フィルム</div><div class="ad">溶けた高分子の<b>粘度・緩和時間</b>が、充填しやすさ・<b>ダイスウェル</b>・残留応力・そり（寸法精度）を左右する。</div></div>
+      <div class="app pop" style="--d:.2s;--c:var(--accent)"><div class="ah"><span class="ic">🛞</span>タイヤ・防振ゴム<span class="lnk">PART 5</span></div><div class="ak">tanδ・発熱・耐久性</div><div class="ad"><b>時間‐温度換算</b>で走行条件を見積もり、グリップと燃費を両立。防振ゴムは tanδ で振動を熱に変えて吸収。</div></div>
+      <div class="app pop" style="--d:.25s;--c:var(--teal)"><div class="ah"><span class="ic">⚙️</span>精密工学<span class="lnk">PART 6</span></div><div class="ak">研磨・潤滑・機能性流体</div><div class="ad">研磨スラリーの流動、<b>MR流体（磁性流体）研磨</b>、軸受の潤滑膜、ER/MR ダンパー・クラッチ。粘度を<b>電場・磁場で制御</b>する。</div></div>
+      <div class="app pop" style="--d:.3s;--c:var(--pink)"><div class="ah"><span class="ic">🩸</span>生体<span class="lnk">PART 3</span></div><div class="ak">血液・関節液・粘液</div><div class="ad">血液は赤血球の集合がこわれて<b>シアシニング</b>。関節液はヒアルロン酸の<b>粘弾性</b>で、ゆっくりは潤滑・急な衝撃にはクッション。</div></div>
+      <div class="app pop" style="--d:.35s;--c:var(--blue)"><div class="ah"><span class="ic">🌋</span>地球科学<span class="lnk">PART 1</span></div><div class="ak">マントル・氷河・溶岩</div><div class="ad">マントル（η ≈ 10²¹ Pa·s）は地震波には固体、地質時間では対流する液体。<b>デボラ数</b>の典型例。</div></div>
+      <div class="app pop" style="--d:.4s;--c:var(--purple)"><div class="ah"><span class="ic">🖨️</span>3Dプリンタ・建設<span class="lnk">PART 3</span></div><div class="ak">押し出して形を保つ</div><div class="ad">ノズルからは流れ、積み重ねても崩れない<b>降伏応力</b>が必要。生コンクリートの施工性（ワーカビリティ）も同じ考え方。</div></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="mrf">
+  <div class="chap">PART 6 測る・使う ／ 機能性流体</div>
+  <h2>MR流体：磁場で「固まる」液体<small>粘度をスイッチする</small></h2>
+  <div class="body cols" style="grid-template-columns:1.1fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="mrBox" viewBox="0 0 560 300"></svg>
+      <div class="ctl">磁場の強さ<input type="range" id="mrB" min="0" max="1" step="0.01" value="0"><span class="ro" id="mrBv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s"><svg class="plot" id="mrPlot" viewBox="0 0 470 250"></svg></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s">油の中の鉄粒子が磁場で<b>鎖状に並び</b>、<b>降伏応力</b>が生まれる（ビンガム流体に変身）</li>
+        <li class="pop" style="--d:.25s">応答は<b>数ミリ秒</b>。車のサスペンション・建物の免震ダンパー・クラッチ</li>
+        <li class="pop" style="--d:.3s">磁場で固めた流体を工具にする <b>MR研磨</b>：レンズなどの超精密仕上げ</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== まとめ ===== -->
+<section class="slide">
+  <div class="chap">まとめ</div>
+  <h2>レオロジーの全体マップ</h2>
+  <div class="body"><svg class="plot map" id="mapSvg" viewBox="0 0 1150 520"></svg></div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="quiz">
+  <div class="chap">復習</div>
+  <h2>確認クイズ<small>カードをクリックで答え</small><button class="b qz-all" data-quiz-all>答えをぜんぶ表示</button></h2>
+  <div class="body quiz q4">
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q1</span><span>シリコーンパテが「速くぶつけると弾み、置いておくと流れる」のはなぜ？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">デボラ数 De＝λ/t が違うから。短い時間（De≫1）では固体的、長い時間（De≪1）では液体的。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q2</span><span>G＝1 MPa、η＝10⁶ Pa·s のマクスウェル模型の緩和時間 λ は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">λ＝η/G＝10⁶/10⁶＝<b>1 秒</b>。1秒後に応力は約37%に。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q3</span><span>ペンキが「塗るときはのび、塗った後はたれない」のに関係する性質を2つ。</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">シアシニング（高せん断で低粘度）と、チキソトロピー／降伏応力（静置で構造回復）。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q4</span><span>tanδ＝1 のとき G′ と G″ の関係は？ 位相差 δ は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">G′＝G″（固体と液体の境目）。δ＝45°。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q5</span><span>時間‐温度換算則では「温度を上げる」ことは何に相当する？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">観察時間を長くする（低周波側へずらす）こと。分子運動が速くなり、時間が「早送り」される。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q6</span><span>ゴムの弾性率は温度を上げるとどうなる？ その理由は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">大きくなる（G＝νkT）。ゴム弾性はエントロピー弾性で、熱運動が激しいほど元に戻ろうとする力が強い。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q7</span><span>低燃費タイヤのゴムでは、0 ℃ と 60 ℃ の tanδ をそれぞれどうしたい？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">0 ℃ は<b>高く</b>（ウェットグリップ↑）、60 ℃ は<b>低く</b>（転がり抵抗↓）。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q8</span><span>コーン・プレート型レオメーターを使う利点は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">すき間 h が半径 r に比例するので、せん断速度 γ̇＝Ωr/h が試料全体で一様になる。</span></div></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide">
+  <div class="chap">参考資料</div>
+  <h2>参考文献</h2>
+  <div class="body cols" style="grid-template-columns:1.5fr 1fr">
+    <ol class="refs">
+      <li>日本ゴム協会誌 第89巻 第9号 p.281（2016）<br><a href="https://www.jstage.jst.go.jp/article/gomu/89/9/89_281/_pdf/-char/ja" target="_blank" rel="noopener">jstage.jst.go.jp/article/gomu/89/9/89_281</a></li>
+      <li>日本ゴム協会誌 第89巻 第11号 p.341（2016）<br><a href="https://www.jstage.jst.go.jp/article/gomu/89/11/89_341/_pdf" target="_blank" rel="noopener">jstage.jst.go.jp/article/gomu/89/11/89_341</a></li>
+      <li>日本ゴム協会誌 第90巻 第4号 p.215（2017）<br><a href="https://www.jstage.jst.go.jp/article/gomu/90/4/90_215/_pdf/-char/ja" target="_blank" rel="noopener">jstage.jst.go.jp/article/gomu/90/4/90_215</a></li>
+      <li>日本ゴム協会誌 第90巻 第6号 p.290（2017）<br><a href="https://www.jstage.jst.go.jp/article/gomu/90/6/90_290/_pdf/-char/ja" target="_blank" rel="noopener">jstage.jst.go.jp/article/gomu/90/6/90_290</a></li>
+      <li>日本ゴム協会誌 第90巻 第8号 p.395（2017）<br><a href="https://www.jstage.jst.go.jp/article/gomu/90/8/90_395/_pdf/-char/ja" target="_blank" rel="noopener">jstage.jst.go.jp/article/gomu/90/8/90_395</a></li>
+      <li>日本ゴム協会誌 第90巻 第10号 p.475（2017）<br><a href="https://www.jstage.jst.go.jp/article/gomu/90/10/90_475/_pdf" target="_blank" rel="noopener">jstage.jst.go.jp/article/gomu/90/10/90_475</a></li>
+      <li>精密工学会誌 第81巻 第7号 p.643（2015）<br><a href="https://www.jstage.jst.go.jp/article/jjspe/81/7/81_643/_pdf/-char/ja" target="_blank" rel="noopener">jstage.jst.go.jp/article/jjspe/81/7/81_643</a></li>
+    </ol>
+    <div class="card pop">
+      <p style="margin:0 0 6px;font-weight:900">数値について</p>
+      <ul>
+        <li style="font-size:16px">粘度・緩和時間などはオーダーを示す<b>代表値</b>です</li>
+        <li style="font-size:16px">高分子のスペクトル・タイヤの tanδ 曲線は、性質を説明するための<b>模式的なモデル計算</b>です</li>
+        <li style="font-size:16px">WLF 定数 C₁ ≈ 17.44, C₂ ≈ 51.6 K は T<sub>g</sub> 基準の「普遍定数」</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+</div></div>
+
+
+<div id="ui">
+  <button id="btnPrev">◀</button><span id="counter"></span><button id="btnNext">▶</button>
+  <button id="btnFs">全画面 (F)</button>
+  <button id="btnOv">一覧 (O)</button>
+  <span>← → / Space でページ送り</span>
+</div>
+<div id="progress"></div>
+<div id="penbar" aria-label="ペンの道具">
+  <button data-tool="laser" class="on" title="レーザーポインター（書き込みは残らない）">🔴 レーザー</button>
+  <button data-tool="pen" title="黒ペンで書き込む (P)">✏️ 黒ペン</button>
+  <button data-tool="eraser" title="消しゴム（なぞった線を消す）">🧽 消す</button>
+  <span class="sep"></span>
+  <button id="inkUndo" title="元に戻す (Z)">↩️</button>
+  <button id="inkClear" title="このスライドの書き込みを全部消す">🗑️</button>
+</div>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const stoppers = [];
+
+/* ---------- 共通の道具 ---------- */
+const lg = Math.log10, clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, u) => a + (b - a) * u;
+const ease = u => u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+window.onEnter = {};
+function onSlide(id, f) { const p = onEnter[id]; onEnter[id] = () => { if (p) p(); f(); }; }
+// スライドが表示されている間だけ回るアニメーション
+function anim(id, step) {
+  let raf = 0, last = 0, t = 0;
+  const f = now => { const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; step(dt, t); raf = requestAnimationFrame(f); };
+  onSlide(id, () => { cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(f); });
+  stoppers.push(() => { cancelAnimationFrame(raf); raf = 0; });
+}
+// "10^{3}" "η_{0}" 形式の上付き・下付きに対応した SVG テキスト
+function rich(t, str) {
+  t.textContent = '';
+  String(str).split(/([_^]\{[^}]*\})/).forEach(part => {
+    if (!part) return;
+    const m = part.match(/^([_^])\{([^}]*)\}$/);
+    if (m) {
+      const up = m[1] === '^';
+      el('tspan', { dy: up ? -7 : 5, 'font-size': '72%' }, t).textContent = m[2];
+      el('tspan', { dy: up ? 7 : -5 }, t).textContent = '​';
+    } else el('tspan', {}, t).textContent = part;
+  });
+  return t;
+}
+function txt(parent, x, y, str, attrs = {}) { return rich(el('text', { x, y, ...attrs }, parent), str); }
+const svgEl = id => document.getElementById(id);
+let uid = 0;
+// 目盛り付きの座標軸。X(v), Y(v) で座標に変換。clip（描画域で切り取り）と top（切り取りなし）の2つの層を返す
+function axes(svg, o) {
+  const g = el('g', {}, svg);
+  const tx = v => o.xlog ? lg(v) : v, ty = v => o.ylog ? lg(v) : v;
+  const A = {
+    o,
+    X: v => o.x + (tx(v) - tx(o.xr[0])) / (tx(o.xr[1]) - tx(o.xr[0])) * o.w,
+    Y: v => o.y + o.h - (ty(v) - ty(o.yr[0])) / (ty(o.yr[1]) - ty(o.yr[0])) * o.h,
+  };
+  el('rect', { x: o.x, y: o.y, width: o.w, height: o.h, class: 'bg' }, g);
+  const f = (v, log, ff) => ff ? ff(v) : log ? `10^{${Math.round(lg(v))}}` : String(v);
+  (o.xt || []).forEach(v => {
+    el('line', { x1: A.X(v), x2: A.X(v), y1: o.y, y2: o.y + o.h, class: 'gd' }, g);
+    txt(g, A.X(v), o.y + o.h + 19, f(v, o.xlog, o.xf), { class: 'tk', 'text-anchor': 'middle' });
+  });
+  (o.yt || []).forEach(v => {
+    el('line', { x1: o.x, x2: o.x + o.w, y1: A.Y(v), y2: A.Y(v), class: 'gd' }, g);
+    txt(g, o.x - 7, A.Y(v) + 5, f(v, o.ylog, o.yf), { class: 'tk', 'text-anchor': 'end' });
+  });
+  A.under = el('g', {}, svg);
+  el('path', { d: `M${o.x} ${o.y - 10}V${o.y + o.h}H${o.x + o.w + 10}`, class: 'ax' }, svg);
+  el('path', { d: `M${o.x - 6} ${o.y - 6}L${o.x} ${o.y - 16}L${o.x + 6} ${o.y - 6}z`, class: 'axh' }, svg);
+  el('path', { d: `M${o.x + o.w + 6} ${o.y + o.h - 6}L${o.x + o.w + 16} ${o.y + o.h}L${o.x + o.w + 6} ${o.y + o.h + 6}z`, class: 'axh' }, svg);
+  if (o.xl) txt(svg, o.x + o.w + 14, o.y + o.h + (o.xt ? 40 : 24), o.xl, { class: 'al', 'text-anchor': 'end' });
+  if (o.yl) txt(svg, o.x + 10, o.y - 6, o.yl, { class: 'al' });
+  const cid = 'clip' + uid++;
+  el('rect', { x: o.x, y: o.y - 2, width: o.w, height: o.h + 2 }, el('clipPath', { id: cid }, svg));
+  A.clip = el('g', { 'clip-path': `url(#${cid})` }, svg);
+  A.top = el('g', {}, svg);
+  return A;
+}
+// 関数 fn を [a,b] で n 点サンプルして path の d にする
+function curve(A, fn, a = A.o.xr[0], b = A.o.xr[1], n = 160) {
+  const log = A.o.xlog, pts = [];
+  for (let i = 0; i <= n; i++) {
+    const x = log ? 10 ** lerp(lg(a), lg(b), i / n) : lerp(a, b, i / n), y = fn(x);
+    if (!isFinite(y) || (A.o.ylog && y <= 0)) continue;
+    pts.push([A.X(x), clamp(A.Y(y), A.o.y - 400, A.o.y + A.o.h + 400)]);
+  }
+  return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('');
+}
+const segSel = (id, cb) => {
+  const s = document.getElementById(id), bs = [...s.querySelectorAll('button')];
+  bs.forEach(b => b.addEventListener('click', () => { b.blur(); bs.forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset); }));
+  return bs;
+};
+const sup = n => String(n).replace(/-/g, '⁻').replace(/\d/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+function tenPow(v, digits = 1) {
+  const e = Math.floor(lg(v) + 1e-9), m = v / 10 ** e;
+  if (e >= -2 && e <= 3) return (+v.toPrecision(2)).toString();
+  return (m.toFixed(digits) === '1.0' || m.toFixed(0) === '1' && digits === 0 ? '' : m.toFixed(digits) + '×') + '10' + sup(e);
+}
+function humanTime(s) {
+  const Y = 3.156e7;
+  if (s < 1e-3) return (s * 1e6).toPrecision(2) + ' µs';
+  if (s < 1) return (s * 1e3).toPrecision(2) + ' ms';
+  if (s < 60) return s.toPrecision(2) + ' 秒';
+  if (s < 3600) return (s / 60).toPrecision(2) + ' 分';
+  if (s < 86400) return (s / 3600).toPrecision(2) + ' 時間';
+  if (s < Y) return (s / 86400).toPrecision(2) + ' 日';
+  if (s < 1e4 * Y) return Math.round(s / Y).toLocaleString() + ' 年';
+  if (s < 1e8 * Y) return (s / Y / 1e4).toPrecision(2) + ' 万年';
+  return (s / Y / 1e8).toPrecision(2) + ' 億年';
+}
+// 決まった乱数（再読み込みしても同じ絵になる）
+function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; }
+
+/* ---------- タイトル：弾んでから流れるパテ ---------- */
+{
+  const svg = svgEl('titleAnim'), F = 320, R = 46;
+  el('rect', { x: 20, y: F, width: 440, height: 14, fill: '#1f1a3d', rx: 4 }, svg);
+  for (let x = 30; x < 460; x += 22) el('path', { d: `M${x} ${F + 14}l-12 18`, stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  const shadow = el('ellipse', { cx: 240, cy: F, rx: 40, ry: 7, fill: 'rgba(31,26,61,.15)' }, svg);
+  const ball = el('ellipse', { cx: 240, cy: 100, rx: R, ry: R, fill: '#ff4f9a', stroke: '#1f1a3d', 'stroke-width': 4 }, svg);
+  const shine = el('ellipse', { cx: 224, cy: 84, rx: 12, ry: 8, fill: 'rgba(255,255,255,.7)' }, svg);
+  const lab = txt(svg, 240, 40, '', { 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 900, fill: '#1f1a3d' });
+  const clock = txt(svg, 240, 70, '', { 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 800, fill: '#6b6790' });
+  let h, v, sq, phase;
+  const reset = () => { h = 170; v = 0; sq = 0; phase = 0; };
+  reset();
+  function draw(rx, ry, op = 1) {
+    const cy = F - ry - h;
+    ball.setAttribute('cx', 240); ball.setAttribute('cy', cy); ball.setAttribute('rx', rx); ball.setAttribute('ry', ry);
+    shine.setAttribute('cx', 240 - rx * .35); shine.setAttribute('cy', cy - ry * .35); shine.setAttribute('rx', Math.min(14, rx * .26)); shine.setAttribute('ry', Math.min(9, ry * .18));
+    shadow.setAttribute('rx', rx * (1 - Math.min(.6, h / 400))); svg.style.opacity = 1;
+    [ball, shine, shadow].forEach(e => e.setAttribute('opacity', op));
+  }
+  draw(R, R);
+  anim('title', (dt, t) => {
+    phase += dt;
+    if (phase < 3.4) {
+      v -= 1500 * dt; h += v * dt;
+      if (h <= 0) { h = 0; if (Math.abs(v) > 120) { v = -v * .78; sq = .12; } else v = 0; }
+      sq = Math.max(0, sq - dt);
+      const s = sq > 0 ? .22 * Math.sin(sq / .12 * Math.PI) : 0;
+      draw(R * (1 + s), R * (1 - s));
+      rich(lab, '速くぶつける → 弾む（固体）'); lab.setAttribute('fill', '#3b6cff');
+      rich(clock, '⏱ 一瞬（0.01 秒）');
+    } else if (phase < 8) {
+      h = 0;
+      const u = ease(clamp((phase - 3.6) / 4, 0, 1)), ry = R * (1 - .74 * u), rx = Math.min(200, R * R / ry);
+      draw(rx, ry);
+      rich(lab, 'じっと待つ → 流れて広がる（液体）'); lab.setAttribute('fill', '#e04e00');
+      rich(clock, `⏱ ${Math.round(u * 60)} 分後`);
+    } else if (phase < 8.8) {
+      const ry = R * .26; draw(Math.min(200, R * R / ry), ry, 1 - (phase - 8) / .8);
+    } else reset();
+  });
+}
+
+/* ---------- デボラ数 ---------- */
+{
+  const svg = svgEl('debo');
+  let lamLog = 0;
+  const F = 212, W0 = 120, H0 = 110;
+  el('rect', { x: 60, y: F, width: 400, height: 12, rx: 4, fill: '#1f1a3d' }, svg);
+  const blob = el('rect', { rx: 26, fill: '#8a5cff', stroke: '#1f1a3d', 'stroke-width': 4 }, svg);
+  const press = el('g', {}, svg);
+  el('rect', { x: 150, y: -14, width: 220, height: 14, rx: 4, fill: '#ffd53d', stroke: '#1f1a3d', 'stroke-width': 3 }, press);
+  el('rect', { x: 252, y: -60, width: 16, height: 46, fill: '#1f1a3d' }, press);
+  const ghost = el('rect', { x: 260 - W0 / 2, y: F - H0, width: W0, height: H0, rx: 26, fill: 'none', stroke: '#b9b5d0', 'stroke-width': 2.5, 'stroke-dasharray': '6 5' }, svg);
+  const state = txt(svg, 60, 256, '', { class: 'labm' });
+  const recov = txt(svg, 460, 256, '', { 'text-anchor': 'end', class: 'lab' });
+  const tS = svgEl('deT'), De = () => 10 ** (lamLog - +tS.value);
+  function blobAt(h) {
+    const w = W0 * H0 / h;
+    blob.setAttribute('x', 260 - w / 2); blob.setAttribute('width', w); blob.setAttribute('y', F - h); blob.setAttribute('height', h);
+    blob.setAttribute('rx', Math.min(26, h / 2));
+  }
+  function readout() {
+    const d = De();
+    $('#deLam').textContent = humanTime(10 ** lamLog).replace(' µs', ' µs');
+    if (lamLog < -6) $('#deLam').textContent = '10⁻¹² 秒';
+    $('#deTv').textContent = humanTime(10 ** +tS.value);
+    $('#deDe').textContent = 'De = ' + tenPow(d);
+    const v = $('#deVerdict');
+    if (d > 3) { v.textContent = '固体のようにふるまう'; v.className = 'verdict solid'; }
+    else if (d < .3) { v.textContent = '液体のように流れる'; v.className = 'verdict liquid'; }
+    else { v.textContent = '粘弾性（両方の顔）'; v.className = 'verdict mid'; }
+    rich(recov, `戻る割合 e^{−1/De} = ${Math.round(Math.exp(-1 / d) * 100)}%`);
+  }
+  tS.addEventListener('input', readout);
+  segSel('deMat', d => { lamLog = +d.l; tS.value = clamp(lamLog, -6, 15); readout(); });
+  readout();
+  // 押して（観察時間ぶん保持して）離すと、e^{-1/De} の割合だけ形が戻る（マクスウェル模型）
+  let ph = 0;
+  const Hs = 52;
+  blobAt(H0); press.setAttribute('transform', `translate(0 ${F - H0 - 44})`);
+  anim('debo', dt => {
+    ph = (ph + dt) % 3.6;
+    const s = Math.exp(-1 / De()), Hr = Hs + (H0 - Hs) * s;
+    let h, py;
+    if (ph < .8) { const u = ease(ph / .8); h = lerp(H0, Hs, u); py = F - h; rich(state, '① 押しつぶす'); }
+    else if (ph < 1.6) { h = Hs; py = F - h; rich(state, '② 観察時間 t のあいだ押さえる'); }
+    else if (ph < 2.3) { const u = ease((ph - 1.6) / .7); py = lerp(F - Hs, F - H0 - 40, u); h = Math.min(F - py, Hr); rich(state, '③ 離す'); }
+    else { py = F - H0 - 40; h = Hr; rich(state, '④ どれだけ戻った？'); }
+    blobAt(h); press.setAttribute('transform', `translate(0 ${py - 4})`);
+    ghost.setAttribute('opacity', ph > 2.3 ? 1 : 0);
+  });
+}
+
+/* ---------- 応力・ひずみの定義図 ---------- */
+{
+  const svg = svgEl('shearDef'), x0 = 110, yb = 270, yt = 110, h = yb - yt, Wd = 200;
+  el('rect', { x: 40, y: yb, width: 460, height: 16, rx: 4, fill: '#1f1a3d' }, svg);
+  for (let x = 50; x < 500; x += 20) el('path', { d: `M${x} ${yb + 16}l-10 14`, stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  txt(svg, 46, yb - 8, '固定', { class: 'labm' });
+  const body = el('path', { fill: '#dfe8ff', stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  const layers = [1, 2, 3, 4].map(() => el('line', { stroke: '#a9bdf5', 'stroke-width': 2, 'stroke-dasharray': '6 5' }, svg));
+  const vecs = [1, 2, 3, 4, 5].map(() => el('path', { stroke: '#3b6cff', 'stroke-width': 3, fill: 'none' }, svg));
+  const dye = el('line', { stroke: '#ff2850', 'stroke-width': 4, 'stroke-linecap': 'round' }, svg);
+  const plate = el('rect', { y: yt - 16, width: Wd + 40, height: 16, rx: 4, fill: '#ffd53d', stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  const Farr = el('path', { stroke: '#e04e00', 'stroke-width': 5, fill: 'none', 'marker-end': 'url(#arrF)' }, svg);
+  el('path', { d: 'M0 0L10 5L0 10z', fill: '#e04e00' }, el('marker', { id: 'arrF', viewBox: '0 0 10 10', refX: 6, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto' }, el('defs', {}, svg)));
+  const Ft = txt(svg, 0, yt - 22, 'F', { class: 'lab', fill: '#e04e00' });
+  const At = txt(svg, 0, yt - 24, '面積 A', { class: 'labm' });
+  el('path', { d: `M${x0 - 22} ${yt}V${yb}`, stroke: '#1f1a3d', 'stroke-width': 2 }, svg);
+  txt(svg, x0 - 30, (yt + yb) / 2 + 6, 'h', { class: 'lab', 'text-anchor': 'end' });
+  const dxl = el('path', { stroke: '#ff2850', 'stroke-width': 2.5, fill: 'none' }, svg);
+  const dxt = txt(svg, 0, yt + 22, 'Δx', { class: 'lab', fill: '#ff2850' });
+  const Vt = txt(svg, 0, 0, 'V', { class: 'lab', fill: '#3b6cff' });
+  let t = 0;
+  function draw() {
+    const g = Math.min(.85, t * .3), dx = g * h;
+    body.setAttribute('d', `M${x0} ${yb}H${x0 + Wd}L${x0 + Wd + dx} ${yt}H${x0 + dx}z`);
+    layers.forEach((l, i) => { const y = yb - h * (i + 1) / 5, s = g * (yb - y); l.setAttribute('x1', x0 + s); l.setAttribute('x2', x0 + Wd + s); l.setAttribute('y1', y); l.setAttribute('y2', y); });
+    vecs.forEach((p, i) => { const y = yb - h * (i + 1) / 5 + 6, L = 60 * (i + 1) / 5; p.setAttribute('d', `M${x0 + Wd + 30 + g * (yb - y)} ${y}h${L}m-8 -6l8 6l-8 6`); });
+    dye.setAttribute('x1', x0 + 60); dye.setAttribute('y1', yb); dye.setAttribute('x2', x0 + 60 + dx); dye.setAttribute('y2', yt);
+    plate.setAttribute('x', x0 - 20 + dx);
+    Farr.setAttribute('d', `M${x0 + Wd + 30 + dx} ${yt - 8}h50`);
+    Ft.setAttribute('x', x0 + Wd + 50 + dx);
+    At.setAttribute('x', x0 + 20 + dx);
+    dxl.setAttribute('d', `M${x0 + 60} ${yt + 6}h${dx}`);
+    dxt.setAttribute('x', x0 + 60 + dx / 2 - 10);
+    Vt.setAttribute('x', x0 + Wd + 100 + dx); Vt.setAttribute('y', yt + 24);
+  }
+  draw();
+  anim('shear', dt => { t += dt; if (t > 4.6) t = 0; draw(); });
+}
+
+/* ---------- ばね・ダッシュポット・マクスウェル・フォークト ---------- */
+const K = 50; // ひずみ 1 あたりの伸び [px]
+function drawSpring(g, x1, x2, y, color) {
+  const n = 9, a = 11, lead = 12, L = x2 - x1 - 2 * lead;
+  let d = `M${x1} ${y}h${lead}`;
+  for (let i = 0; i < n; i++) d += `L${x1 + lead + L * (i + .5) / n} ${y + (i % 2 ? a : -a)}`;
+  d += `L${x2 - lead} ${y}H${x2}`;
+  el('path', { d, fill: 'none', stroke: color, 'stroke-width': 4, 'stroke-linejoin': 'round' }, g);
+}
+function drawDashpot(g, x1, x2, y, color, base) {
+  // シリンダーは左に固定、ピストンが右へ抜けていく。base はひずみ 0 のときの長さ
+  const cyl = 92, ext = x2 - x1 - base;
+  el('path', { d: `M${x1} ${y}h12`, stroke: color, 'stroke-width': 4 }, g);
+  el('rect', { x: x1 + 12, y: y - 17, width: cyl, height: 34, fill: '#fff1c2', stroke: 'none' }, g);
+  el('path', { d: `M${x1 + 12 + cyl} ${y - 17}H${x1 + 12}V${y + 17}H${x1 + 12 + cyl}`, fill: 'none', stroke: color, 'stroke-width': 4 }, g);
+  const px = x1 + 30 + ext;
+  el('rect', { x: px - 4, y: y - 12, width: 8, height: 24, fill: color }, g);
+  el('path', { d: `M${px} ${y}H${x2}`, stroke: color, 'stroke-width': 4 }, g);
+}
+function drawModel(g, type, x1, y, s) {
+  // s: { e: 全ひずみ, es: ばねのひずみ, ed: ダッシュポットのひずみ }
+  const Ls = 110, Ld = 130, col = '#1f1a3d';
+  if (type === 'spring') { const x2 = x1 + Ls + K * s.e; drawSpring(g, x1, x2, y, '#3b6cff'); return x2; }
+  if (type === 'dashpot') { const x2 = x1 + Ld + K * s.e; drawDashpot(g, x1, x2, y, '#e04e00', Ld); return x2; }
+  if (type === 'maxwell') {
+    const xm = x1 + Ls + K * s.es; drawSpring(g, x1, xm, y, '#3b6cff');
+    const x2 = xm + Ld + K * s.ed; drawDashpot(g, xm, x2, y, '#e04e00', Ld); return x2;
+  }
+  // フォークト：並列
+  const x2 = x1 + 20 + Ld + K * s.e;
+  el('path', { d: `M${x1} ${y}h10M${x1 + 10} ${y - 24}V${y + 24}M${x2 - 10} ${y - 24}V${y + 24}M${x2 - 10} ${y}H${x2}`, stroke: col, 'stroke-width': 4 }, g);
+  drawSpring(g, x1 + 10, x2 - 10, y - 24, '#3b6cff');
+  drawDashpot(g, x1 + 10, x2 - 10, y + 24, '#e04e00', Ld);
+  return x2;
+}
+function drawWall(g, x, y, h) {
+  el('rect', { x: x - 10, y: y - h / 2, width: 10, height: h, fill: '#1f1a3d' }, g);
+  for (let yy = y - h / 2 + 4; yy < y + h / 2; yy += 12) el('path', { d: `M${x - 10} ${yy}l-10 10`, stroke: '#1f1a3d', 'stroke-width': 2.5 }, g);
+}
+function drawPull(g, x, y, on, label = 'F') {
+  el('rect', { x, y: y - 14, width: 18, height: 28, rx: 5, fill: on ? '#ffd53d' : '#fff', stroke: '#1f1a3d', 'stroke-width': 3 }, g);
+  if (on) {
+    el('path', { d: `M${x + 18} ${y}h36m-10 -9l10 9l-10 9`, stroke: '#e04e00', 'stroke-width': 4.5, fill: 'none', 'stroke-linecap': 'round' }, g);
+    txt(g, x + 34, y - 14, label, { class: 'lab', fill: '#e04e00', 'text-anchor': 'middle' });
+  }
+}
+// クリープ（一定の力 1 ≤ t < 6）を再生する
+function creepSlide({ id, models, svgM, svgC, btn, rowY, ghosts = [] }) {
+  const G = 1, ETA = 4, T = 12, S = t => t >= 1 && t < 6 ? 1 : 0;
+  const mSvg = svgEl(svgM), cSvg = svgEl(svgC);
+  const As = axes(cSvg, { x: 60, y: 30, w: 420, h: 60, xr: [0, T], yr: [0, 1.4], yt: [0, 1], yf: v => v ? 'σ₀' : '0' });
+  txt(cSvg, 70, 22, '加える力 σ', { class: 'al' });
+  const A = axes(cSvg, { x: 60, y: 130, w: 420, h: 200, xr: [0, T], yr: [0, 2.6], xt: [0, 2, 4, 6, 8, 10, 12], yt: [0, 1, 2], xl: '時間 t', yl: 'ひずみ γ' });
+  el('path', { d: curve(As, S, 0, T, 600), class: 'cv c-or thin' }, As.clip);
+  // 前ページの理想物質を点線で
+  const exact = {
+    spring: t => S(t) / G,
+    dashpot: t => clamp(t - 1, 0, 5) / ETA,
+    maxwell: t => S(t) / G + clamp(t - 1, 0, 5) / ETA,
+    voigt: t => t < 1 ? 0 : t < 6 ? 1 - Math.exp(-(t - 1) * G / ETA) : (1 - Math.exp(-5 * G / ETA)) * Math.exp(-(t - 6) * G / ETA),
+  };
+  const colorOf = { spring: 'c-bl', dashpot: 'c-or', maxwell: 'c-pk', voigt: 'c-gr' };
+  ghosts.forEach(k => el('path', { d: curve(A, exact[k], 0, T, 600), class: `cv thin dash ${colorOf[k]}`, opacity: .5 }, A.clip));
+  const paths = models.map(m => el('path', { class: `cv ${colorOf[m]}` }, A.clip));
+  const names = { spring: 'ばね', dashpot: 'ダッシュポット', maxwell: 'マクスウェル', voigt: 'フォークト' };
+  const tags = models.map(m => txt(A.top, 0, 0, names[m], { class: 'note', fill: getComputedStyle(document.documentElement).getPropertyValue({ spring: '--blue', dashpot: '--accent-d', maxwell: '--pink', voigt: '--green' }[m]) }));
+  const cursor = el('line', { y1: 30, y2: 330, stroke: '#1f1a3d', 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, cSvg);
+  const mG = el('g', {}, mSvg);
+  let t = 0, playing = false, hist;
+  const reset = () => { t = 0; hist = models.map(() => []); };
+  function frame() {
+    mG.textContent = '';
+    models.forEach((m, i) => {
+      const e = exact[m](t), y = rowY[i];
+      const s = { e, es: S(t) / G, ed: clamp(t - 1, 0, 5) / ETA };
+      drawWall(mG, 40, y, m === 'voigt' ? 80 : 50);
+      const x2 = drawModel(mG, m, 40, y, s);
+      drawPull(mG, x2, y, S(t) > 0);
+      txt(mG, 40, y - (m === 'voigt' ? 46 : 30), names[m], { class: 'note', fill: '#6b6790' });
+      hist[i].push([A.X(t), A.Y(e)]);
+      paths[i].setAttribute('d', hist[i].map((p, j) => (j ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(''));
+      const last = hist[i][hist[i].length - 1];
+      tags[i].setAttribute('x', last[0] + 6); tags[i].setAttribute('y', last[1] - 8);
+    });
+    cursor.setAttribute('x1', A.X(t)); cursor.setAttribute('x2', A.X(t));
+  }
+  reset(); frame();
+  const b = svgEl(btn);
+  b.addEventListener('click', () => { b.blur(); reset(); playing = true; b.classList.add('playing'); b.textContent = '⏵ 再生中…'; });
+  anim(id, dt => {
+    if (!playing) return;
+    t = Math.min(T, t + dt * 1.1); frame();
+    if (t >= T) { playing = false; b.classList.remove('playing'); b.textContent = '▶ もう一度'; }
+  });
+  stoppers.push(() => { playing = false; b.classList.remove('playing'); b.textContent = '▶ 再生'; });
+}
+creepSlide({ id: 'sd', models: ['spring', 'dashpot'], svgM: 'sdModels', svgC: 'sdChart', btn: 'sdPlay', rowY: [55, 145] });
+creepSlide({ id: 'mv', models: ['maxwell', 'voigt'], svgM: 'mvModels', svgC: 'mvChart', btn: 'mvPlay', rowY: [50, 150], ghosts: ['spring', 'dashpot'] });
+
+/* ---------- 応力緩和 ---------- */
+{
+  const T = 12, mSvg = svgEl('rxModel'), cSvg = svgEl('rxChart'), eta = svgEl('rxEta');
+  const A = axes(cSvg, { x: 60, y: 30, w: 420, h: 250, xr: [0, T], yr: [0, 1.15], xt: [0, 2, 4, 6, 8, 10, 12], yt: [0, .37, 1], yf: v => v === 1 ? 'σ₀' : v ? 'σ₀/e' : '0', xl: '時間 t', yl: '応力 σ' });
+  const lamOf = () => +eta.value;
+  const sig = t => t < 1 ? 0 : Math.exp(-(t - 1) / lamOf());
+  el('path', { d: curve(A, t => t < 1 ? 0 : 1, 0, T, 400), class: 'cv thin dash c-bl' }, A.clip);
+  txt(A.top, A.X(8.2), A.Y(1) - 8, 'ばねだけ（架橋ゴム）', { class: 'note', fill: '#3b6cff' });
+  const ghost = el('path', { class: 'cv thin c-mu' }, A.clip);
+  const path = el('path', { class: 'cv c-pk' }, A.clip);
+  const mark = el('g', {}, A.top);
+  const cursor = el('line', { y1: 30, y2: 280, stroke: '#1f1a3d', 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, cSvg);
+  const mG = el('g', {}, mSvg);
+  let t = 0, playing = false;
+  function frame() {
+    const lam = lamOf(), s = sig(t), e = t < 1 ? 0 : 1, ed = e - s;
+    mG.textContent = '';
+    drawWall(mG, 40, 60, 50);
+    const x2 = drawModel(mG, 'maxwell', 40, 60, { e, es: s, ed });
+    el('rect', { x: x2, y: 46, width: 18, height: 28, rx: 5, fill: e ? '#ffd53d' : '#fff', stroke: '#1f1a3d', 'stroke-width': 3 }, mG);
+    if (e) { el('path', { d: `M${x2 + 9} 46V20M${x2} 20h18`, stroke: '#1f1a3d', 'stroke-width': 4 }, mG); txt(mG, x2 + 26, 26, '固定', { class: 'note', fill: '#1f1a3d' }); }
+    txt(mG, 40, 106, `ばねの伸び＝力：${Math.round(s * 100)}%`, { class: 'note', fill: '#3b6cff' });
+    path.setAttribute('d', curve(A, sig, 0, Math.max(t, .001), 300));
+    cursor.setAttribute('x1', A.X(t)); cursor.setAttribute('x2', A.X(t));
+    mark.textContent = '';
+    if (t >= 1 + lam) {
+      el('circle', { cx: A.X(1 + lam), cy: A.Y(1 / Math.E), r: 7, fill: '#ff4f9a', class: 'mk' }, mark);
+      el('path', { d: `M${A.X(1)} ${A.Y(.2)}H${A.X(1 + lam)}`, stroke: '#1f1a3d', 'stroke-width': 2, 'marker-end': 'url(#arrF)', 'marker-start': 'url(#arrF)' }, mark);
+      txt(mark, A.X(1 + lam / 2), A.Y(.2) - 8, 'λ', { class: 'lab', 'text-anchor': 'middle' });
+    }
+    $('#rxLam').textContent = `λ = η/G = ${lam.toFixed(1)} 秒`;
+  }
+  const b = svgEl('rxPlay');
+  const start = () => { t = 0; playing = true; b.classList.add('playing'); b.textContent = '⏵ 再生中…'; };
+  b.addEventListener('click', () => { b.blur(); start(); });
+  eta.addEventListener('input', () => { ghost.setAttribute('d', path.getAttribute('d')); if (!playing) start(); frame(); });
+  frame();
+  anim('relax', dt => {
+    if (!playing) return;
+    t = Math.min(T, t + dt * 1.3); frame();
+    if (t >= T) { playing = false; b.classList.remove('playing'); b.textContent = '▶ もう一度'; }
+  });
+  stoppers.push(() => { playing = false; b.classList.remove('playing'); b.textContent = '▶ 再生'; });
+}
+
+/* ---------- 粘度のものさし ---------- */
+{
+  const svg = svgEl('viscChart');
+  const data = [
+    ['💨', '空気', 1.8e-5], ['💧', '水', 1e-3], ['🫒', 'オリーブ油', 8e-2], ['🍯', 'はちみつ', 10],
+    ['🧵', '溶けたプラスチック', 1e4], ['🛣️', 'ピッチ（タール）', 2.3e8], ['🏔️', '氷河の氷', 1e13], ['🌋', 'マントル', 1e21],
+  ];
+  const A = axes(svg, { x: 210, y: 20, w: 450, h: 380, xr: [1e-6, 1e22], yr: [0, data.length], xlog: true, xt: [1e-5, 1e0, 1e5, 1e10, 1e15, 1e20] });
+  txt(svg, 670, 432, 'η [Pa·s]', { class: 'al', 'text-anchor': 'end' });
+  const rowH = 380 / data.length;
+  data.forEach(([ic, nm, v], i) => {
+    const y = 20 + rowH * (i + .5), w = A.X(v) - 210, g = el('g', { class: 'pop', style: `--d:${.1 + i * .08}s` }, svg);
+    txt(g, 200, y + 6, nm, { 'text-anchor': 'end', 'font-size': 16, 'font-weight': 800, fill: '#1f1a3d' });
+    el('rect', { x: 210, y: y - 13, width: w, height: 26, rx: 7, fill: `hsl(${210 - i * 26},85%,62%)`, stroke: '#1f1a3d', 'stroke-width': 2.5 }, g);
+    txt(g, 210 + w + 8, y + 9, ic, { 'font-size': 24 });
+    txt(g, 210 + w + 40, y + 6, tenPow(v), { 'font-size': 14, 'font-weight': 800, fill: '#6b6790', 'font-family': 'Consolas,Menlo,monospace' });
+  });
+}
+
+/* ---------- 流動曲線 ---------- */
+{
+  const svg = svgEl('flowPlot');
+  const M = {
+    newton: { n: 'ニュートン流体', c: 'bl', s: g => g, ex: '💧 水・はちみつ・油', d: '粘度が<b>一定</b>。σ と γ̇ が比例（直線が原点を通る）。' },
+    thin: { n: 'シアシニング（擬塑性）', c: 'pk', s: g => 2.5 * g ** .4, ex: '🥫 ケチャップ・🎨 ペンキ・🧵 高分子溶液・🩸 血液', d: '速くかき混ぜるほど<b>粘度が下がる</b>。もっとも身近な非ニュートン性。' },
+    thick: { n: 'シアシックニング（ダイラタンシー）', c: 'gr', s: g => .15 * g ** 1.8, ex: '🥣 片栗粉と水（ウーブレック）', d: '速く押すほど<b>粘度が上がる</b>。粒子が詰まって動けなくなる。上を走れる液体！' },
+    bingham: { n: 'ビンガム塑性体', c: 'pu', s: g => 3 + .5 * g, ex: '🥚 マヨネーズ・🪥 歯みがき粉・🧈 バター', d: '<b>降伏応力 σ<sub>y</sub></b> を超えるまで流れない。超えると流れ出す。' },
+  };
+  const A1 = axes(svg, { x: 50, y: 30, w: 290, h: 250, xr: [0, 10], yr: [0, 10], xt: [0, 5, 10], yt: [0, 5, 10], xl: 'γ̇', yl: '応力 σ' });
+  const A2 = axes(svg, { x: 440, y: 30, w: 290, h: 250, xr: [0, 10], yr: [0, 4], xt: [0, 5, 10], yt: [0, 2, 4], xl: 'γ̇', yl: '粘度 η ＝ σ／γ̇' });
+  const P = {};
+  for (const k in M) {
+    P[k] = {
+      a: el('path', { d: curve(A1, M[k].s, 0, 10), class: `cv c-${M[k].c}` }, A1.clip),
+      b: el('path', { d: curve(A2, g => M[k].s(g) / g, .02, 10), class: `cv c-${M[k].c}` }, A2.clip),
+      da: el('circle', { r: 8, class: `mk f-${M[k].c}` }, A1.top),
+      db: el('circle', { r: 8, class: `mk f-${M[k].c}` }, A2.top),
+    };
+  }
+  const yl = txt(A1.top, A1.X(.2), A1.Y(3) - 8, 'σ_{y}', { class: 'lab', fill: '#8a5cff' });
+  let sel = 'thin';
+  const gS = svgEl('flowG');
+  function update() {
+    const g = +gS.value;
+    for (const k in M) {
+      const on = sel === 'all' || sel === k;
+      [P[k].a, P[k].b].forEach(p => p.classList.toggle('dim', !on));
+      [P[k].da, P[k].db].forEach(p => p.style.display = on ? '' : 'none');
+      const s = M[k].s(g);
+      P[k].da.setAttribute('cx', A1.X(g)); P[k].da.setAttribute('cy', A1.Y(s));
+      P[k].db.setAttribute('cx', A2.X(g)); P[k].db.setAttribute('cy', A2.Y(Math.min(s / g, 4.3)));
+    }
+    yl.style.display = sel === 'bingham' || sel === 'all' ? '' : 'none';
+    const info = $('#flowInfo');
+    if (sel === 'all') {
+      $('#flowRo').textContent = `γ̇ = ${g.toFixed(1)}`;
+      info.innerHTML = `<div class="cardt">4つのタイプ</div>${Object.values(M).map(m => `<div class="mini" style="margin:4px 0"><b class="t-${m.c === 'bl' ? 'bl' : m.c}">■ ${m.n}</b></div>`).join('')}<div class="mini muted" style="margin-top:8px">右の η‐γ̇ グラフで、<b>傾きの向き</b>が性質を表す</div>`;
+    } else {
+      const m = M[sel], s = m.s(g);
+      $('#flowRo').textContent = `γ̇ = ${g.toFixed(1)} → η = ${(s / g).toFixed(2)}`;
+      info.innerHTML = `<div class="cardt t-${m.c}">${m.n}</div><div class="mini">${m.d}</div><div class="mini" style="margin-top:10px"><b>例：</b>${m.ex}</div><div class="mini muted" style="margin-top:10px;font-size:16px">スライダーで γ̇ を上げると、右の粘度がどう変わる？</div>`;
+    }
+  }
+  segSel('flowSel', d => { sel = d.k; update(); });
+  gS.addEventListener('input', update);
+  update();
+}
+
+/* ---------- 高分子鎖のシアシニング ---------- */
+{
+  const svg = svgEl('chainBox'), gS = svgEl('chG'), r = rng(7), W = 540, NB = 22, b = 8.5;
+  el('rect', { x: 0, y: 0, width: W, height: 300, rx: 16, fill: '#f7f4ff' }, svg);
+  el('rect', { x: 0, y: 0, width: W, height: 10, fill: '#ffd53d' }, svg);
+  el('rect', { x: 0, y: 290, width: W, height: 10, fill: '#1f1a3d' }, svg);
+  const flowArr = el('g', {}, svg);
+  const colors = ['#ff6b1a', '#3b6cff', '#ff4f9a', '#14a35a', '#8a5cff', '#0ea5a4', '#e04e00', '#1f1a3d', '#d61f45', '#2563eb'];
+  const chains = colors.map((c, k) => {
+    const coil = [[0, 0]]; let a = r() * 6.28;
+    for (let i = 1; i < NB; i++) { a += (r() - .5) * 2.4; coil.push([coil[i - 1][0] + b * Math.cos(a), coil[i - 1][1] + b * Math.sin(a)]); }
+    const cx = coil.reduce((s, p) => s + p[0], 0) / NB, cy = coil.reduce((s, p) => s + p[1], 0) / NB;
+    coil.forEach(p => { p[0] -= cx; p[1] -= cy; });
+    return { c, coil, x: r() * W, y: 62 + (k % 5) * 44 + r() * 10, ph: r() * 6, path: el('path', { fill: 'none', stroke: c, 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg) };
+  });
+  const A = axes(svgEl('crossPlot'), { x: 64, y: 28, w: 370, h: 200, xr: [1e-3, 1e3], yr: [3, 3000], xlog: true, ylog: true, xt: [1e-3, 1e-1, 1e1, 1e3], yt: [1e1, 1e2, 1e3], xl: 'γ̇ [1/s]', yl: 'η [Pa·s]' });
+  const eta = g => 1000 / (1 + g ** .7);
+  el('path', { d: curve(A, eta), class: 'cv c-gr' }, A.clip);
+  txt(A.top, A.X(1.5e-3), A.Y(1000) - 10, 'η_{0}（一定）', { class: 'note', fill: '#14a35a' });
+  txt(A.top, A.X(10), A.Y(60), 'べき乗則で低下', { class: 'note', fill: '#14a35a' });
+  const dot = el('circle', { r: 8, class: 'mk f-gr' }, A.top);
+  const al = () => { const x = (10 ** +gS.value) ** .7; return x / (1 + x); };
+  function ro() { const g = 10 ** +gS.value; $('#chGv').textContent = `${tenPow(g)} /s → η=${Math.round(eta(g))}`; dot.setAttribute('cx', A.X(g)); dot.setAttribute('cy', A.Y(eta(g))); }
+  gS.addEventListener('input', ro); ro();
+  let tt = 0;
+  function frame(dt) {
+    tt += dt;
+    const a = al(), g = +gS.value, speed = 12 * (g + 3.2);
+    chains.forEach(ch => {
+      ch.x = (ch.x + speed * (300 - ch.y) / 300 * dt * (1 - .3 * a) + W + 80) % (W + 80);
+      const pts = ch.coil.map((p, i) => {
+        const ax = (i - NB / 2) * b * .92, ay = 3 * Math.sin(i * 1.3 + ch.ph);
+        const j = 1.5 * Math.sin(tt * 3 + i + ch.ph);
+        return [ch.x - 40 + lerp(p[0], ax, a) + j * (1 - a), ch.y + lerp(p[1], ay, a) + j * .6];
+      });
+      ch.path.setAttribute('d', pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(''));
+    });
+    flowArr.textContent = '';
+    for (let i = 0; i < 4; i++) {
+      const y = 290 - 70 * (i + .5), L = 8 + 16 * (g + 3.2) * (i + .5) / 4;
+      el('path', { d: `M8 ${y}h${L}m-6 -5l6 5l-6 5`, stroke: '#1f1a3d', 'stroke-width': 2.5, fill: 'none', opacity: .5 }, flowArr);
+    }
+  }
+  frame(0);
+  anim('chains', frame);
+}
+
+/* ---------- 網目構造（チキソトロピー・ペイン効果で共用） ---------- */
+function network(svg, { n, seed, box, link = 62, r = 7 }) {
+  const rand = rng(seed), [x0, y0, w, h] = box;
+  const nodes = Array.from({ length: n }, () => ({ x: x0 + 14 + rand() * (w - 28), y: y0 + 14 + rand() * (h - 28) }));
+  nodes.forEach(p => { p.hx = p.x; p.hy = p.y; });
+  const thr = Array.from({ length: n * n }, () => rand());
+  const gl = el('g', {}, svg), gn = el('g', {}, svg);
+  const dots = nodes.map(() => el('circle', { r, fill: '#1f1a3d' }, gn));
+  return {
+    nodes,
+    draw(s) {
+      gl.textContent = '';
+      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+        const a = nodes[i], c = nodes[j], d = Math.hypot(a.x - c.x, a.y - c.y);
+        if (d < link && thr[i * n + j] < s) el('line', { x1: a.x, y1: a.y, x2: c.x, y2: c.y, stroke: '#ff6b1a', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, gl);
+      }
+      nodes.forEach((p, i) => { dots[i].setAttribute('cx', p.x); dots[i].setAttribute('cy', p.y); });
+    },
+  };
+}
+
+/* ---------- チキソトロピー ---------- */
+{
+  const svg = svgEl('thixoBox'), cx = 170, cy = 150;
+  el('circle', { cx, cy, r: 135, fill: '#f2fbf6', stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  const spoon = el('g', {}, svg);
+  el('rect', { x: -6, y: -150, width: 12, height: 120, rx: 6, fill: '#b9b5d0', stroke: '#1f1a3d', 'stroke-width': 2.5 }, spoon);
+  const net = network(svg, { n: 44, seed: 3, box: [cx - 120, cy - 120, 240, 240], link: 58 });
+  net.nodes.forEach(p => { const dx = p.x - cx, dy = p.y - cy, d = Math.hypot(dx, dy); if (d > 118) { p.x = cx + dx / d * 118; p.y = cy + dy / d * 118; } });
+  // 右：粘度メーターと履歴
+  const A = axes(svg, { x: 350, y: 40, w: 170, h: 190, xr: [-20, 0], yr: [0, 10], yt: [0, 5, 10] });
+  txt(svg, 358, 30, '粘度 η', { class: 'al' });
+  txt(svg, 520, 262, '← 過去　いま', { class: 'tk', 'text-anchor': 'end' });
+  const hp = el('path', { class: 'cv c-gr' }, A.clip);
+  const st = txt(svg, cx, 296, '', { class: 'note', 'text-anchor': 'middle', fill: '#1f1a3d' });
+  let s = 1, stir = false, hist = [], tt = 0;
+  const b = svgEl('thStir');
+  b.addEventListener('click', () => { b.blur(); stir = !stir; b.classList.toggle('playing', stir); b.textContent = stir ? '✋ 止めて静置する' : '🥄 かき混ぜる'; });
+  stoppers.push(() => { stir = false; b.classList.remove('playing'); b.textContent = '🥄 かき混ぜる'; });
+  function frame(dt) {
+    tt += dt;
+    s = stir ? s - 2.2 * s * dt : s + .14 * (1 - s) * dt;
+    if (stir) net.nodes.forEach(p => {
+      const dx = p.x - cx, dy = p.y - cy, d = Math.hypot(dx, dy) || 1, w = 1.8 / (.35 + d / 120) * dt;
+      p.x = cx + dx * Math.cos(w) - dy * Math.sin(w); p.y = cy + dx * Math.sin(w) + dy * Math.cos(w);
+    });
+    spoon.setAttribute('transform', `translate(${cx} ${cy}) rotate(${stir ? (tt * 200) % 360 : 0})`);
+    spoon.style.display = stir ? '' : 'none';
+    net.draw(s);
+    const eta = .5 + 9.3 * s;
+    hist.push([tt, eta]); while (hist.length && hist[0][0] < tt - 20) hist.shift();
+    hp.setAttribute('d', hist.map((p, i) => (i ? 'L' : 'M') + A.X(p[0] - tt).toFixed(1) + ' ' + A.Y(p[1]).toFixed(1)).join(''));
+    rich(st, stir ? '網目がこわれる → 流れやすい' : s > .9 ? '網目がつながっている → 流れにくい' : '静置中…網目がゆっくり回復');
+  }
+  frame(0);
+  anim('thixo', frame);
+}
+
+/* ---------- ワイセンベルグ効果・ダイスウェル ---------- */
+{
+  const svg = svgEl('weisBox');
+  let tgt = 1, u = 1, tt = 0;
+  segSel('weSel', d => tgt = +d.k);
+  // ビーカー
+  const bx = 60, bw = 360, by = 40, bb = 270, cx = bx + bw / 2, R = bw / 2 - 6, rr = 10;
+  const liquid = el('path', { fill: '#cfe0ff', stroke: '#3b6cff', 'stroke-width': 3 }, svg);
+  const tracers = Array.from({ length: 14 }, (_, i) => ({ r: 30 + (i % 7) * 20, y: 0, ph: i * 1.7, el: el('circle', { r: 5, fill: '#3b6cff' }, svg) }));
+  el('path', { d: `M${bx} ${by}V${bb}H${bx + bw}V${by}`, fill: 'none', stroke: '#1f1a3d', 'stroke-width': 4 }, svg);
+  const rod = el('g', {}, svg);
+  el('rect', { x: cx - rr, y: 10, width: rr * 2, height: bb - 30, fill: '#b9b5d0', stroke: '#1f1a3d', 'stroke-width': 3 }, rod);
+  const stripes = el('g', {}, rod);
+  el('path', { d: `M${cx - 34} 22a34 9 0 1 0 68 0`, fill: 'none', stroke: '#e04e00', 'stroke-width': 3, 'marker-end': 'url(#arrF)' }, svg);
+  txt(svg, cx, 290, '回転する棒', { class: 'labm', 'text-anchor': 'middle' });
+  const lbl = txt(svg, bx + bw - 10, by + 24, '', { class: 'note', 'text-anchor': 'end' });
+  function surf(r) {
+    const water = 120 + 46 * (1 - (r / R) ** 2), poly = 140 - 98 * Math.exp(-(r - rr) / 20) + 6 * (r / R);
+    return lerp(water, poly, u);
+  }
+  // ダイスウェル
+  const dx0 = 560, dx1 = 760, dy = 150, hh = 26;
+  el('rect', { x: dx0, y: dy - hh - 50, width: dx1 - dx0, height: 50, fill: '#1f1a3d' }, svg);
+  el('rect', { x: dx0, y: dy + hh, width: dx1 - dx0, height: 50, fill: '#1f1a3d' }, svg);
+  el('path', { d: `M${dx0} ${dy - hh - 50}l-40 -20M${dx0} ${dy + hh + 50}l-40 20`, stroke: '#1f1a3d', 'stroke-width': 4 }, svg);
+  const flow = el('path', { fill: '#ffe1c7', stroke: '#e04e00', 'stroke-width': 3 }, svg);
+  const marks = el('g', {}, svg);
+  txt(svg, (dx0 + dx1) / 2, dy + hh + 74, 'ダイ（押出口）', { class: 'labm', 'text-anchor': 'middle' });
+  const swl = txt(svg, 1080, 40, '', { class: 'note', 'text-anchor': 'end' });
+  const half = x => x < dx1 ? hh : hh * (1 + lerp(.08, 1.25, u) * (1 - Math.exp(-(x - dx1) / 28)));
+  function frame(dt) {
+    tt += dt; u += (tgt - u) * Math.min(1, dt * 2.5);
+    const pts = [];
+    for (let i = 0; i <= 60; i++) { const r = rr + (R - rr) * i / 60; pts.push([cx + r, surf(r)]); }
+    const left = pts.map(([x, y]) => [2 * cx - x, y]).reverse();
+    liquid.setAttribute('d', `M${bx + 4} ${bb - 2}` + left.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join('') + `L${cx - rr} ${surf(rr)}L${cx + rr} ${surf(rr)}` + pts.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join('') + `L${bx + bw - 4} ${bb - 2}z`);
+    tracers.forEach((tr, i) => {
+      const a = tt * 2.2 * (1 - tr.r / (R * 1.3)) + tr.ph, x = cx + tr.r * Math.cos(a), top = surf(tr.r);
+      tr.el.setAttribute('cx', x); tr.el.setAttribute('cy', lerp(top + 22, bb - 16, ((i * .37) % 1))); tr.el.setAttribute('opacity', .35 + .5 * (Math.sin(a) > 0));
+    });
+    stripes.textContent = '';
+    for (let k = 0; k < 9; k++) { const y = 20 + ((k * 26 + tt * 60) % 234); el('path', { d: `M${cx - rr} ${y}l${2 * rr} -8`, stroke: '#1f1a3d', 'stroke-width': 2 }, stripes); }
+    rich(lbl, u > .5 ? '液体が棒をよじ登る！' : '中央がくぼむ（遠心力）'); lbl.setAttribute('fill', u > .5 ? '#ff4f9a' : '#3b6cff');
+    // ダイスウェル
+    const xs = []; for (let x = dx0 - 40; x <= 1080; x += 8) xs.push(x);
+    const top = xs.map(x => [x, dy - half(x)]), bot = xs.map(x => [x, dy + half(x)]).reverse();
+    flow.setAttribute('d', 'M' + top.concat(bot).map(p => p[0] + ' ' + p[1].toFixed(1)).join('L') + 'z');
+    marks.textContent = '';
+    for (let k = 0; k < 10; k++) {
+      const x = dx0 - 30 + ((k * 52 + tt * 40) % 520), hx = half(x);
+      el('path', { d: `M${x} ${dy - hx + 3}V${dy + hx - 3}`, stroke: '#e04e00', 'stroke-width': 2, opacity: .45 }, marks);
+    }
+    rich(swl, `出口で ${(half(1080) / hh).toFixed(1)} 倍に太る`); swl.setAttribute('fill', u > .5 ? '#ff4f9a' : '#3b6cff');
+  }
+  frame(.016);
+  anim('weis', frame);
+}
+
+/* ---------- 動的粘弾性 ---------- */
+{
+  const svg = svgEl('dynBox'), dS = svgEl('dynD');
+  const x0 = 40, x1 = 700, yc = 150, amp = 100;
+  el('rect', { x: x0, y: yc - amp - 14, width: x1 - x0, height: 2 * amp + 28, fill: '#fff' }, svg);
+  el('path', { d: `M${x0} ${yc}H${x1 + 10}`, class: 'ax' }, svg);
+  txt(svg, x1 + 14, yc + 5, '時間', { class: 'al' });
+  const gP = el('path', { class: 'cv c-bl' }, svg), sP = el('path', { class: 'cv c-or' }, svg);
+  txt(svg, x0 + 6, 30, 'ひずみ γ（加える変形）', { class: 'note', fill: '#3b6cff' });
+  txt(svg, x0 + 230, 30, '応力 σ（返ってくる力）', { class: 'note', fill: '#e04e00' });
+  const gD = el('circle', { r: 8, class: 'mk f-bl' }, svg), sD = el('circle', { r: 8, class: 'mk f-or' }, svg);
+  const lagP = el('path', { stroke: '#8a5cff', 'stroke-width': 3, fill: 'none' }, svg), lagT = txt(svg, 0, 0, 'δ', { class: 'lab', fill: '#8a5cff', 'text-anchor': 'middle' });
+  // リサージュ
+  const lx = 920, R = 110;
+  el('rect', { x: lx - R - 14, y: yc - R - 14, width: 2 * R + 28, height: 2 * R + 28, fill: '#fff', rx: 10 }, svg);
+  el('path', { d: `M${lx - R - 14} ${yc}H${lx + R + 14}M${lx} ${yc - R - 14}V${yc + R + 14}`, class: 'ax', 'stroke-width': 2 }, svg);
+  txt(svg, lx + R + 16, yc + 20, 'γ', { class: 'lab', fill: '#3b6cff' });
+  txt(svg, lx + 8, yc - R - 18, 'σ', { class: 'lab', fill: '#e04e00' });
+  const loop = el('path', { fill: 'rgba(255,107,26,.18)', stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  const lD = el('circle', { r: 8, class: 'mk', fill: '#ff4f9a' }, svg);
+  txt(svg, lx, yc + R + 40, '面積 ＝ 熱になるエネルギー', { class: 'note', 'text-anchor': 'middle', fill: '#e04e00' });
+  const per = 330, k = 2 * Math.PI / per;
+  let ph = 0;
+  const dsel = segSel('dynSel', d => { dS.value = d.d; ro(); });
+  function ro() {
+    const d = +dS.value * Math.PI / 180;
+    $('#dynDv').textContent = `${dS.value}°`;
+    $('#dynGp').textContent = Math.cos(d).toFixed(2); $('#dynGpp').textContent = Math.sin(d).toFixed(2);
+    $('#dynGpB').style.width = Math.cos(d) * 100 + '%'; $('#dynGppB').style.width = Math.sin(d) * 100 + '%';
+    $('#dynTan').textContent = +dS.value >= 90 ? '∞（純粋な液体）' : Math.tan(d).toFixed(2);
+    dsel.forEach(b => b.classList.toggle('on', b.dataset.d === dS.value));
+    const pts = []; for (let i = 0; i <= 120; i++) { const a = i / 120 * 2 * Math.PI; pts.push([lx + R * Math.sin(a), yc - R * .92 * Math.sin(a + d)]); }
+    loop.setAttribute('d', 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'z');
+  }
+  dS.addEventListener('input', ro); ro();
+  function frame(dt) {
+    ph += dt * 2.2;
+    const d = +dS.value * Math.PI / 180, g = [], s = [];
+    for (let x = x0; x <= x1; x += 4) { const a = (x - x1) * k + ph; g.push([x, yc - amp * Math.sin(a)]); s.push([x, yc - amp * .92 * Math.sin(a + d)]); }
+    const P = a => 'M' + a.map(p => p[0] + ' ' + p[1].toFixed(1)).join('L');
+    gP.setAttribute('d', P(g)); sP.setAttribute('d', P(s));
+    gD.setAttribute('cx', x1); gD.setAttribute('cy', yc - amp * Math.sin(ph));
+    sD.setAttribute('cx', x1); sD.setAttribute('cy', yc - amp * .92 * Math.sin(ph + d));
+    // 山のずれ δ を示す：σ の山（直前）と γ の山
+    const pg = x1 - (((ph - Math.PI / 2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)) / k;
+    const ps = pg - d / k, yy = yc - amp - 6;
+    if (d > .05 && ps > x0 + 10) { lagP.setAttribute('d', `M${ps} ${yy}H${pg}M${ps} ${yy - 6}v12M${pg} ${yy - 6}v12`); lagT.setAttribute('x', (ps + pg) / 2); lagT.setAttribute('y', yy - 8); lagP.style.display = lagT.style.display = ''; }
+    else lagP.style.display = lagT.style.display = 'none';
+    lD.setAttribute('cx', lx + R * Math.sin(ph)); lD.setAttribute('cy', yc - R * .92 * Math.sin(ph + d));
+  }
+  frame(0);
+  anim('dyn', frame);
+}
+
+/* ---------- マクスウェル模型の周波数応答 ---------- */
+{
+  const svg = svgEl('mxfPlot'), wS = svgEl('mxfW');
+  const A = axes(svg, { x: 70, y: 30, w: 520, h: 280, xr: [1e-2, 1e2], yr: [1e-3, 2], xlog: true, ylog: true, xt: [1e-2, 1e-1, 1, 1e1, 1e2], yt: [1e-3, 1e-2, 1e-1, 1], xf: v => v === 1 ? '1' : `10^{${Math.round(lg(v))}}`, yf: v => v === 1 ? 'G' : `10^{${Math.round(lg(v))}}G`, xl: 'ωλ', yl: 'G′, G″' });
+  el('rect', { x: A.X(1e-2), y: 30, width: A.X(1) - A.X(1e-2), height: 280, fill: 'rgba(255,107,26,.07)' }, A.under);
+  el('rect', { x: A.X(1), y: 30, width: A.X(1e2) - A.X(1), height: 280, fill: 'rgba(59,108,255,.07)' }, A.under);
+  txt(A.top, A.X(.1), 54, '液体的', { class: 'lab', fill: '#e04e00', 'text-anchor': 'middle' });
+  txt(A.top, A.X(10), 54, '固体的', { class: 'lab', fill: '#3b6cff', 'text-anchor': 'middle' });
+  const Gp = w => w * w / (1 + w * w), Gpp = w => w / (1 + w * w);
+  el('path', { d: curve(A, Gp), class: 'cv c-bl' }, A.clip);
+  el('path', { d: curve(A, Gpp), class: 'cv c-or' }, A.clip);
+  txt(A.top, A.X(.03), A.Y(Gp(.03)) - 10, 'G′ ∝ ω²', { class: 'note', fill: '#3b6cff' });
+  txt(A.top, A.X(.03), A.Y(Gpp(.03)) - 10, 'G″ ∝ ω', { class: 'note', fill: '#e04e00' });
+  el('circle', { cx: A.X(1), cy: A.Y(.5), r: 7, fill: '#fff', class: 'mk' }, A.top);
+  txt(A.top, A.X(1) + 10, A.Y(.5) + 24, '交点 ωλ＝1', { class: 'note', fill: '#1f1a3d' });
+  const vl = el('line', { y1: 30, y2: 310, stroke: '#1f1a3d', 'stroke-width': 2, 'stroke-dasharray': '5 4' }, A.top);
+  const d1 = el('circle', { r: 8, class: 'mk f-bl' }, A.top), d2 = el('circle', { r: 8, class: 'mk f-or' }, A.top);
+  function ro() {
+    const w = 10 ** +wS.value;
+    vl.setAttribute('x1', A.X(w)); vl.setAttribute('x2', A.X(w));
+    d1.setAttribute('cx', A.X(w)); d1.setAttribute('cy', A.Y(Gp(w))); d2.setAttribute('cx', A.X(w)); d2.setAttribute('cy', A.Y(Gpp(w)));
+    $('#mxfWv').textContent = `De = ωλ = ${tenPow(w)}`;
+    $('#mxfRo').textContent = `G′=${Gp(w).toPrecision(2)}G  G″=${Gpp(w).toPrecision(2)}G`;
+    const v = $('#mxfV');
+    if (w > 1.15) { v.textContent = '固体的 G′＞G″'; v.className = 'verdict solid'; }
+    else if (w < .87) { v.textContent = '液体的 G″＞G′'; v.className = 'verdict liquid'; }
+    else { v.textContent = 'ちょうど境目'; v.className = 'verdict mid'; }
+  }
+  wS.addEventListener('input', ro); ro();
+}
+
+/* ---------- 高分子の粘弾性スペクトル（緩和モードの重ね合わせによる模式計算） ---------- */
+const GN = 1e6, TAU_E = 1e3;
+function spectrum(Mr, crosslinked) {
+  const modes = [];
+  for (let k = 0; k <= 6; k++) modes.push([10 ** (-4 + .5 * k), 3e8]);               // ガラス：セグメントの局所運動
+  for (let k = 0; k <= 7; k++) { const t = 10 ** (-.5 + .5 * k); modes.push([t, .55 * GN * Math.sqrt(TAU_E / t)]); } // 転移：ラウス運動
+  const td = TAU_E * Mr ** 3.4;
+  if (!crosslinked) [[1, .6], [1 / 3, .25], [1 / 10, .15]].forEach(([f, w]) => modes.push([Math.max(TAU_E * 1.5, td * f), w * GN]));
+  return { modes, td, Ge: crosslinked ? GN : 0 };
+}
+const Gp = (S, w) => S.Ge + S.modes.reduce((s, [t, g]) => s + g * (w * t) ** 2 / (1 + (w * t) ** 2), 0);
+const Gpp = (S, w) => S.modes.reduce((s, [t, g]) => s + g * w * t / (1 + (w * t) ** 2), 0);
+{
+  const svg = svgEl('masterPlot'), mS = svgEl('msM');
+  const A = axes(svg, { x: 74, y: 30, w: 640, h: 300, xr: [1e-12, 1e6], yr: [1e2, 1e10], xlog: true, ylog: true, xt: [1e-12, 1e-9, 1e-6, 1e-3, 1, 1e3, 1e6], yt: [1e2, 1e4, 1e6, 1e8, 1e10], xl: 'ω（log）', yl: 'G′, G″ [Pa]' });
+  txt(svg, 74, 392, '← ゆっくり（長い時間）', { class: 'tk' });
+  txt(svg, 714, 392, '速い（短い時間）→', { class: 'tk', 'text-anchor': 'end' });
+  const regs = el('g', {}, A.under);
+  const p1 = el('path', { class: 'cv c-bl' }, A.clip), p2 = el('path', { class: 'cv c-or' }, A.clip);
+  const l1 = txt(A.top, 0, 0, 'G′', { class: 'lab', fill: '#3b6cff' }), l2 = txt(A.top, 0, 0, 'G″', { class: 'lab', fill: '#e04e00' });
+  const R = {
+    flow: { n: '流動域', c: '#ff6b1a', ic: '🐍', d: '鎖が絡み合いの「管」から<b>ヘビのようにくねって抜け出す</b>（レプテーション）。液体として流れる。<br>G′ ∝ ω²、G″ ∝ ω（マクスウェル模型と同じ形）' },
+    plat: { n: 'ゴム状平坦域', c: '#14a35a', ic: '🕸️', d: '鎖どうしの<b>絡み合いが一時的な架橋点</b>になり、ゴムのように弾む。弾性率 G<sub>N</sub> ≈ 10⁶ Pa。<br>分子量が大きいほど<b>長く続く</b>。' },
+    tran: { n: '転移域', c: '#8a5cff', ic: '〰️', d: '鎖の一部（セグメント）が動き始める。弾性率が急に下がり、<b>エネルギー損失（tanδ）が最大</b>。ガラス転移温度 T<sub>g</sub> に対応。' },
+    glass: { n: 'ガラス域', c: '#3b6cff', ic: '🧊', d: '変形が速すぎて分子は<b>ほとんど動けない</b>。ガラスのように硬い（G′ ≈ 10⁹ Pa）。' },
+  };
+  let cur = 'plat', xl = false;
+  const info = () => { const r = R[cur]; $('#msInfo').innerHTML = `<div class="rt" style="color:${r.c}"><span class="rm">${r.ic}</span>${r.n}${cur === 'plat' && xl ? '（架橋で永久に）' : ''}</div><div class="rd">${r.d}</div>`; };
+  function draw() {
+    const Mr = 10 ** +mS.value, S = spectrum(Mr, xl);
+    p1.setAttribute('d', curve(A, w => Gp(S, w), 1e-12, 1e6, 260));
+    p2.setAttribute('d', curve(A, w => Gpp(S, w), 1e-12, 1e6, 260));
+    const lw = xl ? 1e-11 : Math.min(1e-3, .05 / S.td);
+    l1.setAttribute('x', A.X(lw)); l1.setAttribute('y', clamp(A.Y(Gp(S, lw)) - 10, 60, 322));
+    l2.setAttribute('x', A.X(lw)); l2.setAttribute('y', clamp(A.Y(Gpp(S, lw)) - 10, 60, 322));
+    const b = [1e-12, xl ? 1e-12 : 1 / S.td, 1 / TAU_E, 10 ** 2.5, 1e6], keys = ['flow', 'plat', 'tran', 'glass'];
+    regs.textContent = '';
+    keys.forEach((k, i) => {
+      const xa = A.X(b[i]), xb = A.X(b[i + 1]);
+      if (xb - xa < 2) return;
+      const g = el('g', { style: 'cursor:pointer' }, regs);
+      el('rect', { x: xa, y: 30, width: xb - xa, height: 300, fill: R[k].c, opacity: k === cur ? .16 : .05 }, g);
+      el('line', { x1: xb, x2: xb, y1: 30, y2: 330, stroke: R[k].c, 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, g);
+      if (xb - xa > 60) txt(g, (xa + xb) / 2, 52, R[k].n, { 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 900, fill: R[k].c });
+      g.addEventListener('click', () => { cur = k; draw(); });
+    });
+    $('#msMv').textContent = `M/Me = ${Mr < 10 ? Mr.toFixed(1) : Math.round(Mr)}`;
+    if (xl && cur === 'flow') cur = 'plat';
+    info();
+  }
+  mS.addEventListener('input', draw);
+  const bx = svgEl('msX');
+  bx.addEventListener('click', () => { bx.blur(); xl = !xl; bx.classList.toggle('playing', xl); bx.textContent = xl ? '✂️ 架橋をはずす' : '🔗 架橋する'; draw(); });
+  draw();
+}
+
+/* ---------- 時間‐温度換算則 ---------- */
+{
+  const svg = svgEl('ttsPlot'), S = spectrum(8, false);
+  const dT = [0, 5, 10, 20, 30, 45, 60], aT = d => -17.44 * d / (51.6 + d);
+  const ox = 74, oy = 30, ow = 640, oh = 290, yr = [0, 10];
+  const Y = v => oy + oh - (lg(v) - yr[0]) / (yr[1] - yr[0]) * oh;
+  el('rect', { x: ox, y: oy, width: ow, height: oh, class: 'bg' }, svg);
+  const grid = el('g', {}, svg), win = el('rect', { y: oy, height: oh, fill: 'rgba(31,26,61,.07)' }, svg);
+  [0, 2, 4, 6, 8, 10].forEach(e => { el('line', { x1: ox, x2: ox + ow, y1: Y(10 ** e), y2: Y(10 ** e), class: 'gd' }, svg); txt(svg, ox - 7, Y(10 ** e) + 5, `10^{${e}}`, { class: 'tk', 'text-anchor': 'end' }); });
+  el('path', { d: `M${ox} ${oy - 10}V${oy + oh}H${ox + ow + 10}`, class: 'ax' }, svg);
+  txt(svg, ox + 10, oy - 6, 'G′ [Pa]', { class: 'al' });
+  const xlab = txt(svg, ox + ow + 14, oy + oh + 40, '', { class: 'al', 'text-anchor': 'end' });
+  const cid = 'clipTTS';
+  el('rect', { x: ox, y: oy - 10, width: ow, height: oh + 10 }, el('clipPath', { id: cid }, svg));
+  const layer = el('g', { 'clip-path': `url(#${cid})` }, svg), top = el('g', {}, svg);
+  const col = i => `hsl(${230 - i * 38},80%,${50 + (i % 2) * 6}%)`;
+  let u = 0, tgt = 0;
+  function draw() {
+    const lo = lerp(-2, -11, ease(u)), hi = 3;
+    const X = w => ox + (lg(w) - lo) / (hi - lo) * ow;
+    grid.textContent = ''; layer.textContent = ''; top.textContent = '';
+    for (let e = Math.ceil(lo); e <= hi; e++) {
+      if (u > .3 && e % 2) continue;
+      el('line', { x1: X(10 ** e), x2: X(10 ** e), y1: oy, y2: oy + oh, class: 'gd' }, grid);
+      txt(grid, X(10 ** e), oy + oh + 19, `10^{${e}}`, { class: 'tk', 'text-anchor': 'middle' });
+    }
+    win.setAttribute('x', X(.1)); win.setAttribute('width', X(100) - X(.1)); win.setAttribute('opacity', 1 - u);
+    if (u > .98) el('path', { d: curve({ o: { xlog: true, ylog: true, y: oy, h: oh }, X, Y }, w => Gp(S, w), 1e-11, 1e3, 300), class: 'cv c-mu', 'stroke-width': 10, opacity: .5 }, layer);
+    dT.forEach((d, i) => {
+      const sh = aT(d) * ease(u), pts = [];
+      for (let k = 0; k <= 12; k++) { const lw = -1 + 3 * k / 12, w = 10 ** lw; pts.push([X(10 ** (lw + sh)), Y(Gp(S, w * 10 ** aT(d)))]); }
+      el('path', { d: 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L'), stroke: col(i), 'stroke-width': 3.5, fill: 'none' }, layer);
+      pts.forEach((p, k) => { if (k % 2 === 0) el('circle', { cx: p[0], cy: p[1], r: 5, fill: col(i), stroke: '#1f1a3d', 'stroke-width': 1.5 }, layer); });
+      el('rect', { x: ox + ow - 104, y: oy + 12 + i * 22, width: 14, height: 14, rx: 3, fill: col(i), stroke: '#1f1a3d', 'stroke-width': 1.5 }, top);
+      txt(top, ox + ow - 84, oy + 25 + i * 22, `T_{g}＋${d} K`, { 'font-size': 14, 'font-weight': 900, fill: col(i) });
+    });
+    rich(xlab, u < .5 ? '測定した周波数 ω [rad/s]' : '換算した周波数 ω・a_{T} [rad/s]（T_{g} 基準）');
+  }
+  draw();
+  const b = svgEl('ttsGo');
+  b.addEventListener('click', () => { b.blur(); tgt = tgt ? 0 : 1; b.textContent = tgt ? '◀ 元に戻す' : '▶ 横にずらして重ねる'; });
+  anim('tts', dt => { if (Math.abs(u - tgt) < 1e-3) return; u = tgt > u ? Math.min(1, u + dt / 2.4) : Math.max(0, u - dt / 1.2); draw(); });
+  onSlide('tts', () => { u = tgt = 0; b.textContent = '▶ 横にずらして重ねる'; draw(); });
+}
+
+/* ---------- エントロピー弾性：鎖の熱運動 ---------- */
+{
+  const svg = svgEl('rcBox'), rS = svgEl('rcR'), tS = svgEl('rcT'), N = 30, b = 15, x0 = 70, yc = 145;
+  el('rect', { x: 0, y: 0, width: 560, height: 270, rx: 16, fill: '#fff7ef' }, svg);
+  el('rect', { x: x0 - 26, y: yc - 40, width: 24, height: 80, rx: 6, fill: '#1f1a3d' }, svg);
+  const clampR = el('rect', { y: yc - 40, width: 24, height: 80, rx: 6, fill: '#1f1a3d' }, svg);
+  const chain = el('path', { fill: 'none', stroke: '#ff4f9a', 'stroke-width': 4.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+  const beads = el('g', {}, svg);
+  const farr = el('path', { stroke: '#e04e00', 'stroke-width': 5, fill: 'none', 'stroke-linecap': 'round' }, svg);
+  const flab = txt(svg, 0, yc - 64, '縮もうとする力', { class: 'note', fill: '#e04e00', 'text-anchor': 'middle' });
+  txt(svg, 280, 258, `鎖の長さ（伸び切り）＝ ${N} 本の結合`, { class: 'tk', 'text-anchor': 'middle' });
+  // 2次元の自由連結鎖：方向の偏り κ と平均伸長 ρ＝I1(κ)/I0(κ)
+  const I = (n, x) => { let s = 0, t = (x / 2) ** n; for (let k = 1; k <= n; k++) t /= k; for (let k = 0; k < 60; k++) { s += t; t *= (x / 2) ** 2 / ((k + 1) * (k + 1 + n)); } return s; };
+  const kOf = rho => { let a = 0, c = 60; for (let i = 0; i < 50; i++) { const m = (a + c) / 2; if (I(1, m) / I(0, m) < rho) a = m; else c = m; } return (a + c) / 2; };
+  const vm = k => { for (;;) { const th = (Math.random() * 2 - 1) * Math.PI; if (Math.random() < Math.exp(k * (Math.cos(th) - 1))) return th; } };
+  let prev = null, acc = 0;
+  function sample() {
+    const rho = +rS.value, k = kOf(rho), Rx = rho * N * b, pts = [[0, 0]];
+    for (let i = 0; i < N; i++) { const th = vm(k); pts.push([pts[i][0] + b * Math.cos(th), pts[i][1] + b * Math.sin(th)]); }
+    const [ex, ey] = pts[N];
+    const out = pts.map(([x, y], i) => [x0 + x + (Rx - ex) * i / N, yc + y - ey * i / N]);
+    chain.setAttribute('d', 'M' + out.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L'));
+    beads.textContent = '';
+    out.forEach((p, i) => { if (i % 4 === 0) el('circle', { cx: p[0], cy: p[1], r: 5, fill: '#ff4f9a', stroke: '#1f1a3d', 'stroke-width': 1.5 }, beads); });
+    prev = out;
+  }
+  function ro() {
+    const rho = +rS.value, T = +tS.value, k = kOf(rho), Rx = rho * N * b;
+    clampR.setAttribute('x', x0 + Rx + 2);
+    const S = clamp(1 - (k * rho - Math.log(I(0, k))) / 2.6, .03, 1), f = clamp(T * k / 7, 0, 1);
+    $('#rcS').style.width = S * 100 + '%'; $('#rcF').style.width = Math.max(2, f * 100) + '%';
+    farr.setAttribute('d', `M${x0 + Rx + 30} ${yc - 50}h${-20 - 70 * f}m10 -8l-10 8l10 8`);
+    flab.setAttribute('x', x0 + Rx - 10 - 35 * f);
+    $('#rcRv').textContent = `伸び ${Math.round(rho * 100)}%`;
+    $('#rcTv').textContent = `${Math.round(T * 300)} K`;
+  }
+  rS.addEventListener('input', () => { ro(); sample(); });
+  tS.addEventListener('input', ro);
+  ro(); sample();
+  anim('rubChain', dt => { acc += dt * +tS.value; if (acc > .14) { acc = 0; sample(); } });
+}
+
+/* ---------- ゴムの応力‐ひずみ ---------- */
+{
+  const svg = svgEl('ssPlot'), lS = svgEl('ssL'), G = .4;
+  const A = axes(svg, { x: 64, y: 30, w: 360, h: 300, xr: [1, 7], yr: [0, 8], xt: [1, 2, 3, 4, 5, 6, 7], yt: [0, 2, 4, 6, 8], xl: '伸長比 λ', yl: '応力 σ [MPa]' });
+  const hook = l => 3 * G * (l - 1), neo = l => G * (l - 1 / l / l), Jm = 46, gent = l => neo(l) * Jm / (Jm - (l * l + 2 / l - 3));
+  el('path', { d: curve(A, hook), class: 'cv thin dash c-ink' }, A.clip);
+  el('path', { d: curve(A, neo), class: 'cv c-pu' }, A.clip);
+  el('path', { d: curve(A, gent, 1, 6.95, 300), class: 'cv c-pk' }, A.clip);
+  txt(A.top, A.X(4.3), A.Y(hook(4.3)) - 14, 'フック則（E＝3G）', { class: 'note', fill: '#1f1a3d', 'text-anchor': 'end' });
+  txt(A.top, A.X(6.9), A.Y(neo(6.9)) + 42, '理想ゴム（ネオ・フック）', { class: 'note', fill: '#8a5cff', 'text-anchor': 'end' });
+  txt(A.top, A.X(5.2), A.Y(7.6), '実際のゴム', { class: 'note', fill: '#ff4f9a', 'text-anchor': 'end' });
+  txt(A.top, A.X(5.2), A.Y(7.6) + 18, '（伸び切り・結晶化）', { class: 'note', fill: '#ff4f9a', 'text-anchor': 'end' });
+  const d1 = el('circle', { r: 8, class: 'mk f-pu' }, A.top), d2 = el('circle', { r: 8, class: 'mk f-pk' }, A.top);
+  // 右：輪ゴムの絵
+  const band = el('rect', { fill: '#ff4f9a', stroke: '#1f1a3d', 'stroke-width': 3, rx: 6 }, svg);
+  el('rect', { x: 470, y: 18, width: 70, height: 12, fill: '#1f1a3d', rx: 3 }, svg);
+  const wt = el('g', {}, svg);
+  function ro() {
+    const l = +lS.value;
+    d1.setAttribute('cx', A.X(l)); d1.setAttribute('cy', A.Y(neo(l)));
+    d2.setAttribute('cx', A.X(l)); d2.setAttribute('cy', A.Y(Math.min(gent(l), 8.4)));
+    const L = 48 * l, w = 34 / Math.sqrt(l);
+    band.setAttribute('x', 505 - w / 2); band.setAttribute('y', 30); band.setAttribute('width', w); band.setAttribute('height', Math.min(L, 330));
+    wt.textContent = '';
+    const yb = 30 + Math.min(L, 330);
+    el('rect', { x: 480, y: yb, width: 50, height: 26, rx: 5, fill: '#ffd53d', stroke: '#1f1a3d', 'stroke-width': 3 }, wt);
+    $('#ssLv').textContent = `λ = ${l.toFixed(1)}（${Math.round((l - 1) * 100)}% 伸び）`;
+  }
+  lS.addEventListener('input', ro); ro();
+}
+
+/* ---------- タイヤ ---------- */
+{
+  const svg = svgEl('tirePlot');
+  const A = axes(svg, { x: 64, y: 30, w: 560, h: 280, xr: [-60, 100], yr: [0, 1.3], xt: [-60, -40, -20, 0, 20, 40, 60, 80, 100], yt: [0, .5, 1], xl: '温度 [℃]', yl: 'tanδ' });
+  const fA = T => .12 + 1.1 * Math.exp(-(((T + 45) / 22) ** 2)), fB = T => .065 + 1.0 * Math.exp(-(((T + 22) / 20) ** 2));
+  el('rect', { x: A.X(-6), y: 30, width: A.X(6) - A.X(-6), height: 280, fill: 'rgba(59,108,255,.12)' }, A.under);
+  el('rect', { x: A.X(52), y: 30, width: A.X(68) - A.X(52), height: 280, fill: 'rgba(255,107,26,.12)' }, A.under);
+  txt(A.top, A.X(0), 48, '🌧️ グリップ', { class: 'note', fill: '#3b6cff', 'text-anchor': 'middle' });
+  txt(A.top, A.X(60), 48, '⛽ 燃費', { class: 'note', fill: '#e04e00', 'text-anchor': 'middle' });
+  const pa = el('path', { d: curve(A, fA), class: 'cv c-mu' }, A.clip), pb = el('path', { d: curve(A, fB), class: 'cv c-gr' }, A.clip);
+  const la = txt(A.top, A.X(-45), A.Y(fA(-45)) - 10, 'A（従来）', { class: 'note', fill: '#6b6790', 'text-anchor': 'middle' });
+  const lb = txt(A.top, A.X(-22), A.Y(fB(-22)) - 10, 'B（低燃費）', { class: 'note', fill: '#14a35a', 'text-anchor': 'middle' });
+  const dots = el('g', {}, A.top);
+  function show(k) {
+    const on = { A: k.includes('A'), B: k.includes('B') };
+    pa.classList.toggle('dim', !on.A); la.classList.toggle('dim', !on.A);
+    pb.classList.toggle('dim', !on.B); lb.classList.toggle('dim', !on.B);
+    dots.textContent = '';
+    [['A', fA, '#b9b5d0'], ['B', fB, '#14a35a']].forEach(([n, f, c]) => {
+      if (!on[n]) return;
+      [0, 60].forEach(T => {
+        el('circle', { cx: A.X(T), cy: A.Y(f(T)), r: 8, fill: c, class: 'mk' }, dots);
+        txt(dots, A.X(T) + (n === 'A' ? -12 : 12), A.Y(f(T)) + (n === 'A' ? -8 : 20), f(T).toFixed(2), { class: 'note', fill: n === 'A' ? '#6b6790' : '#14a35a', 'text-anchor': n === 'A' ? 'end' : 'start' });
+      });
+    });
+  }
+  segSel('tireSel', d => show(d.k));
+  show('AB');
+}
+
+/* ---------- ペイン効果 ---------- */
+{
+  const svg = svgEl('payNet'), aS = svgEl('payA');
+  el('rect', { x: 10, y: 10, width: 500, height: 240, rx: 16, fill: '#fff4f8', stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  const net = network(svg, { n: 48, seed: 11, box: [20, 20, 480, 220], link: 66, r: 9 });
+  const pS = svgEl('payPlot');
+  const A = axes(pS, { x: 64, y: 26, w: 450, h: 180, xr: [1e-4, 1], yr: [0, 12], xlog: true, xt: [1e-4, 1e-3, 1e-2, 1e-1, 1], yt: [0, 4, 8, 12], xl: 'ひずみ振幅 γ₀', yl: 'G′ [MPa]' });
+  const gc = .015, intact = g => 1 / (1 + (g / gc) ** 1.2), filled = g => 2.2 + 8.3 * intact(g), unf = () => 1.1;
+  el('path', { d: curve(A, filled), class: 'cv c-ink' }, A.clip);
+  el('path', { d: curve(A, unf), class: 'cv c-mu' }, A.clip);
+  txt(A.top, A.X(1.3e-4), A.Y(filled(1e-4)) - 10, 'フィラーあり', { class: 'note', fill: '#1f1a3d' });
+  txt(A.top, A.X(1.3e-4), A.Y(1.1) - 10, 'フィラーなし', { class: 'note', fill: '#6b6790' });
+  const dot = el('circle', { r: 8, class: 'mk', fill: '#ff4f9a' }, A.top);
+  let tt = 0;
+  const ro = () => { const g = 10 ** +aS.value; $('#payAv').textContent = g < .01 ? `${(g * 100).toPrecision(2)}%` : `${Math.round(g * 100)}%`; dot.setAttribute('cx', A.X(g)); dot.setAttribute('cy', A.Y(filled(g))); };
+  aS.addEventListener('input', ro); ro();
+  function frame(dt) {
+    tt += dt;
+    const g = 10 ** +aS.value, sh = Math.sin(tt * 5) * 22 * (lg(g) + 4.3) / 4.3;
+    net.nodes.forEach(p => { p.x = p.hx + sh * (p.hy - 130) / 110; p.y = p.hy; });
+    net.draw(intact(g));
+  }
+  frame(0);
+  anim('payne', frame);
+}
+
+/* ---------- レオメーター ---------- */
+{
+  const svg = svgEl('rhBox');
+  const cx = 280, yb = 210, R = 200, N = 50;
+  let mode = 'cp', tt = 0;
+  el('rect', { x: cx - R - 20, y: yb, width: 2 * (R + 20), height: 14, rx: 4, fill: '#1f1a3d' }, svg);
+  txt(svg, cx - R - 20, yb + 36, '下の板（固定）', { class: 'labm' });
+  const sample = el('g', {}, svg), top = el('g', {}, svg);
+  const lab = txt(svg, cx + R + 20, 30, '', { class: 'note', 'text-anchor': 'end' });
+  // 色の帯（凡例）
+  const gr = el('linearGradient', { id: 'rhGrad' }, el('defs', {}, svg));
+  el('stop', { offset: 0, 'stop-color': '#fff7d6' }, gr); el('stop', { offset: 1, 'stop-color': '#ff4f9a' }, gr);
+  el('rect', { x: cx - 100, y: 268, width: 200, height: 14, rx: 4, fill: 'url(#rhGrad)', stroke: '#1f1a3d', 'stroke-width': 2 }, svg);
+  txt(svg, cx - 108, 280, 'γ̇ 小', { class: 'tk', 'text-anchor': 'end' }); txt(svg, cx + 108, 280, 'γ̇ 大', { class: 'tk' });
+  const colAt = v => { const c1 = [255, 247, 214], c2 = [255, 79, 154]; return `rgb(${c1.map((a, i) => Math.round(lerp(a, c2[i], clamp(v, 0, 1)))).join(',')})`; };
+  function draw() {
+    sample.textContent = ''; top.textContent = '';
+    const gap = r => mode === 'pp' ? 40 : 2 + 48 * r / R;
+    for (let i = -N; i < N; i++) {
+      const r0 = Math.abs(i + .5) * R / N, x = cx + i * R / N, h = gap(r0);
+      const rate = mode === 'pp' ? r0 / R : .55;
+      el('rect', { x, y: yb - h, width: R / N + .6, height: h, fill: colAt(rate) }, sample);
+    }
+    const pts = [[cx - R, yb - gap(R)], [cx, yb - gap(0)], [cx + R, yb - gap(R)]];
+    el('path', { d: `M${pts[0][0]} ${pts[0][1]}L${pts[1][0]} ${pts[1][1]}L${pts[2][0]} ${pts[2][1]}V${pts[2][1] - 14}H${cx - R}z`, fill: '#ffd53d', stroke: '#1f1a3d', 'stroke-width': 3 }, top);
+    el('rect', { x: cx - 10, y: 40, width: 20, height: pts[1][1] - 52, fill: '#b9b5d0', stroke: '#1f1a3d', 'stroke-width': 3 }, top);
+    // 回転の印
+    const a = tt * 2.2;
+    el('ellipse', { cx, cy: 70, rx: 50, ry: 12, fill: 'none', stroke: '#e04e00', 'stroke-width': 2.5, 'stroke-dasharray': '6 5' }, top);
+    el('circle', { cx: cx + 50 * Math.cos(a), cy: 70 + 12 * Math.sin(a), r: 7, fill: '#e04e00' }, top);
+    txt(top, cx + 60, 52, 'Ω（回す）→ トルク M を測る', { class: 'note', fill: '#e04e00' });
+    rich(lab, mode === 'pp' ? '外側ほど速くずれる（不均一）' : 'どこでも同じ速さでずれる（一様）');
+    lab.setAttribute('fill', mode === 'pp' ? '#ff4f9a' : '#14a35a');
+    if (mode === 'cp') txt(top, cx + R - 70, yb - gap(R) - 22, 'コーン角 θ ≈ 1〜4°（誇張）', { class: 'tk' });
+  }
+  segSel('rhSel', d => { mode = d.k; draw(); });
+  draw();
+  anim('rheo', dt => { tt += dt; draw(); });
+}
+
+/* ---------- せん断速度のものさし ---------- */
+{
+  const box = $('#gsBox'), lo = -6, hi = 7;
+  const rows = [
+    ['粒子の沈降', -6, -3, '#b9b5d0'], ['塗料のレベリング・たれ', -2, -1, '#0ea5a4'], ['重力で流れ落ちる', -1, 1, '#0ea5a4'],
+    ['押出成形', 0, 2, '#8a5cff'], ['かむ・飲みこむ', 1, 2, '#ff4f9a'], ['かき混ぜる', 1, 3, '#ff4f9a'],
+    ['スプレー・はけ塗り', 3, 4, '#ff6b1a'], ['クリームを肌に塗る', 4, 5, '#ff6b1a'], ['射出成形', 2, 5, '#8a5cff'], ['潤滑（エンジン・軸受）', 3, 7, '#3b6cff'],
+    null,
+    ['回転型レオメーター', -3, 3, '#1f1a3d'], ['キャピラリーレオメーター', 1, 5, '#1f1a3d'],
+  ];
+  let html = '<div class="gs">';
+  rows.forEach((r, i) => {
+    if (!r) { html += '<div class="sep"></div>'; return; }
+    const [n, a, b, c] = r, L = (a - lo) / (hi - lo) * 100, W = (b - a) / (hi - lo) * 100;
+    html += `<div class="nm">${n}</div><div class="tr"><div class="bar" style="left:${L}%;width:${W}%;background:${c};--d:${(.08 * i).toFixed(2)}s"></div></div>`;
+  });
+  html += '<div></div><div class="ax">' + Array.from({ length: hi - lo + 1 }, (_, i) => `<span>10${sup(lo + i)}</span>`).join('') + '</div></div>';
+  box.innerHTML = html;
+}
+
+/* ---------- 応用カード ---------- */
+document.querySelectorAll('.app').forEach(a => a.addEventListener('click', () => a.classList.toggle('open')));
+onSlide('apps', () => document.querySelectorAll('.app').forEach(a => a.classList.remove('open')));
+
+/* ---------- MR流体 ---------- */
+{
+  const svg = svgEl('mrBox'), bS = svgEl('mrB'), W = 520, x0 = 20, yt = 40, yb = 250, cols = 9, rowsN = 7;
+  el('rect', { x: x0, y: yt, width: W, height: yb - yt, fill: '#fff7d6' }, svg);
+  el('rect', { x: x0, y: yt - 14, width: W, height: 14, fill: '#ffd53d', stroke: '#1f1a3d', 'stroke-width': 3 }, svg);
+  el('rect', { x: x0, y: yb, width: W, height: 14, fill: '#1f1a3d' }, svg);
+  const field = el('g', {}, svg), gp = el('g', {}, svg);
+  const vlab = txt(svg, x0 + W, yt - 22, '', { class: 'note', 'text-anchor': 'end' });
+  const r = rng(5);
+  const ps = Array.from({ length: cols * rowsN }, (_, i) => ({ x: x0 + r() * W, y: yt + 10 + r() * (yb - yt - 20), tc: i % cols, tr: Math.floor(i / cols), e: el('circle', { r: 8, fill: '#475569', stroke: '#1f1a3d', 'stroke-width': 2 }, gp) }));
+  const tx = c => x0 + W * (c + .5) / cols, ty = rr => yt + 15 + (yb - yt - 30) * rr / (rowsN - 1);
+  const A = axes(svgEl('mrPlot'), { x: 56, y: 26, w: 380, h: 170, xr: [0, 4], yr: [0, 3], yt: [0, 1, 2, 3], xl: 'γ̇', yl: 'σ' });
+  const tauY = B => 2.4 * B ** 1.5, SIG = 1, ETAp = .5;
+  el('path', { d: curve(A, g => ETAp * g), class: 'cv c-mu' }, A.clip);
+  txt(A.top, A.X(3.9), A.Y(ETAp * 3.9) - 12, '磁場なし', { class: 'note', fill: '#6b6790', 'text-anchor': 'end' });
+  el('line', { x1: A.X(0), x2: A.X(4), y1: A.Y(SIG), y2: A.Y(SIG), stroke: '#e04e00', 'stroke-width': 2, 'stroke-dasharray': '6 5' }, A.top);
+  txt(A.top, A.X(.1), A.Y(SIG) - 8, '加えている力', { class: 'note', fill: '#e04e00' });
+  const bp = el('path', { class: 'cv c-pu' }, A.clip), op = el('circle', { r: 8, class: 'mk f-pu' }, A.top);
+  const rate = () => Math.max(0, SIG - tauY(+bS.value)) / ETAp;
+  function ro() {
+    const B = +bS.value, ty0 = tauY(B), g = rate();
+    bp.setAttribute('d', curve(A, x => ty0 + ETAp * x, 0, 4));
+    op.setAttribute('cx', A.X(g)); op.setAttribute('cy', A.Y(g > 0 ? SIG : Math.min(ty0, SIG)));
+    $('#mrBv').textContent = B < .02 ? 'OFF' : `${Math.round(B * 100)}%`;
+    rich(vlab, g > 0 ? `流れている（γ̇ = ${g.toFixed(2)}）` : '止まった！（降伏応力 ＞ 力）'); vlab.setAttribute('fill', g > 0 ? '#3b6cff' : '#d61f45');
+    field.textContent = '';
+    if (B > .02) for (let c = 0; c < cols; c++) el('path', { d: `M${tx(c)} ${yt}V${yb}`, stroke: '#8a5cff', 'stroke-width': 2, 'stroke-dasharray': '4 6', opacity: B }, field);
+  }
+  bS.addEventListener('input', ro); ro();
+  function frame(dt) {
+    const B = +bS.value, g = rate(), k = 4 * B;
+    ps.forEach(p => {
+      p.x += g * 120 * (p.y - yt) / (yb - yt) * dt;
+      if (B > .02) {
+        let dx = tx(p.tc) - p.x; dx -= W * Math.round(dx / W);
+        p.x += dx * Math.min(1, k * dt); p.y += (ty(p.tr) - p.y) * Math.min(1, k * dt);
+      }
+      if (p.x > x0 + W) p.x -= W;
+      if (p.x < x0) p.x += W;
+      p.e.setAttribute('cx', p.x); p.e.setAttribute('cy', p.y);
+    });
+  }
+  frame(0);
+  anim('mrf', frame);
+}
+
+/* ---------- まとめマップ ---------- */
+{
+  const svg = svgEl('mapSvg');
+  const N = (id, x, y, w, t, s, c, d) => ({ id, x, y, w, t, s, c, d });
+  const nodes = [
+    N('c', 575, 255, 230, 'レオロジー', '変形と流動の科学', '#ffd53d', 0),
+    N('el', 150, 70, 220, '弾性（ばね）', 'σ＝Gγ　蓄えて返す', '#dfe8ff', .1),
+    N('vi', 1000, 70, 220, '粘性（ダッシュポット）', 'σ＝ηγ̇　熱に変える', '#ffe1c7', .15),
+    N('ve', 575, 70, 250, '粘弾性', 'マクスウェル・フォークト・緩和時間 λ', '#ece6ff', .25),
+    N('de', 575, 435, 300, 'デボラ数 De＝λ／t', '時間の見方で固体にも液体にも', '#fff1c2', .3),
+    N('dy', 230, 205, 230, '動的粘弾性', 'G′・G″・tanδ', '#ece6ff', .4),
+    N('tt', 160, 330, 230, '時間‐温度換算則', 'WLF式・マスターカーブ', '#ece6ff', .45),
+    N('po', 250, 450, 250, '高分子・ゴム', '4つの領域・エントロピー弾性', '#ffe0ee', .5),
+    N('nn', 930, 205, 250, '非ニュートン流動', 'シアシニング・降伏応力・チキソ', '#d9f7e6', .55),
+    N('ns', 1000, 330, 220, '法線応力効果', 'ワイセンベルグ・ダイスウェル', '#d9f7e6', .6),
+    N('me', 900, 450, 250, '測る・使う', 'レオメーター・タイヤ・成形・食品', '#d5f5f3', .65),
+  ];
+  const at = Object.fromEntries(nodes.map(n => [n.id, n]));
+  [['c', 'el'], ['c', 'vi'], ['el', 've'], ['vi', 've'], ['c', 've'], ['c', 'de'], ['c', 'dy'], ['dy', 'tt'], ['tt', 'po'], ['c', 'po'], ['c', 'nn'], ['nn', 'ns'], ['c', 'me'], ['ns', 'me'], ['po', 'de'], ['de', 'me']].forEach(([a, b], i) => {
+    el('path', { d: `M${at[a].x} ${at[a].y}L${at[b].x} ${at[b].y}`, class: 'lk', style: `--d:${.05 + i * .03}s` }, svg);
+  });
+  nodes.forEach(n => {
+    const g = el('g', { class: 'nd' + (n.id === 'c' ? ' ce' : ''), style: `--d:${n.d}s` }, svg), h = n.id === 'c' ? 84 : 62;
+    el('rect', { x: n.x - n.w / 2, y: n.y - h / 2, width: n.w, height: h, rx: 16, fill: n.c, style: 'filter:drop-shadow(4px 4px 0 #1f1a3d)' }, g).style.fill = n.c;
+    txt(g, n.x, n.y - (n.id === 'c' ? 2 : 4), n.t);
+    txt(g, n.x, n.y + (n.id === 'c' ? 26 : 18), n.s, { class: 'sm' });
+  });
+}
+/* ---------- 復習問題：カードをクリックすると答えが出る（もう一度押すと隠れる） ---------- */
+{
+  document.querySelectorAll('.qz').forEach(q => q.addEventListener('click', () => {
+    const open = q.classList.toggle('open');
+    q.querySelectorAll('.qgb').forEach(g => g.classList.toggle('shown', open));
+  }));
+  // 図の ? は 1 つずつクリックで開ける。全部開いたら答えの文も出す
+  document.querySelectorAll('.qgb').forEach(g => g.addEventListener('click', e => {
+    e.stopPropagation();
+    g.classList.toggle('shown');
+    const q = g.closest('.qz'), all = [...q.querySelectorAll('.qgb')];
+    q.classList.toggle('open', all.every(x => x.classList.contains('shown')));
+  }));
+  document.querySelectorAll('[data-quiz-all]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation(); b.blur();
+    const qs = [...b.closest('.slide').querySelectorAll('.qz')], open = !qs.every(q => q.classList.contains('open'));
+    qs.forEach(q => { q.classList.toggle('open', open); q.querySelectorAll('.qgb').forEach(g => g.classList.toggle('shown', open)); });
+    b.textContent = open ? '答えをぜんぶ隠す' : '答えをぜんぶ表示';
+  }));
+  // スライドを開くたびに答えを隠した状態に戻す
+  const reset = id => () => {
+    const sl = document.querySelector(`.slide[data-id="${id}"]`);
+    sl.querySelectorAll('.qz').forEach(q => q.classList.remove('open'));
+    sl.querySelectorAll('.qgb').forEach(g => g.classList.remove('shown'));
+    sl.querySelector('[data-quiz-all]').textContent = '答えをぜんぶ表示';
+  };
+
+  onSlide('quiz', reset('quiz'));
+  // 印刷（配布資料）では答えも見えるようにする
+  addEventListener('beforeprint', () => document.querySelectorAll('.qz, .qgb').forEach(q => q.classList.add(q.classList.contains('qz') ? 'open' : 'shown')));
+}
+/* ---------- スライド制御 ---------- */
+const stage = $('#stage');
+function fit() {
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+
+const slides = [...document.querySelectorAll('.slide')];
+slides.forEach((s, i) => { const p = s.querySelector('.pageno'); if (p) p.textContent = `${i + 1} / ${slides.length}`; });
+let cur = 0;
+const frags = s => [...s.querySelectorAll('.frag')];
+function showFrag(f, on) {
+  f.classList.toggle('vis', on);
+  if (f.dataset.slideClass) f.closest('.slide').classList.toggle(f.dataset.slideClass, on);
+}
+function go(n, showAll = false) {
+  if (n < 0 || n >= slides.length) return;
+  stoppers.forEach(f => f());
+  cur = n;
+  slides.forEach((s, i) => { s.classList.toggle('active', i === n); s.classList.toggle('past', i < n); });
+  frags(slides[n]).forEach(f => showFrag(f, showAll));
+  $('#counter').textContent = `${n + 1} / ${slides.length}`;
+  $('#progress').style.width = `${(n + 1) / slides.length * 100}%`;
+  history.replaceState(null, '', '#' + (n + 1));
+  const id = slides[n].dataset.id;
+  if (window.onEnter && onEnter[id]) onEnter[id]();
+  // 自動再生ボタンのあるスライドは、開いた時点で再生を始める（ボタンで停止できる）
+  slides[n].querySelectorAll('[data-autoplay]').forEach(b => b.click());
+  ink.render();
+}
+function next() {
+  const f = frags(slides[cur]).find(x => !x.classList.contains('vis'));
+  if (f) showFrag(f, true); else go(cur + 1);
+}
+function prev() {
+  const v = frags(slides[cur]).filter(x => x.classList.contains('vis'));
+  if (v.length) showFrag(v[v.length - 1], false); else go(cur - 1, true);
+}
+function fullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+}
+let overview = false;
+function layoutOverview() {
+  const cols = innerWidth < 900 ? 2 : innerWidth < 1400 ? 3 : 4;
+  const w = (document.body.clientWidth - 48 - 22 * (cols - 1)) / cols;
+  stage.style.setProperty('--cols', cols);
+  stage.style.setProperty('--z', w / 1280);
+  stage.style.setProperty('--ow', `${w}px`);
+  stage.style.setProperty('--oh', `${w * 720 / 1280}px`);
+}
+function markCurrent() { slides.forEach((s, i) => s.classList.toggle('current', i === cur)); }
+function toggleOverview(on = !overview) {
+  overview = on;
+  document.body.classList.toggle('overview', on);
+  if (on) {
+    stoppers.forEach(f => f());
+    layoutOverview(); markCurrent();
+    slides[cur].scrollIntoView({ block: 'center' });
+  } else {
+    document.body.scrollTop = 0;
+    go(cur);
+  }
+}
+slides.forEach((s, i) => s.addEventListener('click', () => {
+  if (!overview) return;
+  cur = i; toggleOverview(false);
+}));
+addEventListener('resize', () => { if (overview) layoutOverview(); });
+addEventListener('keydown', e => {
+  if (overview) {
+    if (['o', 'O', 'Escape'].includes(e.key)) toggleOverview(false);
+    else if (e.key === 'Enter') { e.preventDefault(); toggleOverview(false); }
+    else if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+      e.preventDefault();
+      cur = Math.max(0, Math.min(slides.length - 1, cur + (e.key === 'ArrowRight' ? 1 : -1)));
+      markCurrent(); slides[cur].scrollIntoView({ block: 'nearest' });
+    }
+    return;
+  }
+  if (e.target.tagName === 'SUMMARY' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'p' || e.key === 'P') return ink.setTool(ink.tool() === 'pen' ? 'laser' : 'pen');
+  if (e.key === 'z' || e.key === 'Z') return ink.undo();
+  if (e.key === 'o' || e.key === 'O') return toggleOverview(true);
+  if (['ArrowRight', 'PageDown', ' ', 'Enter', 'ArrowDown'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace', 'ArrowUp'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(slides.length - 1);
+  else if (e.key === 'f' || e.key === 'F') fullscreen();
+});
+let tx = null;
+// スライダー操作や Apple Pencil のタッチはスワイプのページ送りに使わない
+addEventListener('touchstart', e => tx = laser.blocksSwipe(e.touches[0]) || e.target.closest('input') ? null : e.touches[0].clientX, { passive: true });
+addEventListener('touchend', e => {
+  if (tx === null || overview) return;
+  const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 60) dx < 0 ? next() : prev();
+});
+// Apple Pencil のタッチは、Safari のスクリブル（手書き入力）・スクロール・拡大鏡などの判定に使わせない。
+// これらが働くと、速く書いたときにペンの動きが一瞬ページに届かなくなり、固まって見えるため。
+// タッチの既定の動作を止めるとクリックも起きなくなるので、ペンで軽くタップしたときはこちらでクリックを送る
+let penTap = null;
+const findPen = e => penTap && [...e.changedTouches].find(t => t.identifier === penTap.id);
+stage.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  if (t.touchType !== 'stylus' || overview || e.target.closest('input')) return;
+  e.preventDefault();
+  penTap = { id: t.identifier, x: t.clientX, y: t.clientY, target: e.target, moved: 0 };
+}, { passive: false });
+stage.addEventListener('touchmove', e => {
+  const t = findPen(e);
+  if (!t) return;
+  e.preventDefault();
+  penTap.moved = Math.max(penTap.moved, Math.hypot(t.clientX - penTap.x, t.clientY - penTap.y));
+}, { passive: false });
+stage.addEventListener('touchend', e => {
+  const t = findPen(e);
+  if (!t) return;
+  const { target, moved } = penTap;
+  penTap = null;
+  // ほとんど動かさなかったときはタップとみなしてクリックを送る（ボタン・回路の入力・復習問題のカードなど）
+  if (moved < 8) {
+    if (typeof target.click === 'function') target.click();
+    else target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: t.clientX, clientY: t.clientY }));
+  }
+});
+stage.addEventListener('touchcancel', () => { penTap = null; });
+$('#btnNext').onclick = e => { e.currentTarget.blur(); next(); };
+$('#btnPrev').onclick = e => { e.currentTarget.blur(); prev(); };
+$('#btnFs').onclick = e => { e.currentTarget.blur(); fullscreen(); };
+$('#btnOv').onclick = e => { e.currentTarget.blur(); toggleOverview(true); };
+$('#btnOvClose').onclick = e => { e.currentTarget.blur(); toggleOverview(false); };
+addEventListener('beforeprint', () => slides.forEach(s => frags(s).forEach(f => showFrag(f, true))));
+/* ---------- 黒ペン ----------
+   右下の道具で「黒ペン」を選ぶと、Apple Pencil（パソコンではマウス）でスライドに書き込める。指では書かない（指はスワイプやタップに使う）。
+   ペン先で軽くタップしただけのときは線を残さず、ボタンや入力の丸のクリックとして扱う。
+   書き込みはスライドごとに保持し、ページを戻ると再表示される（再読み込みで消える）。 */
+const ink = (() => {
+  const W = 1280, H = 720, COLOR = '#111';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ink';
+  stage.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const bar = $('#penbar');
+  const pages = slides.map(() => ({ strokes: [], undo: [] }));
+  let tool = 'laser', active = null;
+
+  function resize() {
+    const k = Math.min(4096 / W, stage.getBoundingClientRect().width / W * (devicePixelRatio || 1));
+    canvas.width = Math.round(W * k); canvas.height = Math.round(H * k);
+    render();
+  }
+  // 筆圧で太さを変え、点の中点を結ぶ曲線でなめらかにする。i 番目の区間は p[i-1]・p[i]・p[i+1] で決まる
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  function drawSeg(p, i) {
+    const m0 = i === 1 ? p[0] : mid(p[i - 1], p[i]);
+    const m1 = i === p.length - 1 ? p[i] : mid(p[i], p[i + 1]);
+    ctx.lineWidth = 4 * (.4 + p[i][2] * 1.2);
+    ctx.beginPath(); ctx.moveTo(m0[0], m0[1]); ctx.quadraticCurveTo(p[i][0], p[i][1], m1[0], m1[1]); ctx.stroke();
+  }
+  function drawStroke(p) { for (let i = 1; i < p.length; i++) drawSeg(p, i); }
+  // スライド全体の描き直し（元に戻す・消しゴム・スライド切り替えなどのときだけ）
+  function render() {
+    const k = canvas.width / W;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.strokeStyle = COLOR; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    pages[cur].strokes.forEach(drawStroke);
+    if (active && active.pts) { drawStroke(active.pts); active.drawn = active.pts.length - 2; }
+  }
+  // 書いている途中は、まだ描いていない区間だけを描き足す（毎回全部を描き直すと速く書いたときに固まるため）。
+  // 最後の区間は次の点が来ないと形が決まらないので、ペンを離したときに描く
+  function drawNew(final) {
+    const p = active.pts, upto = final ? p.length - 1 : p.length - 2;
+    for (let i = Math.max(1, active.drawn + 1); i <= upto; i++) drawSeg(p, i);
+    active.drawn = Math.max(active.drawn, upto);
+  }
+  // ペンの点はたくさん届くので、画面の書き換え 1 回につき 1 回だけまとめて描く
+  let queued = false;
+  function flush() {
+    queued = false;
+    if (!active) return;
+    if (active.pts) drawNew(false);
+    else if (active.erase.length) { const qs = active.erase; active.erase = []; if (qs.map(eraseAt).some(Boolean)) render(); }
+  }
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(flush); } };
+  function toStage(e) {
+    const r = stage.getBoundingClientRect();
+    // マウスは筆圧が取れないので 0.5 として扱う
+    const pr = e.pointerType === 'pen' && e.pressure > 0 ? e.pressure : .5;
+    return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H, pr];
+  }
+  function snapshot() { const pg = pages[cur]; pg.undo.push(pg.strokes.slice()); if (pg.undo.length > 100) pg.undo.shift(); }
+  function segDist(q, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const t = L ? Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L)) : 0;
+    return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy);
+  }
+  // q の近くを通る線を消す。消したら true（描き直しは呼び出し側でまとめて行う）
+  function eraseAt(q) {
+    const pg = pages[cur];
+    const keep = pg.strokes.filter(st => !st.some((pt, i) => segDist(q, st[Math.max(0, i - 1)], pt) < 14));
+    if (keep.length === pg.strokes.length) return false;
+    if (!active.erased) { snapshot(); active.erased = true; }
+    pg.strokes = keep;
+    return true;
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    if (overview || active || tool === 'laser' || e.target.closest('input')) return;
+    if (!(e.pointerType === 'pen' || (e.pointerType === 'mouse' && e.button === 0))) return;
+    e.preventDefault();
+    const q = toStage(e);
+    // ペンの消しゴム側（対応ペンのみ）は消しゴムとして扱う
+    const erase = tool === 'eraser' || e.button === 5;
+    active = { id: e.pointerId, start: q, moved: 0, pts: erase ? null : [q], drawn: 0, erase: [] };
+    if (erase) { if (eraseAt(q)) render(); }
+  });
+  addEventListener('pointermove', e => {
+    if (!active || e.pointerId !== active.id) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of evs.length ? evs : [e]) {
+      const q = toStage(ev);
+      active.moved = Math.max(active.moved, Math.hypot(q[0] - active.start[0], q[1] - active.start[1]));
+      if (active.pts) {
+        // ほとんど動いていない点は間引く（見た目は変わらず、描く量が減る）
+        const last = active.pts[active.pts.length - 1];
+        if (Math.hypot(q[0] - last[0], q[1] - last[1]) >= 1.2) active.pts.push(q); else last[2] = Math.max(last[2], q[2]);
+      } else active.erase.push(q);
+    }
+    schedule();
+  }, { passive: false });
+  function end(e) {
+    if (!active || e.pointerId !== active.id) return;
+    flush();
+    // ほとんど動かさなかったペン先はタップ（クリック）として扱い、線は残さない
+    if (active.pts && active.moved >= 4) {
+      drawNew(true); snapshot(); pages[cur].strokes.push(active.pts); active = null;
+    } else { active = null; render(); }
+  }
+  addEventListener('pointerup', end);
+  addEventListener('pointercancel', end);
+
+  function setTool(t) {
+    tool = t;
+    bar.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
+  }
+  function undo() { const pg = pages[cur]; if (pg.undo.length) { pg.strokes = pg.undo.pop(); render(); } }
+  bar.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => { b.blur(); setTool(b.dataset.tool); });
+  $('#inkUndo').onclick = e => { e.currentTarget.blur(); undo(); };
+  $('#inkClear').onclick = e => {
+    e.currentTarget.blur();
+    if (pages[cur].strokes.length) { snapshot(); pages[cur].strokes = []; render(); }
+  };
+  addEventListener('resize', resize);
+  resize();
+  return { render, undo, setTool, tool: () => tool, drawing: () => !!active };
+})();
+
+/* ---------- レーザーポインター ----------
+   Apple Pencil のペン先を画面に当てている間だけ赤く光る点を表示し、なぞった軌跡を光らせる（書き込みは残らない）。
+   軌跡はペンを離してから約1秒で消える。消えきる前にもう一度ペンを当てると、それまでの軌跡は消えずに残り続ける。
+   軽いタップは今までどおり回路の入力やボタンのクリックとして扱う。 */
+const laser = (() => {
+  const W = 1280, H = 720, LIFE = 1000;
+  const canvas = document.createElement('canvas');
+  canvas.id = 'laser';
+  stage.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  // trail は線ごとの点の配列。fadeFrom はペンを離した時刻（ペンを当てている間は null）
+  let trail = [], down = null, raf = 0, fadeFrom = null;
+
+  function resize() {
+    const k = Math.min(4096 / W, stage.getBoundingClientRect().width / W * (devicePixelRatio || 1));
+    canvas.width = Math.round(W * k); canvas.height = Math.round(H * k);
+    kick();
+  }
+  function toStage(e) {
+    const r = stage.getBoundingClientRect();
+    return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H];
+  }
+  const level = () => fadeFrom === null ? 1 : Math.max(0, 1 - (performance.now() - fadeFrom) / LIFE);
+  function frame() {
+    raf = 0;
+    const k = canvas.width / W, f = level();
+    if (!f) trail = [];
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // 影のぼかし（shadowBlur）は重いので使わず、太い半透明の線の上に細い線を重ねて光って見せる
+    const path = new Path2D();
+    trail.forEach(line => { path.moveTo(line[0][0], line[0][1]); line.forEach(q => path.lineTo(q[0], q[1])); });
+    ctx.strokeStyle = `rgba(255,40,70,${.18 * f})`; ctx.lineWidth = 6 + 14 * f; ctx.stroke(path);
+    ctx.strokeStyle = `rgba(255,40,70,${.8 * f})`; ctx.lineWidth = 2 + 5 * f; ctx.stroke(path);
+    if (down) {
+      const [x, y] = down.pos, g = ctx.createRadialGradient(x, y, 0, x, y, 13);
+      g.addColorStop(0, '#fff'); g.addColorStop(.35, '#ff5a6e'); g.addColorStop(1, 'rgba(255,30,60,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2); ctx.fill();
+    }
+    if (fadeFrom !== null && trail.length) kick();
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+  function add(q) {
+    const line = trail[trail.length - 1], last = line[line.length - 1];
+    // ほとんど動いていない点は間引く
+    if (!last || Math.hypot(q[0] - last[0], q[1] - last[1]) >= 1.5) line.push(q);
+    down.pos = q;
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    if (overview || e.pointerType !== 'pen' || down || e.target.closest('input') || ink.tool() !== 'laser') return;
+    e.preventDefault();
+    // 前の軌跡が消えきっていなければ残したまま続ける
+    if (!level()) trail = [];
+    fadeFrom = null; down = { id: e.pointerId, pos: null };
+    trail.push([]); add(toStage(e)); kick();
+  });
+  addEventListener('pointermove', e => {
+    if (!down || e.pointerId !== down.id) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    (evs.length ? evs : [e]).forEach(ev => add(toStage(ev)));
+    kick();
+  }, { passive: false });
+  const up = e => { if (down && e.pointerId === down.id) { down = null; fadeFrom = performance.now(); kick(); } };
+  addEventListener('pointerup', up);
+  addEventListener('pointercancel', up);
+  addEventListener('resize', resize);
+  resize();
+
+  // Apple Pencil のタッチはスワイプのページ送りに使わない
+  return { blocksSwipe: t => t.touchType === 'stylus' || !!down };
+})();
+
+go(Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1)) || 1) - 1)));
+</script>
+</body>
+</html>
