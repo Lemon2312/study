@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>トライボロジーの全体像</title>
+<style>
+:root{
+  --ink:#1f1a3d; --muted:#6b6790; --line:#1f1a3d; --bg:#fffaf0;
+  --accent:#ff6b1a; --accent-d:#e04e00; --accent-l:#fff1c2;
+  --blue:#3b6cff; --blue-l:#dfe8ff; --green:#14a35a;
+  --off:#b9b5d0; --pink:#ff4f9a; --yellow:#ffd53d; --purple:#8a5cff;
+  --hard:4px 4px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;height:100%;background:#1e293b;overflow:hidden;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;color:var(--ink)}
+#viewport{position:fixed;inset:0}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center;
+  background:var(--bg);box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;padding:44px 64px 50px;opacity:0;pointer-events:none;
+  transform:translateX(60px);transition:opacity .55s ease,transform .55s ease;display:flex;flex-direction:column}
+.slide.past{transform:translateX(-60px)}
+.slide.active{opacity:1;transform:none;pointer-events:auto}
+.slide::before{content:"";position:absolute;left:0;top:0;right:0;height:6px;
+  background:linear-gradient(90deg,var(--accent),#facc15 50%,var(--blue))}
+.chap{font-size:15px;color:var(--muted);letter-spacing:.05em}
+h2{font-size:38px;margin:6px 0 22px;padding-left:16px;border-left:10px solid var(--accent);line-height:1.25}
+h2 small{font-size:22px;color:var(--muted);font-weight:500;margin-left:12px}
+.pageno{position:absolute;right:30px;bottom:16px;font-size:14px;color:var(--muted)}
+.body{flex:1;min-height:0}
+p,li{font-size:23px;line-height:1.6}
+ul{margin:0;padding-left:1.2em}
+li{margin:6px 0}
+b.k{color:var(--accent-d)}
+b.kb{color:var(--blue)}
+.muted{color:var(--muted)}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:30px;align-items:center;height:100%}
+.cols.even{grid-template-columns:1fr 1fr}
+.cols.wide{grid-template-columns:1.7fr 1fr}
+.card{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(15,23,42,.08);padding:18px 22px}
+.point{background:var(--accent-l);border-left:7px solid var(--accent);padding:12px 18px;border-radius:10px;font-size:22px;line-height:1.55;margin-top:14px}
+.point.blue{background:var(--blue-l);border-left-color:var(--blue)}
+.hint{font-size:16px;color:var(--muted);margin-top:6px}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:30px;background:#fff;border-radius:12px;
+  padding:10px 20px;display:inline-block;box-shadow:0 3px 12px rgba(15,23,42,.08)}
+sub{font-size:.65em}
+.center{display:flex;justify-content:center;align-items:center}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+button.b{font:inherit;font-size:16px;padding:7px 16px;border-radius:999px;border:2px solid var(--blue);background:#fff;color:var(--blue);cursor:pointer;font-weight:700}
+button.b:hover{background:var(--blue-l)}
+button.b.playing{background:var(--blue);color:#fff}
+
+/* fragments & entrance animations */
+.frag{opacity:0;transform:translateY(18px);transition:opacity .45s ease,transform .45s ease}
+.frag.vis{opacity:1;transform:none}
+.slide.active .pop{animation:pop .6s cubic-bezier(.2,.8,.3,1.2) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+
+/* bars */
+.barrow{display:grid;grid-template-columns:190px 1fr;align-items:center;gap:10px;margin:8px 0;font-size:18px}
+.bar-bg{background:#e2e8f0;border-radius:8px;height:30px;overflow:hidden}
+.bar-fill{height:100%;width:0;border-radius:8px;transition:width 1.2s cubic-bezier(.2,.8,.3,1);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#fff;font-weight:800}
+.slide.active .bar-fill{width:var(--w)}
+.bar-fill.o{background:var(--off)}
+.bar-fill.a{background:var(--accent)}
+
+/* title */
+.title-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center;height:100%}
+.title-wrap h1{font-size:54px;line-height:1.25;margin:0 0 14px}
+.title-wrap .sub{font-size:30px;color:var(--accent-d);font-weight:700;margin-bottom:34px}
+.title-wrap .meta{font-size:20px;color:var(--muted);line-height:1.8}
+.agenda li{font-size:27px;margin:16px 0;list-style:none;display:flex;align-items:center;gap:16px}
+.agenda .num{width:46px;height:46px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.agenda .new{background:var(--accent)}
+.tag{font-size:15px;background:var(--accent);color:#fff;border-radius:999px;padding:2px 12px;font-weight:700}
+details{background:#fff;border-radius:12px;padding:10px 18px;margin:10px 0;box-shadow:0 3px 12px rgba(15,23,42,.06);font-size:22px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{color:var(--accent-d)}
+details div{margin-top:8px;line-height:1.6;color:#334155}
+
+/* ---------- UI ---------- */
+#ui{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;
+  color:#cbd5e1;font-size:14px;opacity:.25;transition:opacity .3s;z-index:10}
+#ui:hover{opacity:1}
+#ui button{background:#334155;color:#fff;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+#progress{position:fixed;left:0;bottom:0;height:4px;background:var(--accent);transition:width .4s;z-index:11}
+
+/* ---------- 一覧モード ---------- */
+#ovHead{display:none}
+body.overview{overflow:auto}
+body.overview #viewport{position:static;padding:64px 24px 60px}
+body.overview #ovHead{display:flex;position:fixed;left:0;right:0;top:0;height:52px;align-items:center;gap:16px;padding:0 24px;
+  background:#0f172a;color:#e2e8f0;font-size:16px;z-index:12}
+body.overview #ovHead b{font-size:18px}
+body.overview #ovHead b,body.overview #ovHead button{white-space:nowrap}
+@media (max-width:900px){body.overview #ovHead span{display:none}}
+body.overview #ovHead button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit;font-weight:700;margin-left:auto}
+body.overview #stage{position:static;transform:none!important;width:auto;height:auto;overflow:visible;background:none;box-shadow:none;
+  display:grid;grid-template-columns:repeat(var(--cols,4),var(--ow,256px));gap:22px}
+/* 縮小は zoom ではなく transform で行う（iPad の Safari は zoom の扱いが異なり、中身の位置がずれるため）。
+   transform は並べるときの大きさに影響しないので、負の余白で縮小後の大きさ（--ow × --oh）に合わせる */
+body.overview .slide{position:relative;inset:auto;width:1280px;height:720px;opacity:1;pointer-events:auto;
+  transform:scale(var(--z,.2));transform-origin:0 0;margin:0 calc(var(--ow,256px) - 1280px) calc(var(--oh,144px) - 720px) 0;
+  cursor:pointer;background:var(--bg);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);outline:0 solid var(--accent);transition:outline-width .15s}
+body.overview .slide *{pointer-events:none}
+body.overview .slide:hover{outline-width:14px}
+body.overview .slide.current{outline-width:22px}
+body.overview .frag{opacity:1;transform:none}
+body.overview .bar-fill{width:var(--w);transition:none}
+body.overview .slide{overflow:hidden}
+/* 一覧ではページ番号を右下の札にして、中身と重なっても読めるようにする */
+body.overview .slide .pageno{font-size:40px;font-weight:900;color:#fff;background:var(--ink);border-radius:16px;padding:2px 20px;bottom:14px;right:14px;z-index:6}
+body.overview #ui,body.overview #progress{display:none}
+
+/* ---------- ポップ調デザイン（太枠・ずらし影・弾むアニメ） ---------- */
+html,body{background:#2a2350}
+#stage{background:
+  radial-gradient(circle at 92% 8%,#ffd6e8 0 120px,transparent 121px),
+  radial-gradient(circle at 4% 96%,#d4f4ff 0 150px,transparent 151px),
+  radial-gradient(circle at 98% 92%,#fff0b3 0 70px,transparent 71px),
+  radial-gradient(#e9e2cf 1.4px,transparent 1.6px) 0 0/22px 22px,
+  var(--bg)}
+.slide{transition:opacity .45s ease,transform .6s cubic-bezier(.3,1.5,.5,1)}
+.slide::before{height:10px;background:repeating-linear-gradient(90deg,var(--accent) 0 80px,var(--yellow) 80px 160px,var(--pink) 160px 240px,var(--blue) 240px 320px)}
+.chap{font-weight:700;color:var(--pink);letter-spacing:.08em}
+h2{border-left:none;padding-left:54px;position:relative}
+h2::before{content:"";position:absolute;left:0;top:50%;width:34px;height:34px;margin-top:-17px;border-radius:10px;
+  background:linear-gradient(135deg,var(--yellow),var(--accent) 55%,var(--pink));border:3px solid var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink)}
+.slide.active h2::before{animation:wiggle 1s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes wiggle{from{transform:rotate(-120deg) scale(.3)}to{transform:rotate(-12deg)}}
+h2 small{white-space:nowrap;background:var(--accent-l);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:2px 14px;font-size:18px;font-weight:700;vertical-align:middle}
+b.k{color:var(--accent-d);background:linear-gradient(transparent 62%,#ffe58a 62%)}
+b.kb{color:var(--blue);background:linear-gradient(transparent 62%,#cfe0ff 62%)}
+.card{border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink)}
+.point{border:2.5px solid var(--ink);border-left:10px solid var(--accent);border-radius:16px;box-shadow:var(--hard)}
+.point.blue{border-left-color:var(--blue)}
+.formula{border:2.5px solid var(--ink);box-shadow:var(--hard)}
+button.b{border:2.5px solid var(--ink);background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+button.b:hover{background:#ffe06b;transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+button.b:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+button.b.playing{background:var(--pink);color:#fff}
+.slide.active .pop{animation:pop .7s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:translateY(30px) scale(.85) rotate(-2deg)}to{opacity:1;transform:none}}
+.frag{transform:translateY(18px) scale(.95);transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.6,.5,1)}
+
+
+.bar-bg{background:#ece6ff;border:2px solid var(--ink)}
+.bar-fill.a{background:linear-gradient(90deg,var(--accent),var(--pink))}
+
+.title-wrap h1{font-size:64px;background:linear-gradient(transparent 70%,#ffe58a 70%) no-repeat;display:inline;line-height:1.3;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.title-wrap .sub{color:var(--pink);margin-top:18px;margin-bottom:22px;font-size:23px;white-space:nowrap}
+.tchaps{display:flex;flex-direction:column;gap:12px}
+.tchap{display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 var(--ink);padding:6px 14px 6px 6px}
+.tchap .tno{background:var(--c);color:#fff;font-weight:900;border:2px solid var(--ink);border-radius:10px;padding:2px 10px;font-size:18px;flex:none}
+.tchap .tname{font-weight:900;font-size:21px}
+.tchap .tsec{margin-left:auto;font-size:14px;color:var(--muted);font-weight:700;white-space:nowrap}
+.agenda .num{border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--blue)}
+.agenda li:nth-child(3) .num{background:var(--pink)}
+.agenda li:nth-child(4) .num{background:var(--green)}
+.agenda li:nth-child(6) .num{background:var(--purple)}
+.agenda li:nth-child(7) .num{background:var(--accent)}
+.agenda .new{background:var(--accent)}
+.tag{background:var(--pink);border:2px solid var(--ink);white-space:nowrap;flex:none}
+
+/* 目次の教科書の章見出し */
+.agenda li.agroup{font-size:17px;font-weight:900;color:var(--pink);letter-spacing:.06em;margin:14px 0 -4px;border-bottom:2.5px dashed #e3dcf2;padding-bottom:4px}
+.agenda li.agroup:first-child{margin-top:0}
+
+/* 教科書の章の扉（本の章扉風） */
+.partdoor .pd-wrap{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:40px}
+.pd-src{font-size:18px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+.pd-no{margin-top:14px;font-size:30px;font-weight:900;color:#fff;background:var(--c);border:3px solid var(--ink);border-radius:999px;padding:4px 26px;box-shadow:4px 4px 0 var(--ink);letter-spacing:.12em}
+.pd-title{font-size:68px;line-height:1.25;margin:22px 0 26px;background:linear-gradient(transparent 70%,#ffe58a 70%);display:inline;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.pd-secs{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:22px}
+.pd-secs span{background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 18px;font-size:19px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+.pd-secs span.add{background:var(--accent-l)}
+.pd-bg{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;color:var(--c);opacity:.13;font-size:84px;pointer-events:none}
+.pd-bg .eq{font-size:50px;gap:14px}
+.pd-bg .vec{border-width:5px;border-radius:40px;padding:4px 26px;line-height:1.15}
+
+/* 復習問題：カードをクリックすると答えが出る */
+.quiz{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px 16px;align-content:center}
+.qz{display:flex;flex-direction:column;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:10px 14px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.qz:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.qz-q{display:flex;gap:10px;align-items:flex-start;font-size:17px;line-height:1.5;font-weight:600}
+.qz-no{flex:none;background:var(--blue);color:#fff;font-weight:900;font-size:14px;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;margin-top:2px}
+.qz-a{margin-top:auto;padding-top:8px;min-height:40px;display:flex;align-items:center;border-top:2px dashed #e3dcf2;font-size:17px;line-height:1.5}
+.qz-hide{color:var(--muted);font-weight:800;font-size:15px}
+.qz-ans{display:none;color:#1f1a3d}
+.qz.open{background:#fffaf0}
+.qz.open .qz-no{background:var(--green)}
+.qz.open .qz-hide{display:none}
+.qz.open .qz-ans{display:inline;animation:qzIn .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes qzIn{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+.quiz.q2{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:auto}
+/* 章の扉スライド */
+.door-wrap{position:relative;display:grid;grid-template-columns:auto 1fr;gap:64px;align-items:center;height:100%;padding:0 40px}
+.door-num{width:210px;height:210px;border-radius:46px;background:var(--c);color:#fff;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:140px;font-weight:900;font-family:Consolas,Menlo,monospace;transform:rotate(-6deg)}
+.slide.active .door-num{animation:doorIn .9s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes doorIn{from{opacity:0;transform:rotate(-120deg) scale(.3)}to{opacity:1;transform:rotate(-6deg)}}
+.door-label{font-size:22px;font-weight:900;letter-spacing:.14em;color:var(--c)}
+.door-label .door-book{display:block;font-size:16px;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.door-label .tag{font-size:15px;letter-spacing:0;vertical-align:middle;margin-left:8px}
+.door h1{font-size:80px;line-height:1.15;margin:6px 0 4px}
+.door-lead{font-size:32px;font-weight:700;color:var(--muted);margin:0 0 30px}
+.door-topics{display:flex;flex-wrap:wrap;gap:12px}
+.door-topics span{background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 18px;font-size:19px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+.door-bg{position:absolute;right:-20px;bottom:-150px;font-size:600px;font-weight:900;line-height:1;color:var(--c);opacity:.09;
+  font-family:Consolas,Menlo,monospace;pointer-events:none}
+#progress{height:6px;background:linear-gradient(90deg,var(--accent),var(--pink),var(--blue))}
+
+/* ---------- レーザーポインター（Apple Pencil） ---------- */
+#stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body:not(.overview) #stage{touch-action:none}
+#laser{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;z-index:5}
+body.overview #laser{display:none}
+/* 黒ペン（Apple Pencil で書き込み） */
+#ink{position:absolute;left:0;top:0;width:1280px;height:720px;pointer-events:none;z-index:4}
+#penbar{position:fixed;right:12px;top:14px;z-index:20;display:flex;align-items:center;gap:4px;background:#fff;border:2.5px solid var(--ink);
+  border-radius:999px;box-shadow:3px 3px 0 var(--ink);padding:4px;touch-action:manipulation;opacity:.85}
+#penbar:hover{opacity:1}
+#penbar button{height:38px;min-width:38px;border-radius:999px;border:2px solid transparent;background:none;font:inherit;font-size:14px;font-weight:800;
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px}
+#penbar button.on{background:var(--accent-l);border-color:var(--ink)}
+#penbar .sep{width:2px;height:24px;background:#e3dcf2;border-radius:1px}
+body.overview #ink,body.overview #penbar{display:none}
+
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{overflow:visible;background:#fff}
+  #viewport{position:static}
+  #stage{position:static;transform:none!important;box-shadow:none;width:auto;height:auto;overflow:visible;background:none}
+  .slide{position:relative;width:1280px;height:720px;opacity:1;transform:none;page-break-after:always;background:var(--bg)}
+  .frag{opacity:1;transform:none}
+  #ui,#progress,.btns,.hint,#laser,#penbar{display:none}
+}
+
+/* ---------- レオロジー用の部品 ---------- */
+:root{--teal:#0ea5a4;--teal-l:#d5f5f3;--pink-l:#ffe0ee;--green-l:#d9f7e6;--purple-l:#ece6ff}
+.plot{width:100%;height:auto;display:block;user-select:none;overflow:visible}
+.plot text{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif}
+.plot .tk{font-size:13px;fill:var(--muted);font-weight:700}
+.plot .ax{stroke:var(--ink);stroke-width:2.5;fill:none;stroke-linejoin:round}
+.plot .axh{fill:var(--ink)}
+.plot .gd{stroke:#ece7f6;stroke-width:1.2}
+.plot .al{font-size:15px;font-weight:800;fill:var(--ink)}
+.plot .bg{fill:#fff;stroke:none}
+.plot .note{font-size:14px;font-weight:800}
+.plot .lab{font-size:16px;font-weight:900;fill:var(--ink)}
+.plot .labm{font-size:14px;font-weight:700;fill:var(--muted)}
+.cv{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:opacity .3s}
+.cv.thin{stroke-width:2.5}
+.cv.dash{stroke-dasharray:7 6}
+.c-or{stroke:var(--accent)}.c-bl{stroke:var(--blue)}.c-pk{stroke:var(--pink)}.c-gr{stroke:var(--green)}.c-pu{stroke:var(--purple)}.c-ink{stroke:var(--ink)}.c-tl{stroke:var(--teal)}.c-mu{stroke:#b9b5d0}
+.f-or{fill:var(--accent)}.f-bl{fill:var(--blue)}.f-pk{fill:var(--pink)}.f-gr{fill:var(--green)}.f-pu{fill:var(--purple)}.f-ink{fill:var(--ink)}.f-tl{fill:var(--teal)}
+.t-or{color:var(--accent-d)}.t-bl{color:var(--blue)}.t-pk{color:var(--pink)}.t-gr{color:var(--green)}.t-pu{color:var(--purple)}.t-tl{color:var(--teal)}
+.dim{opacity:.15}
+.mk{stroke:var(--ink);stroke-width:2.5}
+
+/* 切り替えボタン（セグメント） */
+.seg{display:inline-flex;flex-wrap:wrap;border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:3px 3px 0 var(--ink);background:#fff}
+.seg button{font:inherit;font-size:15px;font-weight:800;border:0;background:none;padding:6px 13px;cursor:pointer;color:var(--ink);border-right:2px solid var(--ink);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--accent-l)}
+.seg button.on{background:var(--yellow)}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:16px;font-weight:800}
+.ctl input[type=range]{flex:1;min-width:120px;accent-color:var(--accent);height:28px;touch-action:none}
+.ro{font-family:Consolas,Menlo,monospace;font-weight:800;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:1px 10px;white-space:nowrap}
+.math{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.mini{font-size:18px;line-height:1.6}
+.mini li{font-size:18px;line-height:1.55;margin:4px 0}
+.cardt{font-weight:900;font-size:19px;margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.cardt .tag{font-size:13px}
+.lead{font-size:22px;font-weight:700;margin:0 0 10px;line-height:1.55}
+.verdict{display:inline-block;font-weight:900;font-size:19px;border:2.5px solid var(--ink);border-radius:12px;padding:3px 14px;box-shadow:3px 3px 0 var(--ink);background:#fff;transition:background .3s}
+.verdict.solid{background:var(--blue-l);color:var(--blue)}
+.verdict.liquid{background:#ffe1c7;color:var(--accent-d)}
+.verdict.mid{background:var(--purple-l);color:var(--purple)}
+.eqbox{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:26px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:var(--hard);padding:6px 16px;display:inline-block;line-height:1.4}
+.eqbox small{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;font-size:15px;color:var(--muted);font-weight:700}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:1px 12px;font-size:15px;font-weight:800}
+.gauge{height:20px;border:2px solid var(--ink);border-radius:8px;background:#f4f1fb;overflow:hidden}
+.gauge>div{height:100%;width:0;transition:width .25s}
+.glab{display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin:6px 0 3px}
+.card.tight{padding:12px 16px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+/* 応用カード */
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.app{background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:8px 12px;cursor:pointer;transition:transform .12s,box-shadow .12s,background .2s}
+.app:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.app .ah{display:flex;align-items:center;gap:8px;font-weight:900;font-size:19px}
+.app .ah .ic{font-size:28px}
+.app .ak{font-size:14.5px;color:var(--muted);font-weight:700;margin-top:2px;line-height:1.45}
+.app .ad{display:none;font-size:15px;line-height:1.5;margin-top:4px;border-top:2px dashed #e3dcf2;padding-top:4px}
+.app.open{background:#fffaf0}
+.app.open .ad{display:block;animation:qzIn .35s cubic-bezier(.3,1.6,.5,1)}
+.app .lnk{font-size:12px;font-weight:900;color:#fff;background:var(--c,var(--blue));border-radius:999px;padding:0 8px;margin-left:auto;white-space:nowrap}
+
+/* まとめマップ */
+.map .nd rect{fill:#fff;stroke:var(--ink);stroke-width:2.5}
+.map .nd text{font-size:16px;font-weight:800;fill:var(--ink);text-anchor:middle}
+.map .nd .sm{font-size:12.5px;font-weight:700;fill:var(--muted)}
+.map .lk{stroke:var(--ink);stroke-width:2.5;fill:none;stroke-dasharray:5 5}
+.map .ce rect{fill:var(--yellow)}
+.map .ce text{font-size:24px;font-weight:900}
+.slide.active .map .nd,.slide.active .map .lk{animation:pop .6s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+.map .nd{transform-box:fill-box;transform-origin:center}
+
+.quote{display:block;background:#fff;border:2.5px solid var(--ink);border-left:8px solid var(--blue);border-radius:12px;padding:8px 14px;box-shadow:3px 3px 0 var(--ink)}
+.quote small{display:block;text-align:right;font-size:14px;color:var(--muted)}
+/* 文献 */
+.refs li{font-size:16px;line-height:1.5;margin:6px 0}
+.refs a{color:var(--blue);word-break:break-all}
+.quiz.q4{grid-auto-rows:auto}
+.quiz.q4 .qz{min-height:96px}
+.quiz.q4 .qz-q{font-size:16.5px}
+.quiz.q4 .qz-a{font-size:15.5px;min-height:30px}
+
+/* ---------- トライボロジー用の部品 ---------- */
+.apps .app.dim{opacity:.25;transform:scale(.97)}
+.app .tg{font-size:12px;font-weight:900;color:#fff;border-radius:999px;padding:0 8px;margin-left:auto;white-space:nowrap;border:2px solid var(--ink)}
+.tg.hi{background:var(--accent)}.tg.lo{background:var(--blue)}.tg.st{background:var(--green)}
+/* 年表 */
+.tl-info{min-height:132px}
+.tl-info .yr{font-family:Consolas,Menlo,monospace;font-weight:900;font-size:22px;color:var(--pink)}
+.tl-info .who{font-weight:900;font-size:22px;margin-left:8px}
+.tl-info .what{font-size:18px;line-height:1.6;margin-top:6px}
+/* 3つの輪 */
+.venn3 .vc{cursor:pointer;transition:opacity .2s}
+.venn3 .vc:hover{opacity:.85}
+.vinfo .vt{font-weight:900;font-size:24px;margin-bottom:6px}
+.vinfo li{font-size:17px;line-height:1.55}
+/* 凡例 */
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:15px;font-weight:800;margin-top:6px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:14px;height:14px;border-radius:4px;border:2px solid var(--ink)}
+/* 摩耗の分類カード */
+.wear{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;height:100%;grid-auto-rows:1fr}
+.wear .app .ah{font-size:19px}
+.wear .app .ak{font-size:15.5px}
+.wear .app .ad{font-size:16px;line-height:1.6}
+.stepbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stepbar button{font:inherit;font-size:14px;font-weight:900;border:2px solid var(--ink);border-radius:10px;background:#fff;padding:3px 10px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.stepbar button.on{background:var(--yellow)}
+.bigro{font-family:Consolas,Menlo,monospace;font-size:26px;font-weight:900}
+.always .ad{display:block}
+.always .app{cursor:default}
+.always .app:hover{transform:none;box-shadow:4px 4px 0 var(--ink)}
+.apps.always .app .ad{font-size:15.5px}
+</style>
+</head>
+<body>
+<div id="ovHead"><b>スライド一覧</b><span>クリックでそのスライドへ ／ ← → で選択、Enter で開く、O / Esc で戻る</span><button id="btnOvClose">一覧を閉じる</button></div>
+<div id="viewport"><div id="stage">
+
+<!-- タイトル -->
+<section class="slide" data-id="title">
+  <div class="title-wrap">
+    <div>
+      <div class="chap pop">ゼミ資料 ／ トライボロジー入門</div>
+      <h1 class="pop" style="--d:.1s">トライボロジーの<br>全体像</h1>
+      <div class="sub pop" style="--d:.2s">― 摩擦・摩耗・潤滑の科学と技術 ―</div>
+      <div class="tchaps">
+        <div class="tchap pop" style="--d:.25s;--c:var(--blue)"><span class="tno">1</span><span class="tname">トライボロジーとは</span><span class="tsec">語源・Jost報告・歴史</span></div>
+        <div class="tchap pop" style="--d:.3s;--c:var(--pink)"><span class="tno">2</span><span class="tname">表面と接触</span><span class="tsec">でこぼこ・真実接触面積</span></div>
+        <div class="tchap pop" style="--d:.35s;--c:var(--green)"><span class="tno">3</span><span class="tname">摩擦</span><span class="tsec">3法則・凝着説・ゴムの摩擦</span></div>
+        <div class="tchap pop" style="--d:.4s;--c:var(--purple)"><span class="tno">4</span><span class="tname">転がりと潤滑</span><span class="tsec">転がり摩擦・ストライベック曲線</span></div>
+        <div class="tchap pop" style="--d:.45s;--c:var(--accent)"><span class="tno">5</span><span class="tname">ゴムの摩擦を測る</span><span class="tsec">乾燥面・水・氷</span></div>
+        <div class="tchap pop" style="--d:.5s;--c:var(--teal)"><span class="tno">6</span><span class="tname">摩耗</span><span class="tsec">8つの摩耗形態</span></div>
+      </div>
+    </div>
+    <div class="card pop" style="--d:.3s">
+      <svg class="plot" id="titleAnim" viewBox="0 0 480 380" style="overflow:hidden"></svg>
+      <div class="hint" style="text-align:center">ぴったり重なって見える面も、本当に触れているのは凹凸の先端だけ</div>
+    </div>
+  </div>
+</section>
+
+<!-- 本日の流れ -->
+<section class="slide">
+  <div class="chap">Agenda</div>
+  <h2>本日の流れ</h2>
+  <div class="body cols" style="grid-template-columns:1.45fr 1fr">
+    <ul class="agenda">
+      <li class="pop" style="--d:.05s"><span class="num">1</span>トライボロジーとは：語源・経済効果・歴史</li>
+      <li class="pop" style="--d:.1s"><span class="num" style="background:var(--pink)">2</span>表面と接触：本当に触れている面積はわずか</li>
+      <li class="pop" style="--d:.15s"><span class="num" style="background:var(--green)">3</span>摩擦：凹凸説から凝着説へ、ゴムの摩擦</li>
+      <li class="pop" style="--d:.2s"><span class="num" style="background:var(--purple)">4</span>転がり摩擦と潤滑：ストライベック曲線</li>
+      <li class="pop" style="--d:.25s"><span class="num" style="background:var(--accent)">5</span>ゴムの摩擦を測る：乾燥面・水・氷</li>
+      <li class="pop" style="--d:.3s"><span class="num" style="background:var(--teal)">6</span>摩耗：アブレシブ・凝着・疲労・パターン…</li>
+    </ul>
+    <div class="card pop" style="--d:.4s">
+      <p style="margin:0 0 8px;font-weight:900">このスライドの使い方</p>
+      <ul>
+        <li style="font-size:18px">ほぼ全ページが <b class="k">動くシミュレーション</b>。ボタン・スライダーを触ってみよう</li>
+        <li style="font-size:18px">グラフの数値は参考文献（内山 2016–2017 ほか）の図から読み取った値です</li>
+        <li style="font-size:18px">← → / Space でページ送り、F で全画面、O で一覧</li>
+        <li style="font-size:18px">右上のペンで書き込み（Apple Pencil 対応）</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 1 ===== -->
+<section class="slide door" style="--c:var(--blue)">
+  <div class="door-bg">1</div>
+  <div class="door-wrap">
+    <div class="door-num">1</div>
+    <div>
+      <div class="door-label pop">PART 1</div>
+      <h1 class="pop" style="--d:.1s">トライボロジーとは</h1>
+      <p class="door-lead pop" style="--d:.2s">こすれ合う表面の科学と技術</p>
+      <div class="door-topics pop" style="--d:.3s"><span>語源と定義</span><span>Jost 報告</span><span>摩擦研究の歴史</span><span>身のまわりの例</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="venn">
+  <div class="chap">PART 1 トライボロジーとは ／ 定義</div>
+  <h2>摩擦・摩耗・潤滑をまとめる学問<small>tribology</small></h2>
+  <div class="body cols" style="grid-template-columns:1.1fr 1fr">
+    <div class="stack">
+      <div class="quote pop">「トライボロジーは，相対運動における相互作用する表面と，それに付随する実用の科学と技術である」<small>Jost 報告（1965年11月23日）の定義</small></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">ギリシャ語 <b class="kb">τρίβω（tribo：こする）</b>＋ -logy（学）</li>
+        <li class="pop" style="--d:.15s">命名は英国。それまでの「潤滑（Lubrication）」では<b>狭すぎる</b>ため、Oxford University Press に相談して新語に</li>
+        <li class="pop" style="--d:.2s">機械工学・物理・化学・冶金・材料科学にまたがる<b class="k">境界領域</b></li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:18px">右の 3 つの輪をクリック。摩擦・摩耗・潤滑は<b>切り離せない</b>：摩擦が熱と摩耗を生み、潤滑が両方を減らす。</div>
+    </div>
+    <div class="card pop" style="--d:.2s">
+      <svg class="plot venn3" id="vennSvg" viewBox="0 0 440 300"></svg>
+      <div class="vinfo" id="vennInfo"></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="jost">
+  <div class="chap">PART 1 トライボロジーとは ／ 社会的なインパクト</div>
+  <h2>Jost 報告：トライボロジーはお金になる<small>1965–1966</small></h2>
+  <div class="body cols" style="grid-template-columns:1.15fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="jostSel"><button data-k="uk" class="on">🇬🇧 英国（1965年の試算）</button><button data-k="jp">🇯🇵 日本（1968年の試算）</button></div>
+      <svg class="plot" id="jostSvg" viewBox="0 0 560 330" style="margin-top:4px"></svg>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s" id="jostInfo"></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s">節約の最大項目は「<b class="k">保守・部品交換</b>」。摩擦を減らす省エネより、<b>壊れない・長持ち</b>の効果が大きい</li>
+        <li class="pop" style="--d:.25s">報告を受けて英国に<b>国立トライボロジーセンター</b>（1968）、日本でも調査が行われた</li>
+        <li class="pop" style="--d:.3s">報告をまとめた H. Peter Jost 卿は世界トライボロジー会議を提唱（第4回 2009年 京都）</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="hist">
+  <div class="chap">PART 1 トライボロジーとは ／ 歴史</div>
+  <h2>摩擦を追い求めた人々<small>点をクリック／再生</small></h2>
+  <div class="body">
+    <div class="card pop">
+      <svg class="plot" id="histSvg" viewBox="0 0 1100 200"></svg>
+      <div class="btns"><button class="b" id="histPlay">▶ 歴史をたどる</button></div>
+    </div>
+    <div class="cols" style="grid-template-columns:1.6fr 1fr;height:auto;margin-top:14px;gap:16px;align-items:stretch">
+      <div class="card tight pop tl-info" style="--d:.1s" id="histInfo"></div>
+      <div class="point pop" style="--d:.2s;margin-top:0;font-size:17px">ダ・ヴィンチ、アモントン、クーロンは<b>凹凸説</b>。バウデンとテイバーの<b>凝着説</b>（1949）まで約 180 年かかった。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="apps">
+  <div class="chap">PART 1 トライボロジーとは ／ 身のまわりの例</div>
+  <h2>高い摩擦がほしい？ 低い摩擦がほしい？<small>上のボタンで絞り込み</small></h2>
+  <div class="body" style="display:flex;flex-direction:column;gap:10px">
+    <div class="seg pop" id="appSel" style="align-self:flex-start"><button data-k="all" class="on">すべて</button><button data-k="hi">🔥 高い摩擦がほしい</button><button data-k="lo">🧊 低い摩擦がほしい</button><button data-k="st">⚖️ 安定した摩擦がほしい</button></div>
+    <div class="apps always" style="flex:1">
+      <div class="app pop" data-t="hi lo"><div class="ah"><span class="ic">🛞</span>タイヤ<span class="tg hi">高</span><span class="tg lo">低</span></div><div class="ak">転がりは小さく、すべり・静止摩擦は大きく</div><div class="ad">燃費のために<b>転がり摩擦は小さく</b>、止まるために<b>すべり摩擦は大きく</b>。乾燥・水濡れ・雪氷と路面が変わっても安定が必要。</div></div>
+      <div class="app pop" data-t="hi" style="--d:.05s"><div class="ah"><span class="ic">🛑</span>ブレーキ・クラッチ<span class="tg hi">高</span></div><div class="ak">しっかり止める・伝える</div><div class="ad">高く安定した摩擦が必要。自動変速機のペーパークラッチは油の添加剤で<b>摩擦振動</b>を防ぐ（PART 4）。</div></div>
+      <div class="app pop" data-t="st" style="--d:.1s"><div class="ah"><span class="ic">💴</span>紙送りゴムロール<span class="tg st">安定</span></div><div class="ak">ATM・コピー機・自動改札</div><div class="ad">新札も古いお札も同じように運ぶ。<b>紙粉の付着</b>やロールの摩耗で摩擦係数が変わると、斜行・重送のトラブルに。</div></div>
+      <div class="app pop" data-t="lo" style="--d:.15s"><div class="ah"><span class="ic">💧</span>シール<span class="tg lo">低</span></div><div class="ak">漏らさず、しかも軽く動く</div><div class="ad">漏れを防ぐには強く押し付けたい。でも摩擦は小さくしたい。<b>相反する要求</b>を両立させる。</div></div>
+      <div class="app pop" data-t="st" style="--d:.2s"><div class="ah"><span class="ic">⚙️</span>ベルト<span class="tg st">安定</span></div><div class="ak">動力を伝える・物を運ぶ</div><div class="ad">V ベルトはプーリとの<b>摩擦</b>で力を伝える（PART 4 のオイラーの式）。耐摩耗性、静かさも要求される。</div></div>
+      <div class="app pop" data-t="lo" style="--d:.25s"><div class="ah"><span class="ic">🔩</span>軸受・エンジン<span class="tg lo">低</span></div><div class="ak">玉軸受・自己潤滑プラスチック</div><div class="ad">メンテナンスフリーの要求から<b>自己潤滑性プラスチック</b>の軸受も。オイル交換で車の調子が良くなるのも潤滑の効果。</div></div>
+      <div class="app pop" data-t="st hi" style="--d:.3s"><div class="ah"><span class="ic">👟</span>靴底・ワイパー<span class="tg st">安定</span><span class="tg hi">高</span></div><div class="ak">すべらない・びびらない</div><div class="ad">雨の道でも転ばない靴底、ガラスを<b>びびらず</b>にふき取るワイパー。安定した摩擦係数が必要。</div></div>
+      <div class="app pop" data-t="hi" style="--d:.35s"><div class="ah"><span class="ic">❄️</span>スタッドレスタイヤ<span class="tg hi">高</span></div><div class="ak">氷の上でも止まる</div><div class="ad">スパイクは使えない（日本では1991年に規制）。氷の上の<b>擬似水膜</b>との戦い（PART 5）。</div></div>
+      <div class="app pop" data-t="lo st" style="--d:.4s"><div class="ah"><span class="ic">🧽</span>消しゴム<span class="tg st">安定</span></div><div class="ak">ゴムのトライボ利用の第1号</div><div class="ad">鉛筆の字を消せることを見つけたのは<b>プリーストリー</b>（1770）。"rubber" の語源。ころ状に削れて汚れを巻き込む（PART 6）。</div></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 2 ===== -->
+<section class="slide door" style="--c:var(--pink)">
+  <div class="door-bg">2</div>
+  <div class="door-wrap">
+    <div class="door-num">2</div>
+    <div>
+      <div class="door-label pop">PART 2</div>
+      <h1 class="pop" style="--d:.1s">表面と接触</h1>
+      <p class="door-lead pop" style="--d:.2s">平らな面は、どこにもない</p>
+      <div class="door-topics pop" style="--d:.3s"><span>表面粗さ</span><span>表面層</span><span>真実接触面積</span><span>A ∝ Wⁿ</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="rough">
+  <div class="chap">PART 2 表面と接触 ／ 表面粗さ</div>
+  <h2>どんな面も、拡大すればでこぼこ<small>凹凸の上に凹凸</small></h2>
+  <div class="body cols" style="grid-template-columns:1.5fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="roughSvg" viewBox="0 0 700 300"></svg>
+      <div class="ctl">拡大する<input type="range" id="roughZ" min="0" max="3" step="0.01" value="0"><span class="ro" id="roughZv"></span></div>
+    </div>
+    <div class="stack">
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">鏡のように磨いた面も、拡大すると<b class="k">突起（アスペリティ）</b>だらけ</li>
+        <li class="pop" style="--d:.15s">拡大しても、また<b>小さな凹凸</b>が現れる（多重スケール）</li>
+        <li class="pop" style="--d:.2s">粗さの図は<b>縦を何千倍にも</b>拡大して描いている。実際の斜面はとてもなだらか</li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:18px">2つの面を重ねると、<b>突起の先端どうし</b>だけが触れる → 次のページ以降の「真実接触面積」へ</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="layers">
+  <div class="chap">PART 2 表面と接触 ／ 表面の正体</div>
+  <h2>表面は「何層ものコート」<small>層をクリック</small></h2>
+  <div class="body cols" style="grid-template-columns:1.25fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="layerSvg" viewBox="0 0 600 330"></svg>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s" id="layerInfo"></div>
+      <div class="card tight pop" style="--d:.2s">
+        <div class="cardt">材料ごとの注目点</div>
+        <div class="mini" style="font-size:16px">🔩 <b>金属</b>：酸化膜（すぐ再生し、損傷を防ぐ）<br>🧴 <b>プラスチック</b>：熱で溶融・流動し、摩擦方向に配向<br>🛞 <b>ゴム</b>：粘弾性と補強材。配合剤が表面に移行（ブルーム）することも<br><span class="muted">高分子は熱伝導が悪く、耐熱性は金属よりはるかに低い</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="contact">
+  <div class="chap">PART 2 表面と接触 ／ 真実接触面積</div>
+  <h2>本当に触れているのは、ほんの一部<small>A ＝ W ／ p<sub>m</sub></small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="contactSvg" viewBox="0 0 640 340"></svg>
+      <div class="ctl">荷重 W<input type="range" id="contactW" min="0.05" max="1" step="0.01" value="0.3"><span class="ro" id="contactWv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="font-size:22px">真実接触面積 A ＝ W ／ p<sub>m</sub>　<small>p<sub>m</sub>：突起の降伏圧力（鋼では引張りの弾性限度 Y の約 3 倍）</small></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">突起の先端はつぶれて<b>塑性接触</b>。1 つ 1 つが p<sub>m</sub> で荷重を支える</li>
+        <li class="pop" style="--d:.15s">荷重が 2 倍 → 接触点が増え・広がり、<b>A も 2 倍</b></li>
+        <li class="pop" style="--d:.2s"><b>見かけの面積</b>（ブロックの大きさ）には<b>よらない</b></li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:17px">これが「摩擦は見かけの面積によらず、荷重に比例する」理由の土台になる（PART 3）。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="aw">
+  <div class="chap">PART 2 表面と接触 ／ 弾性接触のモデル</div>
+  <h2>接触面積と荷重：A ∝ Wⁿ<small>モデルを切り替え</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1.25fr">
+    <div class="stack">
+      <div class="seg pop" id="awSel" style="flex-direction:column;align-self:stretch"><button data-k="0">● 1 つの球（ヘルツ）n＝2/3</button><button data-k="1">●●● 等間隔の球（多数点）n＝4/5</button><button data-k="2" class="on">🫐 球の上に突起　n＝8/9</button><button data-k="3">🫐🫐 突起の上に突起　n＝26/27</button><button data-k="4">▬ 塑性接触　n＝1</button></div>
+      <svg class="plot pop" id="awIcon" viewBox="0 0 440 130" style="--d:.1s"></svg>
+      <div class="point frag" style="margin-top:0;font-size:16.5px">凹凸が複雑になるほど n → 1。<b>弾性接触でも A はほぼ W に比例</b>し、アモントンの法則が成り立つ（Archard, 1953）。</div>
+    </div>
+    <div class="card pop" style="--d:.15s">
+      <svg class="plot" id="awPlot" viewBox="0 0 560 360"></svg>
+      <div class="mini" style="font-size:16px;margin-top:4px">表面エネルギーのある滑らかなゴムでは、<b>荷重 0 でも接触面ができる</b>（JKR理論, 1971）。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 3 ===== -->
+<section class="slide door" style="--c:var(--green)">
+  <div class="door-bg">3</div>
+  <div class="door-wrap">
+    <div class="door-num">3</div>
+    <div>
+      <div class="door-label pop">PART 3</div>
+      <h1 class="pop" style="--d:.1s">摩擦</h1>
+      <p class="door-lead pop" style="--d:.2s">なぜ、こすると抵抗が生まれるのか</p>
+      <div class="door-topics pop" style="--d:.3s"><span>摩擦の3法則</span><span>凹凸説と凝着説</span><span>掘り起こし</span><span>ヒステリシス摩擦</span><span>μ‐V マスターカーブ</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="laws">
+  <div class="chap">PART 3 摩擦 ／ 古典法則</div>
+  <h2>摩擦の 3 法則<small>ダ・ヴィンチ → アモントン → クーロン</small></h2>
+  <div class="body cols" style="grid-template-columns:1.3fr 1fr">
+    <div class="card pop">
+      <div class="row" style="justify-content:space-between"><div class="seg" id="lawFace"><button data-k="0" class="on">面 A（広い）</button><button data-k="1">面 B</button><button data-k="2">面 C（せまい）</button></div><span class="pill">W ＝ <span id="lawWv"></span></span></div>
+      <svg class="plot" id="lawSvg" viewBox="0 0 620 320" style="margin-top:4px"></svg>
+      <div class="ctl">おもり<input type="range" id="lawW" min="1" max="4" step="1" value="2"><button class="b" id="lawPull" style="margin:0" data-autoplay>▶ 引っぱる</button></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s"><div class="cardt t-bl">第1法則</div><div class="mini" style="font-size:16.5px">摩擦力は<b>見かけの接触面積によらない</b>（面 A・B・C を比べよう）</div></div>
+      <div class="card tight pop" style="--d:.15s"><div class="cardt t-pk">第2法則</div><div class="mini" style="font-size:16.5px">摩擦力は<b>荷重に比例</b>する：F ＝ μW</div></div>
+      <div class="card tight pop" style="--d:.2s"><div class="cardt t-gr">第3法則（クーロン）</div><div class="mini" style="font-size:16.5px">動摩擦は<b>すべり速度にほとんどよらない</b>。静摩擦と動摩擦を区別し、<b>動摩擦 ＜ 静摩擦</b></div></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="theory">
+  <div class="chap">PART 3 摩擦 ／ 摩擦はどこから来る？</div>
+  <h2>凹凸説から凝着説へ<small>タブを切り替え</small></h2>
+  <div class="body cols" style="grid-template-columns:1.3fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="thSel"><button data-k="0" class="on">⛰️ 凹凸説</button><button data-k="1">🔗 凝着説</button><button data-k="2">🚜 凝着＋掘り起こし</button></div>
+      <svg class="plot" id="thSvg" viewBox="0 0 620 300" style="margin-top:4px"></svg>
+    </div>
+    <div class="card pop" style="--d:.15s" id="thInfo"></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="hyst">
+  <div class="chap">PART 3 摩擦 ／ 弾性体（ゴム）の摩擦</div>
+  <h2>ゴムの摩擦 ＝ 凝着 ＋ ヒステリシス<small>F ＝ F<sub>adh</sub> ＋ F<sub>def</sub></small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="hySel"><button data-k="slide" class="on">すべり</button><button data-k="roll">転がり（潤滑下）</button></div>
+      <svg class="plot" id="hySvg" viewBox="0 0 540 250" style="margin-top:4px"></svg>
+      <div class="lg"><span><i style="background:var(--accent)"></i>凝着項 F<sub>adh</sub>（界面のせん断）</span><span><i style="background:var(--purple)"></i>変形項 F<sub>def</sub>（ヒステリシス損失）</span></div>
+    </div>
+    <div class="card pop" style="--d:.15s">
+      <svg class="plot" id="hyPlot" viewBox="0 0 540 300"></svg>
+      <div class="ctl">温度<input type="range" id="hyT" min="-1" max="1" step="0.01" value="0"><span class="ro" id="hyTv"></span></div>
+      <div class="mini" style="font-size:15.5px">粗い面では低速に<b>凝着のピーク</b>、高速に<b>ヒステリシスのピーク</b>。どちらも粘弾性（tanδ）に由来し、高温で<b>高速側</b>へ移る。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="mu">
+  <div class="chap">PART 3 摩擦 ／ ゴムの摩擦は速度と温度で変わる</div>
+  <h2>μ‐V マスターカーブ<small>Grosch（1963）、Ludema・Tabor（1966）</small></h2>
+  <div class="body cols" style="grid-template-columns:1.6fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="muPlot" viewBox="0 0 760 380"></svg>
+      <div class="btns"><button class="b" id="muGo">▶ 横にずらして重ねる</button><span class="hint" style="margin:0;align-self:center">NBR とガラス半球の摩擦（荷重 50 gf）、温度別の測定</span></div>
+    </div>
+    <div class="stack">
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">温度を変えて測った μ‐V 曲線は、高温ほど<b>高速度側</b>へずれる</li>
+        <li class="pop" style="--d:.15s">速度軸を a<sub>T</sub> 倍してずらすと<b>1本のマスターカーブ</b>に重なる</li>
+      </ul>
+      <div class="eqbox pop" style="--d:.2s;font-size:20px">log a<sub>T</sub> ＝ −8.86 (T−T<sub>s</sub>) ／ (101.5＋T−T<sub>s</sub>)<br><small>WLF式、T<sub>s</sub> ＝ T<sub>g</sub> ＋ 50 ℃</small></div>
+      <div class="point frag" style="margin-top:0;font-size:16.5px">ピークができる理由：速度が上がるとゴムが硬くなり<b>接触面積 A（∝E<sup>−2/3</sup>）は減る</b>が、<b>せん断強さ s は増える</b>。その積 F＝As が山になる。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 4 ===== -->
+<section class="slide door" style="--c:var(--purple)">
+  <div class="door-bg">4</div>
+  <div class="door-wrap">
+    <div class="door-num">4</div>
+    <div>
+      <div class="door-label pop">PART 4</div>
+      <h1 class="pop" style="--d:.1s">転がりと潤滑</h1>
+      <p class="door-lead pop" style="--d:.2s">摩擦を「小さくする」技術</p>
+      <div class="door-topics pop" style="--d:.3s"><span>転がり摩擦</span><span>ベルトの摩擦</span><span>境界潤滑</span><span>ストライベック曲線</span><span>くさび効果</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="roll">
+  <div class="chap">PART 4 転がりと潤滑 ／ 転がり摩擦</div>
+  <h2>転がり摩擦は、なぜ小さい？<small>λ ＝ F ／ W</small></h2>
+  <div class="body cols" style="grid-template-columns:1.15fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="rollSvg" viewBox="0 0 560 250"></svg>
+      <div class="ctl">ヒステリシス損失係数 ε<input type="range" id="rollE" min="0.02" max="0.5" step="0.01" value="0.1"><span class="ro" id="rollEv"></span></div>
+      <div class="ctl">球の半径 R<input type="range" id="rollR" min="0.5" max="2" step="0.01" value="1"><span class="ro" id="rollRv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="font-size:21px">λ ＝ 3εa ／ 16R　<small>a：接触円の半径（∝(WR)<sup>1/3</sup>）</small></div>
+      <div class="card tight pop" style="--d:.1s"><div class="glab"><span>すべり摩擦 μ（凝着＋変形）</span><span class="ro" id="rollMu">1.0</span></div><div class="gauge"><div id="rollMuB" style="background:var(--accent);width:100%"></div></div>
+        <div class="glab"><span>転がり抵抗係数 λ（変形だけ）</span><span class="ro" id="rollLam"></span></div><div class="gauge"><div id="rollLamB" style="background:var(--purple)"></div></div></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s">転がりでは<b>凝着のせん断がほぼない</b>。残るのは前で押しつぶし後ろで戻るときの<b>ヒステリシス損失</b>だけ</li>
+        <li class="pop" style="--d:.25s">接触面内でも<b>微小すべり</b>（レイノルズ、ヒースコート）。タイヤのすべり距離は転がり距離の<b>約 1 万分の 1</b></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="belt">
+  <div class="chap">PART 4 転がりと潤滑 ／ 摩擦で力を伝える</div>
+  <h2>ベルトとプーリ：オイラーの式<small>T₁ ／ T₂ ＝ e<sup>μθ</sup></small></h2>
+  <div class="body cols" style="grid-template-columns:1.2fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="beltSvg" viewBox="0 0 560 300"></svg>
+      <div class="ctl">摩擦係数 μ<input type="range" id="beltMu" min="0.1" max="0.8" step="0.01" value="0.3"><span class="ro" id="beltMuv"></span></div>
+      <div class="ctl">巻付け角 θ<input type="range" id="beltTh" min="60" max="300" step="1" value="180"><span class="ro" id="beltThv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s;text-align:center"><div class="muted" style="font-weight:800">張り側 ／ ゆるみ側の張力比</div><div class="bigro t-pk" id="beltRatio"></div></div>
+      <ul class="mini">
+        <li class="pop" style="--d:.2s">T₁：張り側の張力、T₂：ゆるみ側の張力</li>
+        <li class="pop" style="--d:.25s">巻付け角 θ と μ が増えると、伝えられる力が<b>指数関数的</b>に増える</li>
+        <li class="pop" style="--d:.3s">V ベルトは摩擦で、歯付きベルト（タイミングベルト）は歯のかみ合いで伝える</li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:17px">船をつなぐロープを杭に数回巻くだけで止められるのも、この式の効果。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="bl">
+  <div class="chap">PART 4 転がりと潤滑 ／ 境界潤滑</div>
+  <h2>境界潤滑：わずかな金属接触が摩擦を決める<small>F ＝ A{αs<sub>m</sub>＋(1−α)s<sub>ℓ</sub>}</small></h2>
+  <div class="body cols" style="grid-template-columns:1.25fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="blSvg" viewBox="0 0 600 300"></svg>
+      <div class="ctl">金属どうしが触れている割合 α<input type="range" id="blA" min="0" max="0.3" step="0.005" value="0.05"><span class="ro" id="blAv"></span></div>
+    </div>
+    <div class="stack">
+      <ul class="mini">
+        <li class="pop" style="--d:.1s">荷重を支える面積 A のうち、潤滑膜が<b>局部的に破れた部分 α</b>で金属が凝着</li>
+        <li class="pop" style="--d:.15s">s<sub>m</sub>：金属結合部のせん断強さ　s<sub>ℓ</sub>：潤滑膜のせん断強さ（s<sub>m</sub> ≫ s<sub>ℓ</sub>）</li>
+        <li class="pop" style="--d:.2s">α がほぼ一定なら F ∝ A ∝ W で、<b>アモントンの法則</b>は潤滑下でも成り立つ</li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:17px">優れた潤滑剤では α はごく小さい。それでも<b>摩擦の大部分は金属接触部</b>が担う（左のバーで確認）。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="strib">
+  <div class="chap">PART 4 転がりと潤滑 ／ 潤滑の 3 つの領域</div>
+  <h2>ストライベック曲線<small>μ と ηυ／p</small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="stribPlot" viewBox="0 0 640 300"></svg>
+      <svg class="plot" id="stribPic" viewBox="0 0 640 110" style="margin-top:2px"></svg>
+      <div class="ctl">ηυ／p（粘度×速度÷圧力）<input type="range" id="stribX" min="0" max="1" step="0.002" value="0.12"><span class="ro" id="stribXv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s" id="stribInfo"></div>
+      <div class="point frag" style="margin-top:0;font-size:16px">🚗 自動変速機油は添加剤で低速の μ を下げ、<b>右下がり（負の勾配）</b>をなくして<b>摩擦振動</b>を防ぐ。<br>🌧️ ぬれた路面を高速で走ると水膜に浮く<b>ハイドロプレーニング</b>＝タイヤの「流体潤滑」。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="wedge">
+  <div class="chap">PART 4 転がりと潤滑 ／ 流体潤滑のしくみ</div>
+  <h2>油が荷重を支えるしくみ<small>くさび効果とスクイーズ効果</small></h2>
+  <div class="body cols" style="grid-template-columns:1fr 1fr">
+    <div class="card pop">
+      <div class="cardt t-bl">くさび効果</div>
+      <svg class="plot" id="wedgeSvg" viewBox="0 0 520 250"></svg>
+      <div class="ctl">すべり速度 U<input type="range" id="wedgeU" min="0" max="1" step="0.01" value="0.6"><span class="ro" id="wedgeUv"></span></div>
+    </div>
+    <div class="card pop" style="--d:.15s">
+      <div class="cardt t-pk">スクイーズ効果</div>
+      <svg class="plot" id="squeezeSvg" viewBox="0 0 520 250"></svg>
+      <div class="mini" style="font-size:16px">面が近づくと油は<b>すき間から逃げにくく</b>、中央に圧力が生まれる。衝撃をやわらげるクッション。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 5 ===== -->
+<section class="slide door" style="--c:var(--accent)">
+  <div class="door-bg">5</div>
+  <div class="door-wrap">
+    <div class="door-num">5</div>
+    <div>
+      <div class="door-label pop">PART 5</div>
+      <h1 class="pop" style="--d:.1s">ゴムの摩擦を測る</h1>
+      <p class="door-lead pop" style="--d:.2s">相手面が変われば、摩擦はまるで別物</p>
+      <div class="door-topics pop" style="--d:.3s"><span>乾燥ガラス</span><span>水濡れガラス</span><span>氷</span><span>NR/BR ブレンド</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="dry">
+  <div class="chap">PART 5 ゴムの摩擦を測る ／ 乾燥ガラス</div>
+  <h2>乾いたガラスとの摩擦<small>NR60/BR40、1 cm/s、室温</small></h2>
+  <div class="body cols" style="grid-template-columns:1.4fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="drySel"><button data-k="3" class="on">#CC-1500（細かい）</button><button data-k="2">#CC-500</button><button data-k="1">#CC-180</button><button data-k="0">#CC-80（粗い）</button></div>
+      <svg class="plot" id="dryPlot" viewBox="0 0 640 330" style="margin-top:4px"></svg>
+    </div>
+    <div class="stack">
+      <svg class="plot pop" id="dryPic" viewBox="0 0 440 130" style="--d:.1s"></svg>
+      <ul class="mini">
+        <li class="pop" style="--d:.15s">ゴムは乾燥状態で <b>μ ＝ 2〜3.6</b> もの高い摩擦</li>
+        <li class="pop" style="--d:.2s">表面が<b>細かい</b>ほど接触面積が大きく、μ が高い</li>
+        <li class="pop" style="--d:.25s">接触圧力 p が高いほど μ は<b>低下</b></li>
+      </ul>
+      <div class="eqbox pop" style="--d:.3s;font-size:19px">s ＝ s₀ ＋ αp　→　μ ＝ s₀／p ＋ α<br><small>せん断強さは圧力とともに増える（Bridgman）</small></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="wet">
+  <div class="chap">PART 5 ゴムの摩擦を測る ／ 水濡れガラス</div>
+  <h2>水があるとき：粗いほうが滑りにくい！<small>p ＝ 0.196 MPa、室温</small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="wetPlot" viewBox="0 0 640 300"></svg>
+      <div class="ctl">すべり速度 υ<input type="range" id="wetV" min="0" max="1.477" step="0.005" value="0"><span class="ro" id="wetVv"></span></div>
+    </div>
+    <div class="stack">
+      <svg class="plot pop" id="wetPic" viewBox="0 0 440 170" style="--d:.1s"></svg>
+      <div class="card tight pop" style="--d:.15s" id="wetInfo"></div>
+      <div class="point frag" style="margin-top:0;font-size:16px">粗い面は水膜を<b>突き破って</b>固体接触を保つ。タイヤの溝（エッジ効果）で水を排出するのも同じ考え。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="ice">
+  <div class="chap">PART 5 ゴムの摩擦を測る ／ 氷</div>
+  <h2>氷の上の摩擦：−10 ℃ の崖<small>NR/BR ブレンド、1 cm/s</small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="iceSel"><button data-k="0" class="on">NR100</button><button data-k="1">NR80/BR20</button><button data-k="2">NR60/BR40</button><button data-k="3">BR100</button></div>
+      <svg class="plot" id="icePlot" viewBox="0 0 640 290" style="margin-top:4px"></svg>
+      <div class="ctl">温度 T<input type="range" id="iceT" min="-20" max="0" step="0.5" value="-15"><span class="ro" id="iceTv"></span></div>
+      <div class="ctl">荷重 W<input type="range" id="iceW" min="24.5" max="112.7" step="0.1" value="24.5"><span class="ro" id="iceWv"></span></div>
+    </div>
+    <div class="stack">
+      <svg class="plot pop" id="icePic" viewBox="0 0 440 150" style="--d:.1s"></svg>
+      <ul class="mini">
+        <li class="pop" style="--d:.15s">−15 ℃以下は高く一定、<b>−10 ℃で急低下</b>、0 ℃で最低</li>
+        <li class="pop" style="--d:.2s">原因は氷の表面にできる<b>擬似水膜</b>（0 ℃に近いほど厚い）</li>
+        <li class="pop" style="--d:.25s">低温では NR が最も高く、BR を混ぜるほど低い。<b>荷重が大きいほど低い</b></li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:16px">スタッドレスタイヤはピンの「掘り起こし」が使えず<b>凝着項だけ</b>が頼り。接地圧を下げる（面積を増やす）のが有効。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== PART 6 ===== -->
+<section class="slide door" style="--c:var(--teal)">
+  <div class="door-bg">6</div>
+  <div class="door-wrap">
+    <div class="door-num">6</div>
+    <div>
+      <div class="door-label pop">PART 6</div>
+      <h1 class="pop" style="--d:.1s">摩耗</h1>
+      <p class="door-lead pop" style="--d:.2s">製品の寿命を決める、見過ごされがちな現象</p>
+      <div class="door-topics pop" style="--d:.3s"><span>8つの摩耗形態</span><span>比摩耗量</span><span>アブレシブ</span><span>凝着</span><span>パターン摩耗</span><span>ブレンド</span></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="wtypes">
+  <div class="chap">PART 6 摩耗 ／ 分類</div>
+  <h2>摩耗の 8 つのかたち<small>形態ごとの特徴</small></h2>
+  <div class="body">
+    <div class="wear always">
+      <div class="app pop" style="--c:var(--accent)"><div class="ah"><span class="ic">🔪</span>①アブレシブ摩耗</div><div class="ak">鋭い突起が引っかいて削る</div><div class="ad">硬い突起や粒子が柔らかい面に溝を掘る。<b>二元</b>（相手面の突起）と<b>三元</b>（間に挟まった粒子）がある。</div></div>
+      <div class="app pop" style="--d:.05s;--c:var(--pink)"><div class="ah"><span class="ic">🔗</span>②凝着摩耗</div><div class="ak">くっついた部分がちぎれる</div><div class="ad">滑らかな面どうしで凝着部が破壊され、相手に<b>移着</b>する。条件により<b>シビア摩耗／マイルド摩耗</b>に分かれる。</div></div>
+      <div class="app pop" style="--d:.1s;--c:var(--purple)"><div class="ah"><span class="ic">🔁</span>③疲労摩耗</div><div class="ak">繰り返し変形で表面がはがれる</div><div class="ad">鈍い突起との弾性接触の繰返し。軸受や歯車の<b>表面疲労</b>（はく離）も同じ仲間。n＝(σ₀/σ)<sup>b</sup> 回で摩耗。</div></div>
+      <div class="app pop" style="--d:.15s;--c:var(--green)"><div class="ah"><span class="ic">〰️</span>④パターン摩耗</div><div class="ak">ゴム特有のしま模様</div><div class="ad">すべり方向と<b>直角</b>にアブレージョンパターン（シャラマッハ）。舌状の突起の下で亀裂が進み、ちぎれて脱落。</div></div>
+      <div class="app pop" style="--d:.2s;--c:var(--blue)"><div class="ah"><span class="ic">🧻</span>⑤ころ状摩耗粉</div><div class="ak">消しゴムのカスのように丸まる</div><div class="ad">延性的で強度の弱い材料が高摩擦にさらされると、移着膜が巻き込まれて<b>ころ状</b>に成長。消しゴム・PVC・PP・PC など。</div></div>
+      <div class="app pop" style="--d:.25s;--c:var(--teal)"><div class="ah"><span class="ic">🍯</span>⑥粘着摩耗</div><div class="ak">ねばねばの膜が表面を守る</div><div class="ad">おだやかな条件でゴム表面が<b>酸化・分解</b>して粘ちょうな膜となり、摩耗が<b>著しく低い</b>（oily wear）。</div></div>
+      <div class="app pop" style="--d:.3s;--c:var(--accent)"><div class="ah"><span class="ic">🔥</span>⑦溶融摩耗</div><div class="ak">摩擦熱でとける</div><div class="ad">熱可塑性樹脂・熱可塑性エラストマーで、速度・圧力が上がると表面が<b>軟化・流動</b>し破局的に摩耗。使用限界を <b>pυ 値</b>で示す。</div></div>
+      <div class="app pop" style="--d:.35s;--c:var(--purple)"><div class="ah"><span class="ic">🧪</span>⑧腐食摩耗・浸食</div><div class="ak">化学反応／粒子の衝突</div><div class="ad">腐食摩耗：不適切な潤滑剤や燃焼生成物との化学反応。浸食（エロージョン）：硬い粒子を含む流体の衝突。ゴムは<b>直角に当たる方が摩耗が少ない</b>。</div></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="pod">
+  <div class="chap">PART 6 摩耗 ／ 摩耗をはかる</div>
+  <h2>比摩耗量：摩耗を比べるものさし<small>K ＝ ΔV ／ (W ΔL)</small></h2>
+  <div class="body cols" style="grid-template-columns:1.3fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="podSvg" viewBox="0 0 640 320"></svg>
+      <div class="ctl">荷重 W<input type="range" id="podW" min="1" max="4" step="0.01" value="2"><span class="ro" id="podWv"></span><button class="b" id="podPlay" style="margin:0" data-autoplay>▶ 摩耗試験</button></div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="font-size:20px">比摩耗量 K ＝ ΔV ／ (W·ΔL)　<small>[mm³/(N·m)]</small></div>
+      <ul class="mini" style="font-size:16px">
+        <li class="pop" style="--d:.1s">ピン‐オン‐ディスク試験：ピンを荷重 W で押し付け、距離 L こする</li>
+        <li class="pop" style="--d:.15s">摩擦は「その瞬間の力」だが、摩耗は<b>時間・距離をかけないと</b>わからない</li>
+        <li class="pop" style="--d:.2s">初期摩耗のあと<b>定常摩耗</b>（直線）になる。その傾きで比べる</li>
+      </ul>
+      <div class="card tight pop" style="--d:.25s"><div class="mini" style="font-size:15px">ほかの表し方：線摩耗率 Δh/ΔL、体積摩耗率 ΔV/ΔL、エネルギー摩耗率（摩耗特性値）γ＝ΔV/(FΔL)＝K/μ、摩耗抵抗係数 β＝1/γ</div></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="abr">
+  <div class="chap">PART 6 摩耗 ／ アブレシブ摩耗</div>
+  <h2>アブレシブ摩耗：円すいで引っかく<small>V ＝ k<sub>a</sub>WL ／ H</small></h2>
+  <div class="body cols" style="grid-template-columns:1.25fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="abrSvg" viewBox="0 0 600 300"></svg>
+      <div class="ctl">円すいの半頂角 θ<input type="range" id="abrTh" min="30" max="80" step="1" value="50"><span class="ro" id="abrThv"></span></div>
+    </div>
+    <div class="stack">
+      <div class="eqbox pop" style="font-size:20px">V ＝ 2W cotθ·L ／ (π p<sub>m</sub>)<br><small>p<sub>m</sub>：柔らかい材料の降伏圧力（≈ 硬さ H）</small></div>
+      <div class="card tight pop" style="--d:.1s;text-align:center"><div class="muted" style="font-weight:800">θ＝50°に比べた摩耗量</div><div class="bigro t-or" id="abrRatio"></div></div>
+      <ul class="mini" style="font-size:16px">
+        <li class="pop" style="--d:.15s">鋭い（θ 小）ほど、荷重が大きいほど、柔らかいほど<b>よく削れる</b></li>
+        <li class="pop" style="--d:.2s">高分子では V ∝ μWL／(Hσε)（Ratner）。ゴムの線摩耗率は <b>1／(Eσ)</b> に比例</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="adh">
+  <div class="chap">PART 6 摩耗 ／ 凝着摩耗</div>
+  <h2>凝着摩耗：移着膜の一生<small>PTFE ピンとガラス</small></h2>
+  <div class="body cols" style="grid-template-columns:1.3fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="adhSvg" viewBox="0 0 620 260"></svg>
+      <div class="stepbar" id="adhSteps"><button data-s="0">(a) 移着</button><button data-s="1">(b) 成長</button><button data-s="2">(c) 合体・分裂</button><button data-s="3">(d) 脱落</button><button data-s="4">(e) 再移着</button><button class="b" id="adhPlay" style="margin:0 0 0 auto;box-shadow:3px 3px 0 var(--ink)" data-autoplay>▶ 自動</button></div>
+    </div>
+    <div class="stack">
+      <div class="card tight pop" style="--d:.1s" id="adhInfo"></div>
+      <div class="eqbox pop" style="--d:.15s;font-size:20px">K<sub>v</sub> ＝ k<sub>adh</sub> W ／ 3p<sub>m</sub><br><small>半球状の摩耗粉ができる確率 k<sub>adh</sub></small></div>
+      <div class="point frag" style="margin-top:0;font-size:16px">(a)〜(e) は定常摩耗中に<b>同時に</b>起きている。摩耗率の速度・圧力・温度依存もマスターカーブにまとまる。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="pat">
+  <div class="chap">PART 6 摩耗 ／ ゴム特有の摩耗</div>
+  <h2>パターン摩耗：しま模様が動いていく<small>Schallamach</small></h2>
+  <div class="body cols" style="grid-template-columns:1.3fr 1fr">
+    <div class="card pop">
+      <svg class="plot" id="patSvg" viewBox="0 50 620 230" style="overflow:hidden"></svg>
+      <div class="ctl">当たりだし荷重<input type="range" id="patW" min="0" max="2" step="1" value="1"><span class="ro" id="patWv"></span></div>
+    </div>
+    <div class="stack">
+      <ul class="mini" style="font-size:16.5px">
+        <li class="pop" style="--d:.1s">すべり方向と<b>直角</b>に舌状の突起が並ぶ（のこぎりの刃のよう）</li>
+        <li class="pop" style="--d:.15s">突起の下で<b>亀裂が進展</b> → ちぎれて摩耗粉に。パターンは形を保ったまま<b>平行に移動</b></li>
+        <li class="pop" style="--d:.2s">荷重が大きいほど間隔が広い（0.98 N：0.30 mm → 1.96 N：0.47 mm）</li>
+        <li class="pop" style="--d:.25s">刃の目が立つ「逆方向（D.A.）」は、「順方向（C.D.A.）」より<b>摩擦が高い</b></li>
+      </ul>
+      <div class="eqbox pop" style="--d:.3s;font-size:19px">r<sub>c</sub> ＝ B T<sub>c</sub><sup>α<sub>f</sub></sup>　<small>1 サイクルの亀裂成長、α<sub>f</sub>：NR 2 〜 充塡 SBR 4</small></div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="blend">
+  <div class="chap">PART 6 摩耗 ／ 材料で摩耗を減らす</div>
+  <h2>ブレンドで摩耗を減らす<small>SBR‐BR ブレンド</small></h2>
+  <div class="body cols" style="grid-template-columns:1.35fr 1fr">
+    <div class="card pop">
+      <div class="seg" id="blendSel"><button data-k="both" class="on">くらべる</button><button data-k="abr">研磨布（アブレシブ）</button><button data-k="fat">金網（疲労）</button></div>
+      <svg class="plot" id="blendPlot" viewBox="0 0 640 310" style="margin-top:4px"></svg>
+      <div class="ctl">BR の量<input type="range" id="blendX" min="0" max="100" step="1" value="40"><span class="ro" id="blendXv"></span></div>
+    </div>
+    <div class="stack">
+      <ul class="mini" style="font-size:16.5px">
+        <li class="pop" style="--d:.1s">研磨布（鋭い突起）：BR を増やすと比摩耗量は<b>約 1 桁</b>減少</li>
+        <li class="pop" style="--d:.15s">金網（鈍い突起・疲労摩耗）：BR が 60 部を超えると<b>急減</b>、80 部で<b>約 3 桁</b>低下</li>
+        <li class="pop" style="--d:.2s">BR は空気（酸素）の有無で摩耗がほとんど変わらない。NR・SBR・NBR は空気に<b>敏感</b></li>
+      </ul>
+      <div class="point frag" style="margin-top:0;font-size:16px">同じ材料でも<b>摩耗のかたち</b>（相手面）が変わると、効く対策がまるで違う。グラフは論文の傾向を模式的に表したもの。</div>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<!-- ===== まとめ ===== -->
+<section class="slide">
+  <div class="chap">まとめ</div>
+  <h2>トライボロジーの全体マップ</h2>
+  <div class="body"><svg class="plot map" id="mapSvg" viewBox="0 0 1150 520"></svg></div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide" data-id="quiz">
+  <div class="chap">復習</div>
+  <h2>確認クイズ<small>カードをクリックで答え</small><button class="b qz-all" data-quiz-all>答えをぜんぶ表示</button></h2>
+  <div class="body quiz q4">
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q1</span><span>「トライボロジー」という言葉が初めて使われた報告書は？ 語源は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">1965年の英国の Jost 報告。ギリシャ語 τρίβω（tribo：こする）＋ -logy。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q2</span><span>摩擦力が見かけの接触面積によらないのはなぜ？（凝着説で）</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">真実接触面積 A＝W/p<sub>m</sub> が荷重だけで決まり、F＝sA だから。μ＝s/p となる。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q3</span><span>ゴムの摩擦力を構成する 2 つの項は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">凝着項 F<sub>adh</sub>（界面のせん断）と変形項 F<sub>def</sub>（ヒステリシス損失）。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q4</span><span>転がり摩擦がすべり摩擦より小さい理由は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">凝着部のせん断がほとんどなく、変形のヒステリシス損失だけが抵抗になるから。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q5</span><span>ストライベック曲線の 3 つの領域は？ 横軸は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">境界潤滑・混合潤滑・流体（弾性流体）潤滑。横軸は ηυ/p（粘度×速度÷圧力）。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q6</span><span>水濡れ面で、粗いゴム面の方が高速まで摩擦が高いのはなぜ？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">粗い突起が水膜を突き破り、固体接触（境界潤滑）を保てるから。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q7</span><span>ゴムと氷の摩擦が −10 ℃ 付近で急に下がる原因は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">氷の表面にできる擬似水膜による潤滑。0 ℃に近いほど効く。</span></div></div>
+    <div class="qz"><div class="qz-q"><span class="qz-no">Q8</span><span>比摩耗量の定義と単位は？</span></div><div class="qz-a"><span class="qz-hide">クリックで答え</span><span class="qz-ans">K＝ΔV/(W·ΔL)。摩耗体積を荷重と摩擦距離で割る。単位は mm³/(N·m)。</span></div></div>
+  </div>
+  <div class="pageno"></div>
+</section>
+
+<section class="slide">
+  <div class="chap">参考資料</div>
+  <h2>参考文献</h2>
+  <div class="body cols" style="grid-template-columns:1.55fr 1fr">
+    <ol class="refs">
+      <li>内山吉隆：トライボロジー（摩擦・摩耗・潤滑の学問）の基礎から応用，最近の進歩 第1回 トライボロジーへの招待，日本ゴム協会誌，<b>89</b>，281（2016）</li>
+      <li>同 第2回 摩擦現象，日本ゴム協会誌，<b>89</b>，341（2016）</li>
+      <li>同 第3回 転がり摩擦と潤滑下のすべり摩擦，日本ゴム協会誌，<b>90</b>，215（2017）</li>
+      <li>同 第4回 ゴムの摩擦，日本ゴム協会誌，<b>90</b>，290（2017）</li>
+      <li>同 第5回 摩耗のメカニズム（1），日本ゴム協会誌，<b>90</b>，395（2017）</li>
+      <li>同 第6回 摩耗のメカニズム（2），日本ゴム協会誌，<b>90</b>，475（2017）</li>
+      <li>長谷亜蘭：はじめての精密工学「Fundamentals of Tribology」，精密工学会誌，<b>81</b>（7），643（2015）</li>
+    </ol>
+    <div class="card pop">
+      <p style="margin:0 0 6px;font-weight:900">図の数値について</p>
+      <ul>
+        <li style="font-size:16px">PART 5 のグラフ、μ‐V マスターカーブは論文の図から<b>読み取った値</b>です</li>
+        <li style="font-size:16px">ストライベック曲線・ブレンドの摩耗・μ の 2 つのピークなどは<b>傾向を示す模式図</b>です</li>
+        <li style="font-size:16px">3法則・パターン摩耗などのアニメーションの数値は説明用の例です</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"></div>
+</section>
+</div></div>
+
+<div id="ui">
+  <button id="btnPrev">◀</button><span id="counter"></span><button id="btnNext">▶</button>
+  <button id="btnFs">全画面 (F)</button>
+  <button id="btnOv">一覧 (O)</button>
+  <span>← → / Space でページ送り</span>
+</div>
+<div id="progress"></div>
+<div id="penbar" aria-label="ペンの道具">
+  <button data-tool="laser" class="on" title="レーザーポインター（書き込みは残らない）">🔴 レーザー</button>
+  <button data-tool="pen" title="黒ペンで書き込む (P)">✏️ 黒ペン</button>
+  <button data-tool="eraser" title="消しゴム（なぞった線を消す）">🧽 消す</button>
+  <span class="sep"></span>
+  <button id="inkUndo" title="元に戻す (Z)">↩️</button>
+  <button id="inkClear" title="このスライドの書き込みを全部消す">🗑️</button>
+</div>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const stoppers = [];
+
+/* ---------- 共通の道具 ---------- */
+const lg = Math.log10, clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, u) => a + (b - a) * u;
+const ease = u => u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+window.onEnter = {};
+function onSlide(id, f) { const p = onEnter[id]; onEnter[id] = () => { if (p) p(); f(); }; }
+// スライドが表示されている間だけ回るアニメーション
+function anim(id, step) {
+  let raf = 0, last = 0, t = 0;
+  const f = now => { const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; step(dt, t); raf = requestAnimationFrame(f); };
+  onSlide(id, () => { cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(f); });
+  stoppers.push(() => { cancelAnimationFrame(raf); raf = 0; });
+}
+// "10^{3}" "η_{0}" 形式の上付き・下付きに対応した SVG テキスト
+function rich(t, str) {
+  t.textContent = '';
+  String(str).split(/([_^]\{[^}]*\})/).forEach(part => {
+    if (!part) return;
+    const m = part.match(/^([_^])\{([^}]*)\}$/);
+    if (m) {
+      const up = m[1] === '^';
+      el('tspan', { dy: up ? -7 : 5, 'font-size': '72%' }, t).textContent = m[2];
+      el('tspan', { dy: up ? 7 : -5 }, t).textContent = '​';
+    } else el('tspan', {}, t).textContent = part;
+  });
+  return t;
+}
+function txt(parent, x, y, str, attrs = {}) { return rich(el('text', { x, y, ...attrs }, parent), str); }
+const svgEl = id => document.getElementById(id);
+let uid = 0;
+// 目盛り付きの座標軸。X(v), Y(v) で座標に変換。clip（描画域で切り取り）と top（切り取りなし）の2つの層を返す
+function axes(svg, o) {
+  const g = el('g', {}, svg);
+  const tx = v => o.xlog ? lg(v) : v, ty = v => o.ylog ? lg(v) : v;
+  const A = {
+    o,
+    X: v => o.x + (tx(v) - tx(o.xr[0])) / (tx(o.xr[1]) - tx(o.xr[0])) * o.w,
+    Y: v => o.y + o.h - (ty(v) - ty(o.yr[0])) / (ty(o.yr[1]) - ty(o.yr[0])) * o.h,
+  };
+  el('rect', { x: o.x, y: o.y, width: o.w, height: o.h, class: 'bg' }, g);
+  const f = (v, log, ff) => ff ? ff(v) : log ? `10^{${Math.round(lg(v))}}` : String(v);
+  (o.xt || []).forEach(v => {
+    el('line', { x1: A.X(v), x2: A.X(v), y1: o.y, y2: o.y + o.h, class: 'gd' }, g);
+    txt(g, A.X(v), o.y + o.h + 19, f(v, o.xlog, o.xf), { class: 'tk', 'text-anchor': 'middle' });
+  });
+  (o.yt || []).forEach(v => {
+    el('line', { x1: o.x, x2: o.x + o.w, y1: A.Y(v), y2: A.Y(v), class: 'gd' }, g);
+    txt(g, o.x - 7, A.Y(v) + 5, f(v, o.ylog, o.yf), { class: 'tk', 'text-anchor': 'end' });
+  });
+  A.under = el('g', {}, svg);
+  el('path', { d: `M${o.x} ${o.y - 10}V${o.y + o.h}H${o.x + o.w + 10}`, class: 'ax' }, svg);
+  el('path', { d: `M${o.x - 6} ${o.y - 6}L${o.x} ${o.y - 16}L${o.x + 6} ${o.y - 6}z`, class: 'axh' }, svg);
+  el('path', { d: `M${o.x + o.w + 6} ${o.y + o.h - 6}L${o.x + o.w + 16} ${o.y + o.h}L${o.x + o.w + 6} ${o.y + o.h + 6}z`, class: 'axh' }, svg);
+  if (o.xl) txt(svg, o.x + o.w + 14, o.y + o.h + (o.xt ? 40 : 24), o.xl, { class: 'al', 'text-anchor': 'end' });
+  if (o.yl) txt(svg, o.x + 10, o.y - 6, o.yl, { class: 'al' });
+  const cid = 'clip' + uid++;
+  el('rect', { x: o.x, y: o.y - 2, width: o.w, height: o.h + 2 }, el('clipPath', { id: cid }, svg));
+  A.clip = el('g', { 'clip-path': `url(#${cid})` }, svg);
+  A.top = el('g', {}, svg);
+  return A;
+}
+// 関数 fn を [a,b] で n 点サンプルして path の d にする
+function curve(A, fn, a = A.o.xr[0], b = A.o.xr[1], n = 160) {
+  const log = A.o.xlog, pts = [];
+  for (let i = 0; i <= n; i++) {
+    const x = log ? 10 ** lerp(lg(a), lg(b), i / n) : lerp(a, b, i / n), y = fn(x);
+    if (!isFinite(y) || (A.o.ylog && y <= 0)) continue;
+    pts.push([A.X(x), clamp(A.Y(y), A.o.y - 400, A.o.y + A.o.h + 400)]);
+  }
+  return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('');
+}
+const segSel = (id, cb) => {
+  const s = document.getElementById(id), bs = [...s.querySelectorAll('button')];
+  bs.forEach(b => b.addEventListener('click', () => { b.blur(); bs.forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset); }));
+  return bs;
+};
+const sup = n => String(n).replace(/-/g, '⁻').replace(/\d/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+function tenPow(v, digits = 1) {
+  const e = Math.floor(lg(v) + 1e-9), m = v / 10 ** e;
+  if (e >= -2 && e <= 3) return (+v.toPrecision(2)).toString();
+  return (m.toFixed(digits) === '1.0' || m.toFixed(0) === '1' && digits === 0 ? '' : m.toFixed(digits) + '×') + '10' + sup(e);
+}
+function humanTime(s) {
+  const Y = 3.156e7;
+  if (s < 1e-3) return (s * 1e6).toPrecision(2) + ' µs';
+  if (s < 1) return (s * 1e3).toPrecision(2) + ' ms';
+  if (s < 60) return s.toPrecision(2) + ' 秒';
+  if (s < 3600) return (s / 60).toPrecision(2) + ' 分';
+  if (s < 86400) return (s / 3600).toPrecision(2) + ' 時間';
+  if (s < Y) return (s / 86400).toPrecision(2) + ' 日';
+  if (s < 1e4 * Y) return Math.round(s / Y).toLocaleString() + ' 年';
+  if (s < 1e8 * Y) return (s / Y / 1e4).toPrecision(2) + ' 万年';
+  return (s / Y / 1e8).toPrecision(2) + ' 億年';
+}
+// 決まった乱数（再読み込みしても同じ絵になる）
+function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; }
+
+/* ---------- 網目構造（チキソトロピー・ペイン効果で共用） ---------- */
+function network(svg, { n, seed, box, link = 62, r = 7 }) {
+  const rand = rng(seed), [x0, y0, w, h] = box;
+  const nodes = Array.from({ length: n }, () => ({ x: x0 + 14 + rand() * (w - 28), y: y0 + 14 + rand() * (h - 28) }));
+  nodes.forEach(p => { p.hx = p.x; p.hy = p.y; });
+  const thr = Array.from({ length: n * n }, () => rand());
+  const gl = el('g', {}, svg), gn = el('g', {}, svg);
+  const dots = nodes.map(() => el('circle', { r, fill: '#1f1a3d' }, gn));
+  return {
+    nodes,
+    draw(s) {
+      gl.textContent = '';
+      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+        const a = nodes[i], c = nodes[j], d = Math.hypot(a.x - c.x, a.y - c.y);
+        if (d < link && thr[i * n + j] < s) el('line', { x1: a.x, y1: a.y, x2: c.x, y2: c.y, stroke: '#ff6b1a', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, gl);
+      }
+      nodes.forEach((p, i) => { dots[i].setAttribute('cx', p.x); dots[i].setAttribute('cy', p.y); });
+    },
+  };
+}
+
+
+/* ---------- 粗さ（決まった乱数で作る多重スケールの凹凸） ---------- */
+function roughness(seed, { L0 = 200, levels = 6, ratio = .5, H = .8, amp = 10 } = {}) {
+  const r = rng(seed), cs = [];
+  for (let k = 0; k < levels; k++) for (let j = 0; j < 3; j++) {
+    const L = L0 * ratio ** k * (.7 + .6 * r());
+    cs.push([L, amp * (L / L0) ** H * (.6 + .5 * r()), r() * 6.283]);
+  }
+  return x => cs.reduce((s, [L, A, p]) => s + A * Math.sin(2 * Math.PI * x / L + p), 0);
+}
+const pathOf = pts => 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L');
+const C = { or: '#ff6b1a', ord: '#e04e00', bl: '#3b6cff', pk: '#ff4f9a', gr: '#14a35a', pu: '#8a5cff', tl: '#0ea5a4', ink: '#1f1a3d', mu: '#6b6790', ye: '#ffd53d', yel: '#fff1c2' };
+document.head.appendChild(document.createElement('style')).textContent = '.tg+.tg{margin-left:4px}';
+
+/* ---------- タイトル：すべるブロックと、拡大した接触点 ---------- */
+{
+  const svg = svgEl('titleAnim'), cx = 240, cy = 262, R = 104;
+  el('rect', { x: 20, y: 120, width: 440, height: 14, rx: 4, fill: '#b9b5d0', stroke: C.ink, 'stroke-width': 3 }, svg);
+  const block = el('g', {}, svg);
+  el('rect', { x: -60, y: 70, width: 120, height: 50, rx: 8, fill: C.ye, stroke: C.ink, 'stroke-width': 3.5 }, block);
+  el('path', { d: 'M70 95h40m-10 -8l10 8l-10 8', stroke: C.ord, 'stroke-width': 4, fill: 'none', 'stroke-linecap': 'round' }, block);
+  txt(svg, 240, 40, '見かけの接触面', { 'text-anchor': 'middle', class: 'lab' });
+  const lens = el('path', { stroke: C.ink, 'stroke-width': 2, 'stroke-dasharray': '5 5', fill: 'none' }, svg);
+  el('circle', { cx, cy, r: R, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, svg);
+  el('circle', { cx, cy, r: R, fill: 'none' }, el('clipPath', { id: 'titleClip' }, svg));
+  const inner = el('g', { 'clip-path': 'url(#titleClip)' }, svg);
+  const gL = roughness(3, { L0: 90, levels: 5, amp: 9 }), gU = roughness(8, { L0: 90, levels: 5, amp: 9 });
+  // 平均で約 6% が接触するように、上下の面の間隔を決める
+  let gap = 0; { const vs = []; for (let x = 0; x < 3000; x += 2) vs.push(gL(x) + gU(x)); vs.sort((a, b) => b - a); gap = vs[Math.floor(vs.length * .06)]; }
+  const lowP = el('path', { fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, inner);
+  const upP = el('path', { fill: C.yel, stroke: C.ink, 'stroke-width': 2.5 }, inner);
+  const spots = el('g', {}, inner);
+  const cnt = txt(svg, cx, cy + R + 2, '', { 'text-anchor': 'middle', class: 'note', fill: C.ord });
+  const ym = cy + 8;
+  function frame(dt, t = 0) {
+    const bx = 240 + 110 * Math.sin(t * .8), shift = t * 60;
+    block.setAttribute('transform', `translate(${bx} 0)`);
+    lens.setAttribute('d', `M${bx - 20} 120L${cx - R * .7} ${cy - R * .7}M${bx + 20} 120L${cx + R * .7} ${cy - R * .7}`);
+    const lo = [], up = [], hits = [];
+    let inHit = false, n = 0;
+    for (let x = cx - R; x <= cx + R; x += 2) {
+      const hl = gL(x + 1000), hu = gU(x + shift), yl = ym - hl / 2, yu = ym - gap / 2 + hu / 2;
+      lo.push([x, yl]); up.push([x, Math.min(yu, yl)]);
+      const touch = yu >= yl;
+      if (touch && !inHit) { hits.push([[x, yl]]); n++; } else if (touch) hits[hits.length - 1].push([x, yl]);
+      inHit = touch;
+    }
+    lowP.setAttribute('d', pathOf(lo) + `L${cx + R} ${cy + R}L${cx - R} ${cy + R}z`);
+    upP.setAttribute('d', pathOf(up) + `L${cx + R} ${cy - R}L${cx - R} ${cy - R}z`);
+    spots.textContent = '';
+    hits.forEach(h => { el('path', { d: pathOf(h.length > 1 ? h : [h[0], [h[0][0] + 2, h[0][1]]]), stroke: C.or, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, spots); });
+    rich(cnt, `本当に触れている点：${n} か所`);
+  }
+  frame(0);
+  anim('title', frame);
+}
+
+/* ---------- 3つの輪 ---------- */
+{
+  const svg = svgEl('vennSvg');
+  const V = {
+    fr: { n: '摩擦', c: C.or, x: 160, y: 115, ic: '🔥', items: ['動きをじゃまする力。μ ＝ F ／ W', '原因は<b>凝着</b>・<b>掘り起こし</b>・<b>ヒステリシス</b>', 'ほしいとき（ブレーキ・タイヤ）と、減らしたいとき（軸受）がある'] },
+    we: { n: '摩耗', c: C.pk, x: 280, y: 115, ic: '🪨', items: ['こすれて表面が<b>失われていく</b>現象', 'アブレシブ・凝着・疲労など<b>8つの形態</b>', 'タイヤ・ベルト・軸受の<b>寿命</b>を決める'] },
+    lu: { n: '潤滑', c: C.bl, x: 220, y: 210, ic: '💧', items: ['面の間に<b>膜</b>をはさみ、摩擦と摩耗を減らす', '境界潤滑 → 混合潤滑 → 流体潤滑', '油・グリース・水・固体潤滑剤'] },
+  };
+  Object.entries(V).forEach(([k, v]) => {
+    const g = el('g', { class: 'vc' }, svg);
+    el('circle', { cx: v.x, cy: v.y, r: 92, fill: v.c, 'fill-opacity': .28, stroke: C.ink, 'stroke-width': 3 }, g);
+    const dx = (v.x - 220) * .5, dy = (v.y - 147) * .62;
+    txt(g, v.x + dx, v.y + dy, v.ic + ' ' + v.n, { 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 900, fill: C.ink });
+    g.addEventListener('click', () => show(k));
+  });
+  const cg = el('g', { class: 'vc' }, svg);
+  el('rect', { x: 160, y: 133, width: 120, height: 30, rx: 15, fill: C.ye, stroke: C.ink, 'stroke-width': 2.5 }, cg);
+  txt(cg, 220, 154, 'トライボロジー', { 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 900 });
+  cg.addEventListener('click', () => show('all'));
+  function show(k) {
+    const box = $('#vennInfo');
+    if (k === 'all') { box.innerHTML = `<div class="vt">⚙️ 3つは切り離せない</div><ul><li>摩擦の仕事は<b>熱</b>になり、表面を傷めて<b>摩耗</b>を生む</li><li>潤滑は摩擦と摩耗を<b>同時に</b>減らす</li><li>流体潤滑、塑性加工時の潤滑、軸受の設計、潤滑剤の分析まで含む</li></ul>`; return; }
+    const v = V[k];
+    box.innerHTML = `<div class="vt" style="color:${v.c}">${v.ic} ${v.n}</div><ul>${v.items.map(s => `<li>${s}</li>`).join('')}</ul>`;
+  }
+  show('all');
+}
+
+/* ---------- Jost 報告の円グラフ ---------- */
+{
+  const svg = svgEl('jostSvg'), cx = 160, cy = 165, R1 = 132, R0 = 80;
+  const D = {
+    uk: { total: ['年5億1500万ポンド', '（約 5000 億円）'], items: [['保守・部品交換の節約', 45, C.or], ['破損による損失の節約', 22, C.pk], ['機械の寿命延長（投資の節約）', 19, C.pu], ['摩擦低減による省エネ', 5, C.bl], ['その他', 9, '#b9b5d0']],
+      info: '英国で適切なトライボロジー技術を使えば、<b>年間約 5億1500万ポンド</b>（1965年の価格、約5000億円）節約できると見積もった。のちに、この見積りは<b>少なすぎた</b>ことがわかっている。' },
+    jp: { total: ['年 約 2 兆円', '（1968年）'], items: [['保守・部品コストの節約', 38, C.or], ['機械の寿命延長', 28, C.pu], ['所要人員の低減', 6, C.gr], ['稼働率・機械効率の向上', 6, C.tl], ['その他', 22, '#b9b5d0']],
+      info: '機械振興協会の試算で<b>年間約 2 兆円</b>の節約が可能（保守・部品 7,500億円、寿命延長 5,500億円 など）。ある製鉄所では潤滑剤の削減・省電力で<b>年 22億5,000万円</b>の効果があった。' },
+  };
+  const arcs = el('g', {}, svg), leg = el('g', {}, svg);
+  const t1 = txt(svg, cx, cy - 2, '', { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 900 }), t2 = txt(svg, cx, cy + 20, '', { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700, fill: C.mu });
+  let key = 'uk', u = 1;
+  const arcPath = (a0, a1) => {
+    const p = (r, a) => [cx + r * Math.sin(a), cy - r * Math.cos(a)], lg1 = a1 - a0 > Math.PI ? 1 : 0;
+    const [x1, y1] = p(R1, a0), [x2, y2] = p(R1, a1), [x3, y3] = p(R0, a1), [x4, y4] = p(R0, a0);
+    return `M${x1} ${y1}A${R1} ${R1} 0 ${lg1} 1 ${x2} ${y2}L${x3} ${y3}A${R0} ${R0} 0 ${lg1} 0 ${x4} ${y4}z`;
+  };
+  function draw() {
+    const d = D[key];
+    arcs.textContent = ''; leg.textContent = '';
+    let a = 0;
+    d.items.forEach(([n, v, c], i) => {
+      const span = v / 100 * 2 * Math.PI, a1 = Math.min(a + span, u * 2 * Math.PI);
+      if (a1 > a + .001) el('path', { d: arcPath(a, a1), fill: c, stroke: C.ink, 'stroke-width': 2.5 }, arcs);
+      if (u > .99 && v >= 5) { const m = a + span / 2; txt(arcs, cx + (R0 + R1) / 2 * Math.sin(m), cy - (R0 + R1) / 2 * Math.cos(m) + 6, v + '%', { 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 900, fill: '#fff' }); }
+      a += span;
+      const y = 50 + i * 52;
+      el('rect', { x: 318, y: y - 16, width: 22, height: 22, rx: 5, fill: c, stroke: C.ink, 'stroke-width': 2 }, leg);
+      txt(leg, 350, y, n, { 'font-size': 16, 'font-weight': 800 });
+      txt(leg, 350, y + 20, v + ' %', { 'font-size': 14, 'font-weight': 800, fill: C.mu });
+    });
+    rich(t1, d.total[0]); rich(t2, d.total[1]);
+    $('#jostInfo').innerHTML = `<div class="cardt">${key === 'uk' ? '🇬🇧 Jost 報告（1966年公表）' : '🇯🇵 日本での試算'}</div><div class="mini" style="font-size:16.5px">${d.info}</div>`;
+  }
+  segSel('jostSel', dd => { key = dd.k; u = 0; });
+  draw();
+  anim('jost', dt => { if (u < 1) { u = Math.min(1, u + dt / 1.2); draw(); } });
+  onSlide('jost', () => { u = 0; });
+}
+
+/* ---------- 年表 ---------- */
+{
+  const svg = svgEl('histSvg');
+  const E = [
+    ['前3500頃', 'メソポタミア', '車輪', 'ウルクの絵文字に<b>車輪つきの運搬具</b>。転がりがすべりより楽なことは古代から知られていた。', '🛞'],
+    ['前2400頃', 'エジプト', 'そりと潤滑', '石像をそりで運び、つぼから<b>潤滑剤（水と思われる）</b>を注ぐ壁画（サッカーラの墓）。', '🗿'],
+    ['1452–1519', 'ダ・ヴィンチ', '第1・第2法則', '摩擦は<b>見かけの接触面積によらず</b>、<b>荷重に比例</b>することを発見。玉・円すい・ころのピボット軸受もスケッチ。', '🎨'],
+    ['1699', 'アモントン', '法則の再発見', '約200年後、実験で第1・第2法則を<b>再発見</b>。いまも「アモントンの法則」と呼ばれる。', '🇫🇷'],
+    ['1770', 'プリーストリー', '消しゴム', 'ゴムで鉛筆の字が消せることを発見。ゴムが<b>トライボ材料</b>として使われた最初の例。', '🧽'],
+    ['1781', 'クーロン', '静摩擦と動摩擦', '静摩擦と動摩擦を区別し、動摩擦は<b>速度によらない</b>（第3法則）。原因は凹凸のかみ合いと考えた（<b>凹凸説</b>）。', '⛰️'],
+    ['1839', 'グッドイヤー', '加硫', '硫黄と熱でゴムを<b>加硫</b>。タイヤ・ベルトなどゴム工業の出発点。', '🔥'],
+    ['1888', 'ダンロップ', '空気入りタイヤ', '自転車用の空気入りタイヤを考案。悪路での<b>転がり抵抗</b>が大幅に減った。', '🚲'],
+    ['1949', 'バウデン・テイバー', '凝着説', '摩擦は真実接触点の<b>凝着部をせん断</b>する力（F＝sA）。1964年には摩擦＝凝着項＋ヒステリシス項を示す。', '🔗'],
+    ['1953', 'アーチャード', '多数点接触', '凹凸が重なるほど、弾性接触でも<b>接触面積は荷重に比例</b>に近づく。', '🫐'],
+    ['1963', 'グロッシュ', 'μ‐V マスターカーブ', 'ゴムの μ‐V 曲線は高温で高速側へずれ、<b>1本のマスターカーブ</b>に重なる。', '📈'],
+    ['1965', 'Jost 報告', 'トライボロジー誕生', '英国の報告書で <b>"Tribology"</b> の語が初登場。「潤滑（トライボロジー）」と併記された。', '📘'],
+    ['1971', 'シャラマッハ', 'はがれ波', 'ゴムの接触面を伝わる<b>はがれの波（シャラマッハ波）</b>を報告。', '🌊'],
+    ['1992', 'タイヤ', 'シリカ配合', 'フランスのタイヤ会社が<b>シリカ配合タイヤ</b>を発売。低燃費とグリップの両立へ。', '🏁'],
+  ];
+  const x0 = 50, x1 = 1060, Y = 100, X = i => x0 + (x1 - x0) * i / (E.length - 1);
+  el('path', { d: `M${x0 - 20} ${Y}H${x1 + 24}`, stroke: C.ink, 'stroke-width': 5, 'marker-end': 'url(#arrT)' }, svg);
+  el('path', { d: 'M0 0L10 5L0 10z', fill: C.ink }, el('marker', { id: 'arrT', viewBox: '0 0 10 10', refX: 5, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto' }, el('defs', {}, svg)));
+  const prog = el('path', { stroke: C.pk, 'stroke-width': 9, 'stroke-linecap': 'round' }, svg);
+  const dots = E.map((e, i) => {
+    const g = el('g', { style: 'cursor:pointer' }, svg), up = i % 2 === 0;
+    const c = el('circle', { cx: X(i), cy: Y, r: 11, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
+    txt(g, X(i), up ? Y - 62 : Y + 84, e[4], { 'text-anchor': 'middle', 'font-size': 24 });
+    txt(g, X(i), up ? Y - 40 : Y + 34, e[0], { 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 900, fill: C.pk, 'font-family': 'Consolas,Menlo,monospace' });
+    txt(g, X(i), up ? Y - 22 : Y + 52, e[1], { 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 800, fill: C.ink });
+    g.addEventListener('click', () => { stop(); sel(i); });
+    return c;
+  });
+  txt(svg, x1 + 30, Y + 100, '※ 間隔は年代に比例しません', { 'text-anchor': 'end', 'font-size': 12, 'font-weight': 700, fill: C.mu });
+  let cur = 0, timer = 0;
+  function sel(i) {
+    cur = i;
+    dots.forEach((d, j) => { d.setAttribute('r', j === i ? 15 : 11); d.setAttribute('fill', j === i ? C.ye : j < i ? '#ffd0e4' : '#fff'); });
+    prog.setAttribute('d', `M${x0} ${Y}H${X(i)}`);
+    const e = E[i];
+    $('#histInfo').innerHTML = `<div><span class="yr">${e[0]}</span><span class="who">${e[4]} ${e[1]}</span><span class="pill" style="margin-left:10px">${e[2]}</span></div><div class="what">${e[3]}</div>`;
+  }
+  const b = svgEl('histPlay');
+  function stop() { clearInterval(timer); timer = 0; b.classList.remove('playing'); b.textContent = '▶ 歴史をたどる'; }
+  b.addEventListener('click', () => {
+    b.blur();
+    if (timer) return stop();
+    b.classList.add('playing'); b.textContent = '⏸ 止める';
+    if (cur >= E.length - 1) sel(0);
+    timer = setInterval(() => { if (cur >= E.length - 1) return stop(); sel(cur + 1); }, 2200);
+  });
+  stoppers.push(stop);
+  sel(0);
+}
+
+/* ---------- 身のまわりの例（フィルタ） ---------- */
+segSel('appSel', d => document.querySelectorAll('[data-id="apps"] .app').forEach(a => a.classList.toggle('dim', d.k !== 'all' && !a.dataset.t.split(' ').includes(d.k))));
+document.querySelectorAll('.app').forEach(a => a.addEventListener('click', () => a.classList.toggle('open')));
+['apps', 'wtypes'].forEach(id => onSlide(id, () => document.querySelectorAll(`[data-id="${id}"] .app`).forEach(a => a.classList.remove('open'))));
+
+/* ---------- 表面粗さのズーム ---------- */
+{
+  const svg = svgEl('roughSvg'), zS = svgEl('roughZ'), x0 = 30, W = 640, yc = 140;
+  // 3 mm から 1 µm までの凹凸（波長が半分になるごとに振幅は 2^-0.8 倍）
+  const r = rng(21), comps = [];
+  for (let k = 0; k < 13; k++) for (let j = 0; j < 3; j++) { const L = 3000 * .5 ** k * (.6 + .8 * r()); comps.push([L, 2.5 * (L / 3000) ** .8 * (.5 + r()), r() * 6.283]); }
+  const prof = (x, Wv) => comps.reduce((s, [L, A, p]) => L < Wv * 3 && L > Wv / 400 ? s + A * Math.sin(2 * Math.PI * x / L + p) : s, 0);
+  el('rect', { x: x0, y: 20, width: W, height: 240, fill: '#fbfaff', rx: 8 }, svg);
+  const fillP = el('path', { fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, svg);
+  const box = el('rect', { fill: 'none', stroke: C.pk, 'stroke-width': 2.5, 'stroke-dasharray': '6 5' }, svg);
+  const bar = el('path', { stroke: C.ink, 'stroke-width': 3 }, svg);
+  const barT = txt(svg, 0, 0, '', { 'text-anchor': 'middle', class: 'note', fill: C.ink });
+  const magT = txt(svg, x0 + W - 8, 44, '', { 'text-anchor': 'end', class: 'note', fill: C.pk });
+  const hT = txt(svg, x0 + 10, 44, '', { class: 'note', fill: C.mu });
+  const fmt = um => um >= 1000 ? (um / 1000).toPrecision(2) + ' mm' : um >= 1 ? Math.round(um) + ' µm' : (um * 1000).toPrecision(2) + ' nm';
+  function draw() {
+    const z = +zS.value, Wv = 3000 / 10 ** z, pts = [];
+    for (let i = 0; i <= 320; i++) { const x = -Wv / 2 + Wv * i / 320; pts.push([x0 + W * i / 320, prof(x, Wv)]); }
+    const ys = pts.map(p => p[1]), mn = Math.min(...ys), mx = Math.max(...ys), k = 150 / ((mx - mn) || 1);
+    const P = pts.map(([x, y]) => [x, yc + 60 - (y - mn) * k]);
+    fillP.setAttribute('d', pathOf(P) + `L${x0 + W} 260L${x0} 260z`);
+    // 次に拡大する範囲
+    const fw = W / 10;
+    box.setAttribute('x', x0 + W / 2 - fw / 2); box.setAttribute('width', fw); box.setAttribute('y', 50); box.setAttribute('height', 210);
+    box.style.display = z < 2.9 ? '' : 'none';
+    const sb = Wv / 4;
+    bar.setAttribute('d', `M${x0 + 20} 285h${W / 4}M${x0 + 20} 279v12M${x0 + 20 + W / 4} 279v12`);
+    barT.setAttribute('x', x0 + 20 + W / 8); barT.setAttribute('y', 276); rich(barT, fmt(sb));
+    const hmag = W / Wv, vmag = k;
+    rich(magT, `縦は横の約 ${Math.round(vmag / hmag).toLocaleString()} 倍に拡大`);
+    rich(hT, `高さの幅：${fmt(mx - mn)}`);
+    $('#roughZv').textContent = `表示幅 ${fmt(Wv)}`;
+  }
+  zS.addEventListener('input', draw); draw();
+}
+
+/* ---------- 表面層 ---------- */
+{
+  const svg = svgEl('layerSvg'), x0 = 150, x1 = 590;
+  const r = rng(4), wav = (y, a, s) => x => y + a * Math.sin(x / 37 + s) + a * .5 * Math.sin(x / 13 + s * 2);
+  const B = [wav(40, 4, 0), wav(66, 4, 1), wav(90, 3, 2), wav(190, 5, 4)];
+  const L = [
+    { n: '吸着分子の層', th: '0.3〜3 nm', c: '#d4f4ff', d: '空気中の<b>水分子・ガス・油分</b>が吸着。ごく薄いが、金属どうしの凝着を弱めて摩擦を大きく左右する。' },
+    { n: '酸化膜', th: '約 10 nm', c: '#8b8fa8', d: '大気中では<b>すぐに再生</b>する。比較的柔らかく、鉄どうしの摩擦で大きな損傷を防ぐ役割をする。' },
+    { n: 'ベイルビー層', th: '非晶質', c: '#c9b8ff', d: '研磨・仕上げでできる<b>非晶質や微細結晶</b>の層。摩擦や摩耗で重要な役割をする。' },
+    { n: '加工変質層', th: '約 1 µm', c: '#ffe7a3', d: '加工の力でひずみ、<b>結晶粒が細かくつぶれた</b>層。母材より硬いことが多い。' },
+    { n: '母材', th: '', c: '#fff4d1', d: '本来の材料（結晶粒）。私たちが「鋼」と呼んでいるのはこの部分だけ。' },
+  ];
+  const sel = el('g', {}, svg);
+  const shape = (i) => {
+    const top = i === 0 ? (x => B[0](x) - 14) : B[i - 1], bot = i < 4 ? B[i] : (() => 320);
+    const a = [], b = [];
+    for (let x = x0; x <= x1; x += 6) { a.push([x, top(x)]); b.push([x, bot(x)]); }
+    return pathOf(a.concat(b.reverse())) + 'z';
+  };
+  const gs = L.map((l, i) => {
+    const g = el('g', { style: 'cursor:pointer' }, svg);
+    el('path', { d: shape(i), fill: l.c, stroke: C.ink, 'stroke-width': 2 }, g);
+    g.addEventListener('click', () => pick(i));
+    return g;
+  });
+  // 吸着分子
+  for (let x = x0 + 8; x < x1; x += 16) el('circle', { cx: x, cy: B[0](x) - 7, r: 3.5, fill: C.bl, 'pointer-events': 'none' }, svg);
+  // 結晶粒（ゆがんだ格子）
+  const grains = (y0, y1, s, seed, cid) => {
+    const cp = el('clipPath', { id: cid }, svg), dd = [];
+    for (let x = x0; x <= x1; x += 6) dd.push([x, cid === 'lyA' ? B[2](x) + 2 : B[3](x) + 2]);
+    for (let x = x1; x >= x0; x -= 6) dd.push([x, cid === 'lyA' ? B[3](x) - 2 : 320]);
+    el('path', { d: pathOf(dd) + 'z' }, cp);
+    const rr = rng(seed), P = [];
+    for (let j = 0; j <= Math.ceil((y1 - y0) / s); j++) { P.push([]); for (let i = 0; i <= Math.ceil((x1 - x0) / s); i++) P[j].push([x0 + i * s + (rr() - .5) * s * .6, y0 + j * s + (rr() - .5) * s * .6]); }
+    const g = el('g', { 'pointer-events': 'none', 'clip-path': `url(#${cid})` }, svg);
+    for (let j = 0; j < P.length - 1; j++) for (let i = 0; i < P[j].length - 1; i++) el('path', { d: pathOf([P[j][i], P[j][i + 1], P[j + 1][i + 1], P[j + 1][i]]) + 'z', fill: 'none', stroke: '#c9a646', 'stroke-width': 1.5 }, g);
+  };
+  grains(100, 186, 12, 5, 'lyA'); grains(196, 330, 48, 6, 'lyB');
+  const labs = L.map((l, i) => {
+    const y = [32, 58, 83, 145, 262][i], g = el('g', { style: 'cursor:pointer' }, svg);
+    txt(g, x0 - 10, y, l.n, { 'text-anchor': 'end', 'font-size': 15, 'font-weight': 900 });
+    if (l.th) txt(g, x1 - 8, i === 0 ? 20 : y + 2, l.th, { 'text-anchor': 'end', 'font-size': 12.5, 'font-weight': 800, fill: i === 1 ? '#fff' : C.ink });
+    g.addEventListener('click', () => pick(i));
+    return g;
+  });
+  txt(svg, x1, 326, '※ 厚さは誇張して描いています', { 'text-anchor': 'end', 'font-size': 12, 'font-weight': 700, fill: C.mu });
+  function pick(i) {
+    gs.forEach((g, j) => g.setAttribute('opacity', j === i ? 1 : .55));
+    sel.textContent = '';
+    $('#layerInfo').innerHTML = `<div class="cardt">${L[i].n}${L[i].th ? `<span class="pill">${L[i].th}</span>` : ''}</div><div class="mini" style="font-size:16.5px">${L[i].d}</div>`;
+  }
+  pick(1);
+}
+
+/* ---------- 真実接触面積 ---------- */
+{
+  const svg = svgEl('contactSvg'), wS = svgEl('contactW'), x0 = 20, x1 = 620;
+  const gL = roughness(12, { L0: 120, levels: 5, amp: 10 }), gU = roughness(31, { L0: 120, levels: 5, amp: 10 });
+  const xs = []; for (let x = x0; x <= x1; x += 2) xs.push(x);
+  const sum = xs.map(x => gL(x) + gU(x));
+  const sorted = [...sum].sort((a, b) => b - a);
+  const lowP = el('path', { fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, svg);
+  const upP = el('path', { fill: C.yel, stroke: C.ink, 'stroke-width': 2.5 }, svg);
+  const hitG = el('g', {}, svg);
+  const arr = el('g', {}, svg);
+  txt(svg, x0, 18, '横から見ると（拡大）', { class: 'note', fill: C.mu });
+  // 上から見た図
+  const ty = 210, th = 110, tx0 = 20, tw = 380;
+  txt(svg, tx0, ty - 8, '上から見ると：見かけの接触面（全体）と真実接触点（●）', { class: 'note', fill: C.mu });
+  el('rect', { x: tx0, y: ty, width: tw, height: th, fill: '#fff', stroke: C.ink, 'stroke-width': 2.5, rx: 6 }, svg);
+  const rr = rng(77), sp = Array.from({ length: 160 }, () => ({ x: tx0 + 6 + rr() * (tw - 12), y: ty + 6 + rr() * (th - 12), h: rr() }));
+  const topG = el('g', {}, svg);
+  const ro1 = txt(svg, 420, ty + 30, '', { 'font-size': 16, 'font-weight': 900 });
+  const ro2 = txt(svg, 420, ty + 62, '', { 'font-size': 16, 'font-weight': 900, fill: C.ord });
+  const ro3 = txt(svg, 420, ty + 94, '', { 'font-size': 14, 'font-weight': 800, fill: C.mu });
+  function draw() {
+    const w = +wS.value, f = .25 * w;
+    const thr = sorted[Math.max(0, Math.floor(sorted.length * f) - 1)];
+    const ym = 110, lo = [], up = [], hits = [];
+    let inHit = false;
+    xs.forEach((x, i) => {
+      const yl = ym - gL(x) / 1, yu = ym - thr + gU(x);
+      lo.push([x, yl]); up.push([x, Math.min(yu, yl)]);
+      const t = sum[i] >= thr;
+      if (t && !inHit) hits.push([[x, yl]]); else if (t) hits[hits.length - 1].push([x, yl]);
+      inHit = t;
+    });
+    lowP.setAttribute('d', pathOf(lo) + `L${x1} 180L${x0} 180z`);
+    upP.setAttribute('d', pathOf(up) + `L${x1} 26L${x0} 26z`);
+    hitG.textContent = '';
+    hits.forEach(h => el('path', { d: pathOf(h.length > 1 ? h : [h[0], [h[0][0] + 2, h[0][1]]]), stroke: C.or, 'stroke-width': 7, 'stroke-linecap': 'round', fill: 'none' }, hitG));
+    arr.textContent = '';
+    const n = 1 + Math.round(w * 4);
+    for (let i = 0; i < n; i++) { const x = 160 + i * 70; el('path', { d: `M${x} 28v-0`, stroke: C.ord }, arr); }
+    el('path', { d: `M560 30v${10 + 40 * w}`, stroke: C.ord, 'stroke-width': 4 + 6 * w, 'stroke-linecap': 'round' }, arr);
+    txt(arr, 575, 44, 'W', { class: 'lab', fill: C.ord });
+    // 上から見た図：面積の合計が f になる点だけを表示
+    topG.textContent = '';
+    const total = tw * th * f, hs = sp.map(s => s.h).sort((a, b) => b - a);
+    let t = 0, area = 0, cntN = 0;
+    for (const c of [.995, .99, .98, .97, .95, .93, .9, .87, .84, .8, .76, .72, .68, .64, .6, .55, .5, .45, .4, .35, .3, .25, .2, .15, .1, .05, 0]) {
+      area = sp.reduce((s, q) => s + (q.h > c ? Math.PI * (34 * (q.h - c)) ** 2 : 0), 0);
+      t = c; if (area >= total) break;
+    }
+    sp.forEach(q => { if (q.h > t) { cntN++; el('circle', { cx: q.x, cy: q.y, r: Math.max(1.5, 34 * (q.h - t) * Math.sqrt(total / Math.max(area, 1))), fill: C.or, stroke: C.ink, 'stroke-width': 1 }, topG); } });
+    rich(ro1, '見かけの面積：100 %');
+    rich(ro2, `真実接触面積：約 ${Math.round(f * 100)} %`);
+    rich(ro3, `接触点の数：${cntN} 個（拡大図の例）`);
+    $('#contactWv').textContent = `W = ${(w * 10).toFixed(1)}（相対値）`;
+  }
+  wS.addEventListener('input', draw); draw();
+}
+
+/* ---------- A ∝ W^n ---------- */
+{
+  const M = [[2 / 3, '2/3', C.bl, 'ヘルツ（1つの球）'], [4 / 5, '4/5', C.tl, '等間隔の球'], [8 / 9, '8/9', C.pu, '球の上に突起'], [26 / 27, '26/27', C.pk, '突起の上に突起'], [1, '1', C.or, '塑性接触']];
+  const A = axes(svgEl('awPlot'), { x: 70, y: 30, w: 440, h: 270, xr: [.01, 100], yr: [.01, 100], xlog: true, ylog: true, xt: [.01, .1, 1, 10, 100], yt: [.01, .1, 1, 10, 100], xf: v => v >= 1 ? String(v) : String(v), yf: v => String(v), xl: '荷重 W（相対）', yl: '接触面積 A（相対）' });
+  const P = M.map(([n, , c]) => el('path', { d: curve(A, w => w ** n), class: 'cv', stroke: c }, A.clip));
+  const L = M.map(([n, s, c]) => txt(A.top, A.X(60), A.Y(60 ** n) + (n === 1 ? -8 : 18), `n＝${s}`, { 'text-anchor': 'end', class: 'note', fill: c }));
+  const ro = txt(A.top, A.X(.012), A.Y(40), '', { class: 'lab' });
+  const icon = svgEl('awIcon');
+  function drawIcon(k) {
+    icon.textContent = '';
+    el('rect', { x: 20, y: 100, width: 400, height: 16, fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, icon);
+    const ball = (x, y, r, f = '#fff') => el('circle', { cx: x, cy: y, r, fill: f, stroke: C.ink, 'stroke-width': 2.5 }, icon);
+    if (k === 0) { ball(220, 50, 50); }
+    else if (k === 1) { el('rect', { x: 60, y: 10, width: 320, height: 40, fill: C.yel, stroke: C.ink, 'stroke-width': 2.5 }, icon); [0, 1, 2, 3, 4, 5, 6].forEach(i => ball(80 + i * 47, 66 + (i % 4) * 6, 16 + 0, '#fff')); }
+    else if (k === 2 || k === 3) {
+      ball(220, 40, 52, '#fff');
+      for (let a = -60; a <= 60; a += 15) { const t = a * Math.PI / 180, x = 220 + 56 * Math.sin(t), y = 40 + 56 * Math.cos(t); ball(x, y, 7);
+        if (k === 3) for (let b = -40; b <= 40; b += 40) { const u = t + b * Math.PI / 180 * .5; ball(x + 8 * Math.sin(u), y + 8 * Math.cos(u), 2.5, C.pk); } }
+    } else { el('path', { d: 'M60 100L60 40H380V100', fill: C.yel, stroke: C.ink, 'stroke-width': 2.5 }, icon); for (let x = 70; x < 380; x += 26) el('path', { d: `M${x} 100l8 -6l8 6`, fill: C.or, stroke: C.ink, 'stroke-width': 1.5 }, icon); }
+    txt(icon, 430, 24, M[k][3], { 'text-anchor': 'end', class: 'note', fill: M[k][2] });
+  }
+  function show(k) {
+    P.forEach((p, i) => { p.classList.toggle('dim', i !== k); p.setAttribute('stroke-width', i === k ? 6 : 4); });
+    L.forEach((l, i) => l.style.display = i === k ? '' : 'none');
+    const n = M[k][0], e = n - 1;
+    rich(ro, k === 4 ? 'A ∝ W　→　μ は W によらない' : `A ∝ W^{${M[k][1]}}　→　μ ∝ W^{${e === 0 ? 0 : '−' + (Math.round(-e * 27) === 9 ? '1/3' : Math.round(-e * 27) === 1 ? '1/27' : Math.round(-e * 45) === 9 ? '1/5' : '1/9')}}`);
+    drawIcon(k);
+  }
+  segSel('awSel', d => show(+d.k));
+  show(2);
+}
+
+/* ---------- 摩擦の 3 法則 ---------- */
+{
+  const svg = svgEl('lawSvg'), wS = svgEl('lawW'), Y = 170, MUS = .5, MUK = .35, T = 5;
+  const faces = [[230, 56], [170, 76], [110, 118]];
+  el('rect', { x: 10, y: Y, width: 600, height: 14, rx: 3, fill: '#b98a5a', stroke: C.ink, 'stroke-width': 3 }, svg);
+  const g = el('g', {}, svg), rope = el('g', {}, svg);
+  const A = axes(svg, { x: 60, y: 210, w: 520, h: 80, xr: [0, T], yr: [0, 26], yt: [0, 10, 20], yf: v => v + ' N' });
+  txt(svg, 68, 204, '引っぱる力 F', { class: 'al' });
+  const fp = el('path', { class: 'cv c-pk' }, A.clip);
+  const lab = el('g', {}, A.top);
+  let face = 0, t = 0, playing = false, hist = [], pos = 0;
+  const Wn = () => +wS.value * 5; // おもり 1 個 5 N（説明用）
+  function drawBlock(F) {
+    g.textContent = ''; rope.textContent = '';
+    const [w, h] = faces[face], bx = 150 + pos;
+    el('rect', { x: bx, y: Y - h, width: w, height: h, rx: 6, fill: C.ye, stroke: C.ink, 'stroke-width': 3 }, g);
+    txt(g, bx + w / 2, Y - h / 2 + 6, '面 ' + 'ABC'[face], { 'text-anchor': 'middle', class: 'lab' });
+    for (let i = 0; i < +wS.value; i++) el('rect', { x: bx + w / 2 - 22, y: Y - h - 22 * (i + 1), width: 44, height: 20, rx: 4, fill: '#8b8fa8', stroke: C.ink, 'stroke-width': 2 }, g);
+    const rx = bx + w, ry = Y - h / 2, sx = rx + 40 + F * 3;
+    el('path', { d: `M${rx} ${ry}H${rx + 30}`, stroke: C.ink, 'stroke-width': 3 }, rope);
+    let d = `M${rx + 30} ${ry}`; const n = 8, L = sx - rx - 30;
+    for (let i = 1; i <= n; i++) d += `L${rx + 30 + L * i / n - L / n / 2} ${ry + (i % 2 ? -8 : 8)}`;
+    el('path', { d: d + `L${sx} ${ry}`, stroke: C.pk, 'stroke-width': 3, fill: 'none' }, rope);
+    el('circle', { cx: sx + 8, cy: ry, r: 8, fill: C.pk, stroke: C.ink, 'stroke-width': 2 }, rope);
+    txt(rope, sx + 22, ry + 6, `F＝${F.toFixed(1)} N`, { class: 'note', fill: C.pk });
+  }
+  function reset() { t = 0; pos = 0; hist = []; fp.setAttribute('d', ''); lab.textContent = ''; drawBlock(0); }
+  function step(dt) {
+    t = Math.min(T, t + dt);
+    const W = Wn(), Fs = MUS * W, Fk = MUK * W, tr = Fs / (W * .45);
+    let F;
+    if (t < tr) F = W * .45 * t; else { F = Fk + (Fs - Fk) * Math.exp(-(t - tr) * 8) + .3 * Math.sin(t * 30); pos = Math.min(110, pos + dt * 60); }
+    hist.push([A.X(t), A.Y(F)]);
+    fp.setAttribute('d', pathOf(hist));
+    drawBlock(F);
+    if (t >= T) {
+      lab.textContent = '';
+      txt(lab, A.X(tr) + 6, A.Y(Fs) - 4, `静摩擦 μs＝${MUS}`, { class: 'note', fill: C.pk });
+      txt(lab, A.X(T) - 4, A.Y(Fk) - 8, `動摩擦 μk＝${MUK}（${Fk.toFixed(1)} N）`, { class: 'note', fill: C.ink, 'text-anchor': 'end' });
+    }
+    return t >= T;
+  }
+  const b = svgEl('lawPull');
+  const ro = () => $('#lawWv').textContent = `${Wn()} N`;
+  segSel('lawFace', d => { face = +d.k; reset(); });
+  wS.addEventListener('input', () => { ro(); reset(); });
+  b.addEventListener('click', () => { b.blur(); reset(); playing = true; b.classList.add('playing'); b.textContent = '⏵ 引っぱり中…'; });
+  anim('laws', dt => { if (playing && step(dt)) { playing = false; b.classList.remove('playing'); b.textContent = '▶ もう一度'; } });
+  stoppers.push(() => { playing = false; b.classList.remove('playing'); b.textContent = '▶ 引っぱる'; });
+  ro(); reset();
+}
+
+/* ---------- 凹凸説・凝着説・掘り起こし ---------- */
+{
+  const svg = svgEl('thSvg'), Y = 190;
+  const g = el('g', {}, svg);
+  const INFO = [
+    `<div class="cardt">⛰️ 凹凸説（ダ・ヴィンチ〜クーロン）</div><div class="eqbox" style="font-size:22px">F ＝ P tanθ</div><ul class="mini" style="font-size:16.5px;margin-top:8px"><li>凹凸がかみ合い、<b>山を越えるたびに荷重を持ち上げる</b>仕事が摩擦</li><li>見かけの面積によらない点は説明できる</li><li>でも<b>下り坂で仕事が返ってくる</b>はず。エネルギーが熱になる理由を説明できない</li></ul>`,
+    `<div class="cardt">🔗 凝着説（バウデン・テイバー, 1949）</div><div class="eqbox" style="font-size:22px">F ＝ sA,　A ＝ W／p　→　μ ＝ s／p</div><ul class="mini" style="font-size:16.5px;margin-top:8px"><li>真実接触点で金属が<b>凝着（冷間溶着）</b>し、それを<b>せん断</b>する力が摩擦</li><li>s：柔らかい方の金属のせん断強さ　p：その降伏圧力</li><li>A は荷重だけで決まる → <b>面積によらず荷重に比例</b>（アモントンの法則を説明！）</li><li>温度で s と p が<b>一緒に</b>変わるので、μ は温度にあまりよらない</li></ul>`,
+    `<div class="cardt">🚜 凝着＋掘り起こし</div><div class="eqbox" style="font-size:20px">F ＝ A₁s ＋ d³p′／12R</div><ul class="mini" style="font-size:16.5px;margin-top:8px"><li>硬い球が柔らかい金属をすべると、<b>凝着のせん断</b>に加えて<b>押しのけて溝を掘る</b>力も必要</li><li>d：溝の幅、R：球の半径、p′：押しのける平均圧力</li><li>せん断は柔らかい金属の<b>内部</b>で起こる。鋼がアルミの上をすべる実験では、<b>荷重を10万倍</b>変えても μ は一定（Whitehead）</li></ul>`,
+  ];
+  let mode = 0, tt = 0;
+  segSel('thSel', d => { mode = +d.k; $('#thInfo').innerHTML = INFO[mode]; frame(0); });
+  $('#thInfo').innerHTML = INFO[0];
+  const tri = (x, p, a) => { const u = ((x % p) + p) % p / p; return a * (u < .5 ? u * 2 : 2 - u * 2); };
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    if (mode === 0) {
+      const p = 80, a = 34, s = (tt * 40) % p;
+      const lo = []; for (let x = 0; x <= 620; x += 4) lo.push([x, Y - tri(x, p, a)]);
+      el('path', { d: pathOf(lo) + 'L620 260L0 260z', fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 3 }, g);
+      const lift = tri(s + p / 2, p, a) - a, up = []; for (let x = 120; x <= 480; x += 4) up.push([x, Y - a - 4 - tri(x - s - p / 2, p, a) + a + lift * 0]);
+      const yb = Y - a - 4 + lift;
+      const up2 = []; for (let x = 120; x <= 480; x += 4) up2.push([x, yb - tri(x - s, p, a) + a]);
+      el('path', { d: pathOf(up2) + `L480 ${yb - 80}L120 ${yb - 80}z`, fill: C.ye, stroke: C.ink, 'stroke-width': 3 }, g);
+      el('path', { d: `M300 ${yb - 120}v34`, stroke: C.ink, 'stroke-width': 5, 'marker-end': 'url(#arrK)' }, g);
+      txt(g, 312, yb - 104, 'P', { class: 'lab' });
+      el('path', { d: `M490 ${yb - 40}h60`, stroke: C.ord, 'stroke-width': 5, 'marker-end': 'url(#arrK)' }, g);
+      txt(g, 520, yb - 52, 'F', { class: 'lab', fill: C.ord });
+      el('path', { d: `M${40} ${Y}l${p / 2} ${-a}`, stroke: C.pk, 'stroke-width': 3 }, g);
+      txt(g, 52 + p / 2, Y - 8, 'θ', { class: 'lab', fill: C.pk });
+    } else if (mode === 1) {
+      const p = 120, s = (tt * 30) % p;
+      el('path', { d: 'M0 200H620V260H0z', fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 3 }, g);
+      el('path', { d: 'M0 40H620V120H0z', fill: C.yel, stroke: C.ink, 'stroke-width': 3 }, g);
+      for (let x = 30; x < 620; x += p) el('path', { d: `M${x - 34} 200Q${x} 150 ${x + 34} 200`, fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 3 }, g);
+      for (let k = -1; k < 6; k++) {
+        const x = 30 + k * p + s + 40;
+        el('path', { d: `M${x - 34} 120Q${x} 172 ${x + 34} 120`, fill: C.yel, stroke: C.ink, 'stroke-width': 3 }, g);
+        // 下の突起との重なり → 凝着部（ずれが大きくなるとちぎれる）
+        const lx = Math.round((x - 30) / p) * p + 30, dx = x - lx;
+        if (Math.abs(dx) < 26) {
+          const w = 28 - Math.abs(dx) * .6, hot = 1 - Math.abs(dx) / 26;
+          el('path', { d: `M${lx - w / 2} 175Q${(lx + x) / 2} ${161 - 4 * hot} ${x + w / 2} 147L${x - w / 2} 147Q${(lx + x) / 2} 165 ${lx + w / 2} 175z`, fill: C.or, opacity: .4 + .6 * hot, stroke: C.ord, 'stroke-width': 1.5 }, g);
+        } else if (dx > 26 && dx < 34) {
+          for (let i = 0; i < 5; i++) el('circle', { cx: lx + 20 + i * 4, cy: 160 + (i % 2) * 8, r: 2.5, fill: C.ord }, g);
+        }
+      }
+      el('path', { d: 'M500 80h70', stroke: C.ord, 'stroke-width': 5, 'marker-end': 'url(#arrK)' }, g);
+      txt(g, 20, 30, 'オレンジ＝凝着部（真実接触点）。ずれるとせん断されてちぎれる', { class: 'note', fill: C.ord });
+    } else {
+      const x = 80 + (tt * 50) % 420, R = 46, d = 18;
+      const surf = []; for (let xx = 0; xx <= 620; xx += 4) surf.push([xx, xx < x - 10 ? 170 + d : xx < x + R + 20 ? 170 - Math.max(0, 10 - Math.abs(xx - x - R - 4) * .5) : 170]);
+      el('path', { d: pathOf(surf) + 'L620 260L0 260z', fill: '#e8d9b8', stroke: C.ink, 'stroke-width': 3 }, g);
+      el('rect', { x: 0, y: 170 + d, width: x - 10, height: 4, fill: '#c9a646' }, g);
+      el('circle', { cx: x, cy: 170 + d - R, r: R, fill: '#b9b5d0', stroke: C.ink, 'stroke-width': 3 }, g);
+      el('path', { d: `M${x + R + 6} ${170 + d - R}h60`, stroke: C.ord, 'stroke-width': 5, 'marker-end': 'url(#arrK)' }, g);
+      txt(g, x + R + 30, 170 + d - R - 12, 'F', { class: 'lab', fill: C.ord });
+      txt(g, Math.max(20, x - 200), 230, '← 掘られた溝（幅 d）', { class: 'note', fill: C.ink });
+      // 2 つの項のバー
+      el('rect', { x: 20, y: 30, width: 150, height: 22, fill: C.or, stroke: C.ink, 'stroke-width': 2, rx: 4 }, g);
+      el('rect', { x: 170, y: 30, width: 90, height: 22, fill: '#c9a646', stroke: C.ink, 'stroke-width': 2, rx: 4 }, g);
+      txt(g, 95, 47, 'F_{adh} 凝着', { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 900, fill: '#fff' });
+      txt(g, 215, 47, '掘り起こし', { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 900, fill: '#fff' });
+      txt(g, 270, 47, '＝ 全摩擦力 F', { class: 'note', fill: C.ink });
+    }
+  }
+  el('path', { d: 'M0 0L10 5L0 10z', fill: C.ink }, el('marker', { id: 'arrK', viewBox: '0 0 10 10', refX: 6, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto' }, el('defs', {}, svg)));
+  frame(0);
+  anim('theory', frame);
+}
+
+/* ---------- ゴム：凝着＋ヒステリシス ---------- */
+{
+  const svg = svgEl('hySvg'), Y = 150, cx = 270, R = 70;
+  let mode = 'slide', tt = 0;
+  segSel('hySel', d => mode = d.k);
+  const g = el('g', {}, svg);
+  const depth = 22, a = 62;
+  // 前（右）で押しつぶし、後ろ（左）は戻りが遅れる非対称なくぼみ
+  const dent = x => { const u = (x - cx) / a; if (u > 1 || u < -1.9) return 0; return u >= 0 ? depth * Math.sqrt(1 - u * u) : depth * Math.exp(-((u * 1.25) ** 2)); };
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    const pts = []; for (let x = 0; x <= 540; x += 3) pts.push([x, Y + dent(x)]);
+    el('path', { d: pathOf(pts) + 'L540 250L0 250z', fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 3 }, g);
+    // ゴムの中の目印（左へ流れる）
+    for (let k = 0; k < 14; k++) { const x = ((k * 44 - tt * 60) % 616 + 616) % 616 - 38; el('path', { d: `M${x} ${Y + 18 + dent(x) * .6}v54`, stroke: C.pk, 'stroke-width': 2, opacity: .45 }, g); }
+    // 圧力の矢印（前が大きい）
+    for (let x = cx - a * 1.7; x <= cx + a; x += 12) { const p = dent(x) * (x > cx ? 1.25 : .7); if (p > 2) el('path', { d: `M${x} ${Y + dent(x) - 2}v${-p * 1.6}`, stroke: C.pu, 'stroke-width': 3 }, g); }
+    el('circle', { cx, cy: Y + depth - R, r: R, fill: '#e9ecf7', stroke: C.ink, 'stroke-width': 3 }, g);
+    if (mode === 'roll') { for (let k = 0; k < 6; k++) { const ang = tt * 1.5 + k * Math.PI / 3; el('path', { d: `M${cx} ${Y + depth - R}l${R * .85 * Math.cos(ang)} ${R * .85 * Math.sin(ang)}`, stroke: C.ink, 'stroke-width': 2 }, g); } }
+    else el('path', { d: `M${cx - 40} ${Y + depth - 3}H${cx + 50}`, stroke: C.or, 'stroke-width': 7, 'stroke-linecap': 'round' }, g);
+    el('path', { d: `M${cx + R + 10} ${Y + depth - R}h50`, stroke: C.ink, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g);
+    txt(g, cx + R + 20, Y + depth - R - 10, mode === 'roll' ? '転がる' : 'すべる', { class: 'note' });
+    txt(g, cx + a + 40, 28, '前：押しつぶす', { class: 'note', fill: C.pu, 'text-anchor': 'middle' });
+    txt(g, cx - a * 1.9, 28, '後ろ：戻りが遅れる', { class: 'note', fill: C.pu, 'text-anchor': 'middle' });
+    const fa = mode === 'roll' ? 0 : 150, fd = 60;
+    el('rect', { x: 20, y: 214, width: fa, height: 20, fill: C.or, stroke: C.ink, 'stroke-width': 2, rx: 4, opacity: fa ? 1 : 0 }, g);
+    el('rect', { x: 20 + fa, y: 214, width: fd, height: 20, fill: C.pu, stroke: C.ink, 'stroke-width': 2, rx: 4 }, g);
+    txt(g, 30 + fa + fd, 230, mode === 'roll' ? 'F ＝ F_{def}（変形項だけ → 小さい）' : 'F ＝ F_{adh} ＋ F_{def}', { class: 'note', fill: C.ink });
+  }
+  frame(0);
+  anim('hyst', frame);
+  // 右：2 つのピーク
+  const tS = svgEl('hyT');
+  const A = axes(svgEl('hyPlot'), { x: 56, y: 30, w: 440, h: 220, xr: [-6, 8], yr: [0, 2.2], yt: [0, 1, 2], xl: 'log（すべり速度）', yl: '摩擦係数 μ' });
+  const pa = el('path', { class: 'cv thin dash c-or' }, A.clip), ph = el('path', { class: 'cv thin dash c-pu' }, A.clip), pt = el('path', { class: 'cv c-ink' }, A.clip);
+  const la = txt(A.top, 0, 0, '凝着のピーク', { class: 'note', fill: C.ord, 'text-anchor': 'middle' }), lh = txt(A.top, 0, 0, 'ヒステリシスのピーク', { class: 'note', fill: C.pu, 'text-anchor': 'middle' });
+  function plot() {
+    const s = +tS.value * 2.2, fa = x => 1.6 * Math.exp(-(((x + 2 - s) / 1.3) ** 2)), fh = x => .75 * Math.exp(-(((x - 4 - s) / 1.6) ** 2));
+    pa.setAttribute('d', curve(A, fa)); ph.setAttribute('d', curve(A, fh)); pt.setAttribute('d', curve(A, x => fa(x) + fh(x) + .15));
+    la.setAttribute('x', A.X(-2 + s)); la.setAttribute('y', A.Y(1.85) - 6); lh.setAttribute('x', A.X(4 + s)); lh.setAttribute('y', A.Y(1.0) - 6);
+    $('#hyTv').textContent = +tS.value > .3 ? '高温 → 高速側へ' : +tS.value < -.3 ? '低温 → 低速側へ' : '基準温度';
+  }
+  tS.addEventListener('input', plot); plot();
+}
+
+/* ---------- μ‐V マスターカーブ（Ludema・Tabor の測定、Grosch のマスターカーブを模式化） ---------- */
+{
+  const svg = svgEl('muPlot');
+  const temps = [[15, .55], [9, 1.02], [3, 2.2], [-1, 3.11], [-6, 4.02], [-15, 5.94]];
+  const M = x => x < .3 ? .6 + 2.6 * Math.exp(-(((x - .3) / 5) ** 2)) : .6 + 2.6 * Math.exp(-(((x - .3) / 1.1) ** 2));
+  const ox = 70, oy = 30, ow = 540, oh = 280, Y = v => oy + oh - v / 3.6 * oh;
+  el('rect', { x: ox, y: oy, width: ow, height: oh, class: 'bg' }, svg);
+  [0, 1, 2, 3].forEach(v => { el('line', { x1: ox, x2: ox + ow, y1: Y(v), y2: Y(v), class: 'gd' }, svg); txt(svg, ox - 7, Y(v) + 5, String(v), { class: 'tk', 'text-anchor': 'end' }); });
+  el('path', { d: `M${ox} ${oy - 10}V${oy + oh}H${ox + ow + 10}`, class: 'ax' }, svg);
+  txt(svg, ox + 10, oy - 6, '摩擦係数 μ', { class: 'al' });
+  const xlab = txt(svg, ox + ow + 14, oy + oh + 40, '', { class: 'al', 'text-anchor': 'end' });
+  const grid = el('g', {}, svg), lay = el('g', {}, svg), leg = el('g', {}, svg);
+  const col = i => `hsl(${10 + i * 40},80%,${48 + (i % 2) * 6}%)`;
+  temps.forEach(([T], i) => { el('rect', { x: ox + ow + 24, y: oy + 10 + i * 22, width: 14, height: 14, rx: 3, fill: col(i), stroke: C.ink, 'stroke-width': 1.5 }, leg); txt(leg, ox + ow + 44, oy + 23 + i * 22, `${T > 0 ? '+' : ''}${T} ℃`, { 'font-size': 14, 'font-weight': 900, fill: col(i) }); });
+  let u = 0, tgt = 0;
+  function draw() {
+    const e = ease(u), lo = lerp(-5, -4.5, e), hi = lerp(1, 6.5, e), X = v => ox + (v - lo) / (hi - lo) * ow;
+    grid.textContent = ''; lay.textContent = '';
+    for (let k = Math.ceil(lo); k <= hi; k++) { el('line', { x1: X(k), x2: X(k), y1: oy, y2: oy + oh, class: 'gd' }, grid); txt(grid, X(k), oy + oh + 19, String(k), { class: 'tk', 'text-anchor': 'middle' }); }
+    if (u > .98) { const pts = []; for (let x = -4.5; x <= 6.5; x += .05) pts.push([X(x), Y(M(x))]); el('path', { d: pathOf(pts), stroke: '#b9b5d0', 'stroke-width': 10, fill: 'none', opacity: .5 }, lay); }
+    temps.forEach(([T, la], i) => {
+      const pts = [];
+      for (let k = 0; k <= 18; k++) { const lv = -4.5 + 4.5 * k / 18; pts.push([X(lv + la * e), Y(M(lv + la))]); }
+      el('path', { d: pathOf(pts), stroke: col(i), 'stroke-width': 3.5, fill: 'none' }, lay);
+      pts.forEach((p, k) => { if (k % 3 === 0) el('circle', { cx: p[0], cy: p[1], r: 5, fill: col(i), stroke: C.ink, 'stroke-width': 1.5 }, lay); });
+    });
+    rich(xlab, u < .5 ? 'log V（V：すべり速度）' : 'log（a_{T} V）');
+  }
+  draw();
+  const b = svgEl('muGo');
+  b.addEventListener('click', () => { b.blur(); tgt = tgt ? 0 : 1; b.textContent = tgt ? '◀ 元に戻す' : '▶ 横にずらして重ねる'; });
+  anim('mu', dt => { if (Math.abs(u - tgt) < 1e-3) return; u = tgt > u ? Math.min(1, u + dt / 2.2) : Math.max(0, u - dt / 1.2); draw(); });
+  onSlide('mu', () => { u = tgt = 0; b.textContent = '▶ 横にずらして重ねる'; draw(); });
+}
+
+/* ---------- 転がり摩擦 ---------- */
+{
+  const svg = svgEl('rollSvg'), eS = svgEl('rollE'), rS = svgEl('rollR'), Y = 190, cx = 260;
+  const g = el('g', {}, svg);
+  let tt = 0;
+  function lam() { const e = +eS.value, R = +rS.value, a = .2 * R ** (1 / 3); return 3 * e * a / (16 * R); }
+  function ro() {
+    const l = lam();
+    $('#rollEv').textContent = (+eS.value).toFixed(2); $('#rollRv').textContent = `${(+rS.value).toFixed(2)}（相対）`;
+    $('#rollLam').textContent = l.toFixed(4);
+    $('#rollLamB').style.width = clamp((lg(l) + 4) / 4, 0, 1) * 100 + '%';
+  }
+  eS.addEventListener('input', ro); rS.addEventListener('input', ro); ro();
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    const R = 70 * (+rS.value) ** .6, e = +eS.value, a = 50 * (+rS.value) ** (1 / 3), dep = 14;
+    const dent = x => { const u = (x - cx) / a; if (u > 1) return 0; if (u >= 0) return dep * Math.sqrt(1 - u * u); return dep * Math.exp(-((u / (1 + 6 * e)) ** 2) * 2.2); };
+    const pts = []; for (let x = 0; x <= 560; x += 3) pts.push([x, Y + dent(x)]);
+    el('path', { d: pathOf(pts) + 'L560 250L0 250z', fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 3 }, g);
+    for (let k = 0; k < 14; k++) { const x = ((k * 44 - tt * 50) % 616 + 616) % 616 - 30; el('path', { d: `M${x} ${Y + 12 + dent(x) * .6}v40`, stroke: C.pk, 'stroke-width': 2, opacity: .45 }, g); }
+    for (let x = cx - a * 2; x <= cx + a; x += 9) { const p = dent(x) * (x > cx ? 1 + e * 2 : 1 - e); if (p > 1.5) el('path', { d: `M${x} ${Y + dent(x) - 2}v${-p * 1.5}`, stroke: C.pu, 'stroke-width': 2.5 }, g); }
+    const by = Y + dep - R;
+    el('circle', { cx, cy: by, r: R, fill: '#e9ecf7', stroke: C.ink, 'stroke-width': 3 }, g);
+    for (let k = 0; k < 6; k++) { const ang = tt * 50 / R + k * Math.PI / 3; el('path', { d: `M${cx} ${by}l${R * .85 * Math.cos(ang)} ${R * .85 * Math.sin(ang)}`, stroke: C.ink, 'stroke-width': 2 }, g); }
+    el('path', { d: `M${cx + R + 10} ${by}h50`, stroke: C.ink, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g);
+    txt(g, cx + a * .5 + 40, 30, '前：押しつぶす', { class: 'note', fill: C.pu, 'text-anchor': 'middle' });
+    txt(g, cx - a * 2.1, 30, '後ろ：戻りきらない', { class: 'note', fill: C.pu, 'text-anchor': 'middle' });
+  }
+  frame(0);
+  anim('roll', frame);
+}
+
+/* ---------- ベルトとプーリ ---------- */
+{
+  const svg = svgEl('beltSvg'), mS = svgEl('beltMu'), tS = svgEl('beltTh'), cx = 340, cy = 150, R = 95;
+  const g = el('g', {}, svg);
+  let tt = 0;
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    const mu = +mS.value, th = +tS.value * Math.PI / 180, half = th / 2, ratio = Math.exp(mu * th);
+    // 巻付け部：張力が T2 から T1 まで指数関数的に増える
+    const N = 60;
+    for (let i = 0; i < N; i++) {
+      const b0 = -half + th * i / N, b1 = -half + th * (i + 1) / N, T = Math.exp(mu * th * (i + .5) / N);
+      const w = 6 + 10 * lg(T) / lg(Math.max(ratio, 1.01)) * Math.min(1, lg(ratio) / .8);
+      const p = b => [cx + (R + 5) * Math.cos(b), cy - (R + 5) * Math.sin(b)];
+      el('path', { d: `M${p(b0)}L${p(b1)}`, stroke: `hsl(${330 - 120 * (1 - (i / N))},80%,${55}%)`, 'stroke-width': w, 'stroke-linecap': 'round' }, g);
+    }
+    // まっすぐな部分（上：張り側 T1、下：ゆるみ側 T2）
+    const up = [cx + (R + 5) * Math.cos(half), cy - (R + 5) * Math.sin(half)], dU = [-Math.sin(half), -Math.cos(half)];
+    const lo = [cx + (R + 5) * Math.cos(-half), cy - (R + 5) * Math.sin(-half)], dL = [-Math.sin(half), Math.cos(half)];
+    const L = 260;
+    el('path', { d: `M${up}l${dU[0] * L} ${dU[1] * L}`, stroke: C.pk, 'stroke-width': 16, 'stroke-linecap': 'round' }, g);
+    el('path', { d: `M${lo}l${dL[0] * L} ${dL[1] * L}`, stroke: '#ffb36b', 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    // 動きの目印
+    for (let k = 0; k < 6; k++) { const s = ((k * 46 + tt * 40) % 276); el('circle', { cx: up[0] + dU[0] * (L - s), cy: up[1] + dU[1] * (L - s), r: 3, fill: '#fff' }, g); }
+    el('circle', { cx, cy, r: R, fill: '#e9ecf7', stroke: C.ink, 'stroke-width': 4 }, g);
+    for (let k = 0; k < 5; k++) { const a = tt * .8 + k * 2 * Math.PI / 5; el('path', { d: `M${cx} ${cy}l${R * .8 * Math.cos(a)} ${R * .8 * Math.sin(a)}`, stroke: C.ink, 'stroke-width': 3 }, g); }
+    el('circle', { cx, cy, r: 12, fill: C.ink }, g);
+    const tl = [up[0] + dU[0] * 200, up[1] + dU[1] * 200], bl = [lo[0] + dL[0] * 200, lo[1] + dL[1] * 200];
+    txt(g, clamp(tl[0], 20, 520), clamp(tl[1] - 16, 20, 290), 'T₁（張り側）', { class: 'note', fill: C.pk });
+    txt(g, clamp(bl[0], 20, 520), clamp(bl[1] + 26, 20, 296), 'T₂（ゆるみ側）', { class: 'note', fill: C.ord });
+    // 巻付け角の表示
+    el('path', { d: `M${cx + 30 * Math.cos(-half)} ${cy - 30 * Math.sin(-half)}A30 30 0 ${th > Math.PI ? 1 : 0} 0 ${cx + 30 * Math.cos(half)} ${cy - 30 * Math.sin(half)}`, stroke: C.ye, 'stroke-width': 5, fill: 'none' }, g);
+    $('#beltMuv').textContent = mu.toFixed(2); $('#beltThv').textContent = `${tS.value}°`;
+    $('#beltRatio').textContent = `T₁／T₂ ＝ ${ratio.toFixed(2)}`;
+  }
+  frame(0);
+  anim('belt', frame);
+}
+
+/* ---------- 境界潤滑 ---------- */
+{
+  const svg = svgEl('blSvg'), aS = svgEl('blA'), SM = 1, SL = .05;
+  const gL = roughness(41, { L0: 110, levels: 4, amp: 9 });
+  const g = el('g', {}, svg);
+  function draw() {
+    const a = +aS.value; g.textContent = '';
+    const xs = []; for (let x = 10; x <= 590; x += 3) xs.push(x);
+    const lo = xs.map(x => [x, 140 - gL(x)]);
+    el('path', { d: pathOf(lo) + 'L590 200L10 200z', fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, g);
+    const up = xs.map(x => [x, 140 - gL(x) - 12]);
+    el('path', { d: pathOf(up) + 'L590 30L10 30z', fill: C.yel, stroke: C.ink, 'stroke-width': 2.5 }, g);
+    el('path', { d: pathOf(up) + 'L' + lo.slice().reverse().map(p => p[0] + ' ' + p[1]).join('L') + 'z', fill: '#9cc3ff', opacity: .75 }, g);
+    // 突起の高い順に α の割合だけ「膜が破れて金属が接触」
+    const order = xs.map((x, i) => [gL(x), i]).sort((p, q) => q[0] - p[0]);
+    const n = Math.round(xs.length * a), hit = new Set(order.slice(0, n).map(p => p[1]));
+    xs.forEach((x, i) => { if (hit.has(i)) el('rect', { x: x - 1.5, y: up[i][1], width: 3.5, height: 12, fill: '#ff2850' }, g); });
+    txt(g, 14, 24, '赤：膜が破れて金属どうしが凝着　青：潤滑膜', { class: 'note', fill: C.ink });
+    const fm = a * SM, fl = (1 - a) * SL, tot = fm + fl, Wb = 520, sc = Wb / (.3 * SM + .7 * SL);
+    el('rect', { x: 20, y: 222, width: fm * sc, height: 26, fill: '#ff2850', stroke: C.ink, 'stroke-width': 2, rx: 4 }, g);
+    el('rect', { x: 20 + fm * sc, y: 222, width: fl * sc, height: 26, fill: '#9cc3ff', stroke: C.ink, 'stroke-width': 2, rx: 4 }, g);
+    txt(g, 20, 272, `摩擦力のうち金属接触部が担う割合：${Math.round(fm / tot * 100)}%`, { class: 'lab', fill: '#d61f45' });
+    txt(g, 20, 292, `（面積では ${Math.round(a * 100)}% しかない。s_{m}／s_{ℓ} ＝ 20 として計算）`, { class: 'note', fill: C.mu });
+    $('#blAv').textContent = `α = ${(a * 100).toFixed(1)}%`;
+  }
+  aS.addEventListener('input', draw); draw();
+}
+
+/* ---------- ストライベック曲線 ---------- */
+{
+  const xS = svgEl('stribX');
+  const A = axes(svgEl('stribPlot'), { x: 60, y: 30, w: 540, h: 220, xr: [0, 1], yr: [.002, .4], ylog: true, yt: [.01, .1], yf: v => String(v), xl: 'ηυ／p（対数）', yl: '摩擦係数 μ' });
+  const sig = z => 1 / (1 + Math.exp(-z));
+  const f = x => 10 ** (x < .48 ? -.9 - 1.6 * sig((x - .33) / .045) : -.9 - 1.6 * sig((.48 - .33) / .045) + .75 * (x - .48) / .52);
+  const bands = [[0, .3, '境界潤滑', '#ffd0e4'], [.3, .5, '混合潤滑', '#fff1c2'], [.5, 1, '流体潤滑・EHL', '#d4f4ff']];
+  bands.forEach(([a, b, n, c]) => { el('rect', { x: A.X(a), y: 30, width: A.X(b) - A.X(a), height: 220, fill: c, opacity: .6 }, A.under); txt(A.top, A.X((a + b) / 2), 50, n, { 'text-anchor': 'middle', class: 'note', fill: C.ink }); });
+  el('path', { d: curve(A, f, 0, 1, 300), class: 'cv c-pu' }, A.clip);
+  const dot = el('circle', { r: 9, class: 'mk', fill: C.pk }, A.top);
+  const pic = svgEl('stribPic'), pg = el('g', {}, pic);
+  const gL = roughness(5, { L0: 80, levels: 4, amp: 7 }), gU = roughness(9, { L0: 80, levels: 4, amp: 7 });
+  const INFO = [
+    ['境界潤滑（BL）', 'h ≈ 0', '荷重は<b>表面の突起</b>がほとんど支える。潤滑剤は吸着した薄い膜だけで、粘度などの流れの性質はあまり効かない。μ は高め。'],
+    ['混合潤滑（ML）', 'h ≈ R', '油膜が薄く、ところどころで<b>突起どうしが接触</b>。荷重の一部を油膜が支える。速くなると μ が急に下がる。'],
+    ['流体潤滑・弾性流体潤滑（HL / EHL）', 'h ＞ R', '<b>油膜の上に完全に浮く</b>。μ は最小付近から、油のせん断抵抗でゆっくり増える。表面疲労などを除き<b>摩耗はほぼ生じない</b>。'],
+  ];
+  let tt = 0;
+  function draw() {
+    const x = +xS.value, k = x < .3 ? 0 : x < .5 ? 1 : 2;
+    dot.setAttribute('cx', A.X(x)); dot.setAttribute('cy', A.Y(f(x)));
+    $('#stribXv').textContent = `μ ≈ ${f(x).toPrecision(2)}`;
+    const I = INFO[k];
+    $('#stribInfo').innerHTML = `<div class="cardt">${I[0]}<span class="pill">${I[1]}</span></div><div class="mini" style="font-size:16.5px">${I[2]}</div><div class="mini muted" style="font-size:14px;margin-top:6px">h：油膜の厚さ、R：表面粗さ</div>`;
+  }
+  function frame(dt) {
+    tt += dt;
+    const x = +xS.value, h = x < .25 ? -6 : x < .5 ? lerp(-6, 9, (x - .25) / .25) : 9 + 30 * (x - .5);
+    pg.textContent = '';
+    const ym = 62, lo = [], up = [], hits = [];
+    for (let X = 0; X <= 640; X += 4) { const yl = ym + 18 - gL(X); const yu = Math.min(ym - 2 - h + 18 - 18 - gU(X + tt * (20 + 200 * x)) + 0, yl); lo.push([X, yl]); up.push([X, yu]); if (yu >= yl - .5) hits.push(X); }
+    el('path', { d: pathOf(lo) + 'L640 110L0 110z', fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2 }, pg);
+    el('path', { d: pathOf(up) + 'L' + lo.slice().reverse().map(p => p[0] + ' ' + p[1]).join('L') + 'z', fill: '#9cc3ff', opacity: .8 }, pg);
+    el('path', { d: pathOf(up) + 'L640 0L0 0z', fill: C.yel, stroke: C.ink, 'stroke-width': 2 }, pg);
+    hits.forEach(X => el('circle', { cx: X, cy: lo[X / 4][1], r: 3, fill: '#ff2850' }, pg));
+  }
+  xS.addEventListener('input', draw); draw(); frame(0);
+  anim('strib', frame);
+}
+
+/* ---------- くさび効果・スクイーズ効果 ---------- */
+{
+  const svg = svgEl('wedgeSvg'), uS = svgEl('wedgeU'), g = el('g', {}, svg);
+  const sq = svgEl('squeezeSvg'), g2 = el('g', {}, sq);
+  let tt = 0;
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    const U = +uS.value, Y = 205, x0 = 110, x1 = 410, h0 = 6 + 20 * Math.sqrt(U), h1 = h0 + 34;
+    el('rect', { x: 0, y: Y, width: 520, height: 30, fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, g);
+    for (let k = 0; k < 14; k++) { const x = ((k * 40 + tt * 120 * U) % 560) - 20; el('path', { d: `M${x} ${Y + 6}l12 18`, stroke: C.ink, 'stroke-width': 2, opacity: .4 }, g); }
+    const yl = Y - h1, yr = Y - h0;
+    el('path', { d: `M${x0} ${yl}L${x1} ${yr}L${x1} ${Y}L${x0} ${Y}z`, fill: '#9cc3ff', opacity: .7 }, g);
+    el('path', { d: `M${x0} ${yl}L${x1} ${yr}L${x1} ${yr - 40}L${x0} ${yl - 40}z`, fill: C.yel, stroke: C.ink, 'stroke-width': 3 }, g);
+    // 速度分布（クエット流れ）の矢印
+    for (let i = 0; i < 4; i++) { const xx = x0 + 40 + i * 75, top = lerp(yl, yr, (xx - x0) / (x1 - x0)); for (let j = 1; j <= 3; j++) { const yy = Y - (Y - top) * j / 4; el('path', { d: `M${xx} ${yy}h${24 * U * (1 - j / 4) + 2}`, stroke: C.bl, 'stroke-width': 2 }, g); } }
+    // 圧力分布
+    const pts = []; for (let i = 0; i <= 40; i++) { const s = i / 40, p = 520 * U * s * (1 - s) * (1 - s * .35) ** 2 * 1.4; pts.push([lerp(x0, x1, s), lerp(yl, yr, s) - 40 - p * .45]); }
+    el('path', { d: pathOf(pts), stroke: C.pk, 'stroke-width': 4, fill: 'none' }, g);
+    for (let i = 4; i < 40; i += 5) el('path', { d: `M${pts[i][0]} ${pts[i][1]}V${lerp(yl, yr, i / 40) - 42}`, stroke: C.pk, 'stroke-width': 2, 'marker-end': 'url(#arrK)' }, g);
+    txt(g, 300, 24, U > .05 ? '油が狭いすき間に引き込まれ、圧力が生まれる' : '止まっていると圧力は生まれない', { class: 'note', fill: C.pk, 'text-anchor': 'middle' });
+    el('path', { d: `M430 ${Y + 15}h60`, stroke: C.ord, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g);
+    txt(g, 460, Y + 48, 'U', { class: 'lab', fill: C.ord });
+    txt(g, x1 + 8, yr + 14, `h₀`, { class: 'note' });
+    $('#wedgeUv').textContent = U < .02 ? '0' : (U * 10).toFixed(1);
+    // スクイーズ
+    g2.textContent = '';
+    const ph = tt * 1.4, gap = 30 + 22 * Math.cos(ph), v = -Math.sin(ph), Y2 = 200, top = Y2 - gap;
+    el('rect', { x: 0, y: Y2, width: 520, height: 30, fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 2.5 }, g2);
+    el('rect', { x: 110, y: top, width: 300, height: gap, fill: '#9cc3ff', opacity: .75 }, g2);
+    el('rect', { x: 110, y: top - 40, width: 300, height: 40, fill: C.yel, stroke: C.ink, 'stroke-width': 3 }, g2);
+    if (v > 0) {
+      const pp = []; for (let i = 0; i <= 40; i++) { const s = i / 40; pp.push([110 + 300 * s, top - 42 - 260 * v * s * (1 - s) / Math.max(gap / 30, .4) ** 1.5 * .6]); }
+      el('path', { d: pathOf(pp), stroke: C.pk, 'stroke-width': 4, fill: 'none' }, g2);
+      el('path', { d: `M100 ${top + gap / 2}h-50M420 ${top + gap / 2}h50`, stroke: C.bl, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g2);
+      el('path', { d: `M260 ${top - 120}v36`, stroke: C.ink, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g2);
+      txt(g2, 270, 24, '近づく → 油が押し出され、圧力が生まれる', { class: 'note', fill: C.pk, 'text-anchor': 'middle' });
+    } else txt(g2, 270, 24, '離れる', { class: 'note', fill: C.mu, 'text-anchor': 'middle' });
+  }
+  frame(0);
+  anim('wedge', frame);
+}
+
+/* ---------- ゴムと乾燥ガラス（内山 第4回 Figure 1 の読み取り値） ---------- */
+{
+  const D = [['#CC-80', [2.35, 1.95, 1.7], C.bl], ['#CC-180', [2.65, 2.2, 1.9], C.gr], ['#CC-500', [3.35, 2.7, 2.25], C.pu], ['#CC-1500', [3.6, 3.15, 2.3], C.pk]];
+  const P = [.05, .1, .2];
+  const quad = ys => p => { const [x0, x1, x2] = P, [y0, y1, y2] = ys; return y0 * (p - x1) * (p - x2) / ((x0 - x1) * (x0 - x2)) + y1 * (p - x0) * (p - x2) / ((x1 - x0) * (x1 - x2)) + y2 * (p - x0) * (p - x1) / ((x2 - x0) * (x2 - x1)); };
+  const A = axes(svgEl('dryPlot'), { x: 60, y: 30, w: 520, h: 240, xr: [0, .26], yr: [0, 4], xt: [0, .05, .1, .15, .2, .25], yt: [0, 1, 2, 3, 4], xl: '接触圧力 p [MPa]', yl: '摩擦係数 μ' });
+  const S = D.map(([n, ys, c]) => {
+    const g = el('g', {}, A.clip);
+    el('path', { d: curve(A, quad(ys), .045, .205), class: 'cv', stroke: c }, g);
+    P.forEach((p, i) => el('circle', { cx: A.X(p), cy: A.Y(ys[i]), r: 6, fill: c, stroke: C.ink, 'stroke-width': 1.5 }, g));
+    txt(g, A.X(.205) + 6, A.Y(ys[2]) + 5, n, { class: 'note', fill: c });
+    return g;
+  });
+  const pic = svgEl('dryPic');
+  function show(k) {
+    S.forEach((g, i) => g.setAttribute('opacity', i === k ? 1 : .18));
+    pic.textContent = '';
+    const amp = [11, 7, 4, 1.8][k], per = [34, 22, 14, 8][k], r = rng(3 + k);
+    el('rect', { x: 20, y: 100, width: 400, height: 20, fill: '#d4f4ff', stroke: C.ink, 'stroke-width': 2.5 }, pic);
+    txt(pic, 420, 135 - 20, 'ガラス', { 'text-anchor': 'end', 'font-size': 12, 'font-weight': 800, fill: C.mu });
+    const pts = []; let x = 40; while (x <= 400) { pts.push([x, 98 - amp * r()]); x += per * (.6 + .6 * r()); }
+    el('path', { d: `M40 20${pts.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join('')}L400 20z`, fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 2.5 }, pic);
+    let n = 0; pts.forEach(p => { if (p[1] > 98 - amp * .45) { n++; el('circle', { cx: p[0], cy: 98, r: 3.5, fill: C.or }, pic); } });
+    txt(pic, 50, 48, `ゴムピン（${D[k][0]} 仕上げ）`, { 'font-size': 14, 'font-weight': 900 });
+    txt(pic, 50, 68, k === 3 ? '細かい凹凸 → 接触が多い' : k === 0 ? '粗い凹凸 → 接触が少ない' : '', { 'font-size': 13, 'font-weight': 800, fill: C.ord });
+  }
+  segSel('drySel', d => show(+d.k));
+  show(3);
+}
+
+/* ---------- 水濡れガラス（Figure 4 の読み取り値） ---------- */
+{
+  const V = [1, 5, 10, 15, 20, 30];
+  const D = [['#CC-1500（細かい）', [.95, .72, .52, .45, .4, .35], C.pk], ['#CC-180', [.8, .73, .6, .55, .52, .45], C.gr], ['#CC-80（粗い）', [.65, .58, .56, .55, .55, .5], C.bl]];
+  const interp = ys => v => { const lv = lg(v); for (let i = 0; i < V.length - 1; i++) if (v <= V[i + 1]) { const u = (lv - lg(V[i])) / (lg(V[i + 1]) - lg(V[i])); return lerp(ys[i], ys[i + 1], clamp(u, 0, 1)); } return ys[ys.length - 1]; };
+  const F = D.map(d => interp(d[1]));
+  const A = axes(svgEl('wetPlot'), { x: 60, y: 30, w: 520, h: 210, xr: [1, 32], yr: [0, 1], xlog: true, xt: [1, 2, 5, 10, 20, 30], yt: [0, .5, 1], xf: String, xl: 'すべり速度 υ [cm/s]', yl: '摩擦係数 μ' });
+  D.forEach(([n, ys, c], i) => {
+    el('path', { d: curve(A, F[i], 1, 30), class: 'cv', stroke: c }, A.clip);
+    V.forEach((v, j) => el('circle', { cx: A.X(v), cy: A.Y(ys[j]), r: 5, fill: c, stroke: C.ink, 'stroke-width': 1.5 }, A.clip));
+  });
+  const dots = D.map(d => el('circle', { r: 8, class: 'mk', fill: d[2] }, A.top));
+  const vl = el('line', { y1: 30, y2: 240, stroke: C.ink, 'stroke-width': 2, 'stroke-dasharray': '5 4' }, A.top);
+  const vS = svgEl('wetV'), pic = svgEl('wetPic'), pg = el('g', {}, pic);
+  let tt = 0;
+  function draw() {
+    const v = 10 ** +vS.value;
+    vl.setAttribute('x1', A.X(v)); vl.setAttribute('x2', A.X(v));
+    dots.forEach((d, i) => { d.setAttribute('cx', A.X(v)); d.setAttribute('cy', A.Y(F[i](v))); });
+    $('#wetVv').textContent = `${v.toFixed(v < 10 ? 1 : 0)} cm/s`;
+    const reg = v < 3 ? ['境界潤滑', '水膜があっても固体接触。<b>細かい面ほど</b>接触面積が大きく μ が高い。'] : v < 22 ? ['混合潤滑', '動圧で水膜が厚くなり、<b>細かい面から</b> μ が急に下がる。粗い面はまだ接触を保つ。'] : ['流体潤滑に近づく', '細かい面は水膜に浮き μ が最低に。<b>粗い面が最も高い</b>（逆転！）。'];
+    $('#wetInfo').innerHTML = `<div class="cardt">${reg[0]}</div><div class="mini" style="font-size:15.5px">${D.map((d, i) => `<span style="color:${d[2]};font-weight:900">${d[0].split('（')[0]}</span> ${F[i](v).toFixed(2)}`).join('　')}<br>${reg[1]}</div>`;
+  }
+  function frame(dt) {
+    tt += dt; pg.textContent = '';
+    const v = 10 ** +vS.value, film = 2 + 22 * (lg(v) / lg(30)) ** 1.5;
+    [[20, 9, 3, '細かい面'], [235, 24, 16, '粗い面']].forEach(([x0, per, amp, n], k) => {
+      el('rect', { x: x0, y: 130, width: 190, height: 18, fill: '#d4f4ff', stroke: C.ink, 'stroke-width': 2 }, pg);
+      el('rect', { x: x0, y: 130 - film, width: 190, height: film, fill: '#9cc3ff', opacity: .8 }, pg);
+      const r = rng(9 + k), pts = []; let x = x0 + 4;
+      const base = 130 - (amp > 10 ? 0 : Math.max(0, film - 3));
+      while (x < x0 + 186) { pts.push([x, base - amp * r() ** 2]); x += per * (.6 + .6 * r()); }
+      const ymin = Math.min(...pts.map(p => p[1]));
+      el('path', { d: `M${x0 + 4} 40${pts.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join('')}L${x0 + 186} 40z`, fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 2 }, pg);
+      pts.forEach(p => { if (p[1] >= 128.5) el('circle', { cx: p[0], cy: 130, r: 3, fill: '#ff2850' }, pg); });
+      txt(pg, x0 + 95, 30, n, { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 900 });
+      void ymin;
+    });
+    txt(pg, 220, 166, '青：水膜（速いほど厚い）　赤：固体接触', { 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 800, fill: C.mu });
+  }
+  vS.addEventListener('input', () => { draw(); frame(0); }); draw(); frame(0);
+  anim('wet', frame);
+}
+
+/* ---------- 氷（Figure 6 の読み取り値） ---------- */
+{
+  const T = [-20, -15, -10, -5, 0];
+  const D = [
+    ['NR100', [1.4, 1.25, .55, .35, .2], [.7, .62, .25, .18, .1], C.pk],
+    ['NR80/BR20', [1.2, 1.1, .55, .3, .15], [.62, .55, .25, .18, .1], C.or],
+    ['NR60/BR40', [1.15, 1.05, .35, .25, .15], [.57, .52, .22, .18, .1], C.pu],
+    ['BR100', [.7, .65, .5, .35, .15], [.45, .4, .3, .2, .1], C.bl],
+  ];
+  const tS = svgEl('iceT'), wS = svgEl('iceW');
+  const at = (ys, t) => { for (let i = 0; i < 4; i++) if (t <= T[i + 1]) return lerp(ys[i], ys[i + 1], (t - T[i]) / 5); return ys[4]; };
+  const mu = (k, t, w) => lerp(at(D[k][1], t), at(D[k][2], t), (w - 24.5) / (112.7 - 24.5));
+  const A = axes(svgEl('icePlot'), { x: 60, y: 28, w: 520, h: 200, xr: [-20, 0], yr: [0, 1.5], xt: [-20, -15, -10, -5, 0], yt: [0, .5, 1, 1.5], xl: '温度 T [℃]', yl: '摩擦係数 μ' });
+  const others = D.map(d => el('path', { class: 'cv thin', stroke: d[3], opacity: .25 }, A.clip));
+  const lo = el('path', { class: 'cv thin dash' }, A.clip), hi = el('path', { class: 'cv thin dash' }, A.clip), cur = el('path', { class: 'cv' }, A.clip);
+  const dot = el('circle', { r: 9, class: 'mk' }, A.top), lab = txt(A.top, 0, 0, '', { class: 'note' });
+  txt(A.top, A.X(-19.5), A.Y(.12), '点線：最小荷重（24.5 N）と最大荷重（112.7 N）', { class: 'tk' });
+  const pic = svgEl('icePic');
+  let k = 0;
+  function draw() {
+    const t = +tS.value, w = +wS.value, c = D[k][3];
+    others.forEach((p, i) => p.setAttribute('d', i === k ? '' : curve(A, x => mu(i, x, w), -20, 0, 80)));
+    [lo, hi].forEach((p, i) => { p.setAttribute('d', curve(A, x => mu(k, x, i ? 112.7 : 24.5), -20, 0, 80)); p.setAttribute('stroke', c); });
+    cur.setAttribute('d', curve(A, x => mu(k, x, w), -20, 0, 80)); cur.setAttribute('stroke', c);
+    const m = mu(k, t, w);
+    dot.setAttribute('cx', A.X(t)); dot.setAttribute('cy', A.Y(m)); dot.setAttribute('fill', c);
+    lab.setAttribute('x', A.X(t) + 12); lab.setAttribute('y', A.Y(m) - 10); lab.setAttribute('fill', c); rich(lab, `μ ＝ ${m.toFixed(2)}`);
+    $('#iceTv').textContent = `${t} ℃`; $('#iceWv').textContent = `${w.toFixed(1)} N（${(w / 113.1 * 1).toFixed(2)} MPa）`;
+    // 擬似水膜のイラスト
+    pic.textContent = '';
+    const film = 2 + 26 * ((t + 20) / 20) ** 2.2;
+    el('rect', { x: 20, y: 96, width: 400, height: 40, fill: '#e6f6ff', stroke: C.ink, 'stroke-width': 2.5 }, pic);
+    for (let x = 30; x < 420; x += 26) el('path', { d: `M${x} 136l10 -18l10 18`, fill: 'none', stroke: '#9cc3ff', 'stroke-width': 1.5 }, pic);
+    el('rect', { x: 20, y: 96 - film * .6, width: 400, height: film * .6, fill: '#7fb4ff', opacity: .7 }, pic);
+    const pinW = 80 + 120 * 0, py = 96 - film * .6;
+    el('rect', { x: 160, y: py - 62, width: 120, height: 62, rx: 6, fill: c, stroke: C.ink, 'stroke-width': 2.5 }, pic);
+    el('path', { d: `M220 ${py - 92}v${16 + 14 * (w - 24.5) / 88}`, stroke: C.ink, 'stroke-width': 3 + 4 * (w - 24.5) / 88, 'marker-end': 'url(#arrK)' }, pic);
+    txt(pic, 220, py - 26, D[k][0], { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 900, fill: '#fff' });
+    txt(pic, 414, 130, film > 8 ? '擬似水膜（厚い）→ すべる' : '擬似水膜は薄い → 凝着できる', { 'font-size': 13, 'font-weight': 900, fill: C.bl, 'text-anchor': 'end' });
+    txt(pic, 24, 150 - 4, '氷', { 'font-size': 13, 'font-weight': 900, fill: C.mu });
+  }
+  segSel('iceSel', d => { k = +d.k; draw(); });
+  tS.addEventListener('input', draw); wS.addEventListener('input', draw);
+  draw();
+}
+
+/* ---------- ピン‐オン‐ディスク ---------- */
+{
+  const svg = svgEl('podSvg'), wS = svgEl('podW'), K = 2e-5, LMAX = 1000;
+  const g = el('g', {}, svg);
+  const A = axes(svg, { x: 360, y: 40, w: 250, h: 220, xr: [0, LMAX], yr: [0, .1], xt: [0, 500, 1000], yt: [0, .05, .1], xl: '摩擦距離 L [m]', yl: '摩耗体積 V [mm³]' });
+  const past = el('g', {}, A.clip), cp = el('path', { class: 'cv c-pk' }, A.clip), ktxt = txt(A.top, A.X(30), A.Y(.095), '', { class: 'note', fill: C.pk });
+  let L = 0, playing = false, tt = 0, runs = [];
+  const V = (l, w) => K * w * l + .006 * (1 - Math.exp(-l / 60)) * w / 2;
+  function drawRig() {
+    g.textContent = '';
+    const w = +wS.value, cx = 170, cy = 230;
+    el('ellipse', { cx, cy: cy + 14, rx: 150, ry: 42, fill: '#9aa0bd', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('ellipse', { cx, cy, rx: 150, ry: 42, fill: '#cfd3e6', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('ellipse', { cx, cy, rx: 95, ry: 26, fill: 'none', stroke: '#8b8fa8', 'stroke-width': 7, opacity: .7 }, g);
+    for (let k = 0; k < 8; k++) { const a = tt * 2 + k * Math.PI / 4; el('circle', { cx: cx + 125 * Math.cos(a), cy: cy + 34 * Math.sin(a), r: 3, fill: C.ink, opacity: Math.sin(a) > 0 ? .8 : .25 }, g); }
+    const ph = 90 - V(L, w) / .1 * 60, px = cx + 95 * Math.cos(Math.PI / 2) - 14, py = cy + 26 - ph;
+    el('rect', { x: px, y: py, width: 28, height: ph, fill: C.ye, stroke: C.ink, 'stroke-width': 3 }, g);
+    el('rect', { x: px - 18, y: py - 22 - 6 * w, width: 64, height: 22 + 6 * w, rx: 5, fill: '#8b8fa8', stroke: C.ink, 'stroke-width': 2.5 }, g);
+    txt(g, px + 14, py - 8, `W＝${w.toFixed(1)} N`, { 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 900, fill: '#fff' });
+    txt(g, 20, 30, 'ピン（試料）が減っていく', { class: 'note', fill: C.mu });
+    for (let i = 0; i < 4; i++) el('circle', { cx: px + 30 + ((tt * 40 + i * 20) % 80), cy: cy + 22 + (i % 2) * 6, r: 2, fill: '#c9a646' }, g);
+  }
+  function plotRun() {
+    const w = +wS.value, pts = []; for (let l = 0; l <= L; l += 10) pts.push([A.X(l), A.Y(V(l, w))]);
+    cp.setAttribute('d', pathOf(pts.length ? pts : [[A.X(0), A.Y(0)]]));
+    rich(ktxt, `K ＝ ΔV／(WΔL) ＝ 2×10^{−5} mm³/(N·m)`);
+  }
+  const b = svgEl('podPlay');
+  b.addEventListener('click', () => {
+    b.blur();
+    if (L > 0) { el('path', { d: cp.getAttribute('d'), class: 'cv thin c-mu' }, past); }
+    L = 0; playing = true; b.classList.add('playing'); b.textContent = '⏵ 試験中…';
+  });
+  wS.addEventListener('input', () => { $('#podWv').textContent = `${(+wS.value).toFixed(1)} N`; if (!playing) drawRig(); });
+  $('#podWv').textContent = `${(+wS.value).toFixed(1)} N`;
+  anim('pod', dt => {
+    tt += dt;
+    if (playing) { L = Math.min(LMAX, L + dt * 220); plotRun(); if (L >= LMAX) { playing = false; b.classList.remove('playing'); b.textContent = '▶ 荷重を変えてもう一度'; } }
+    drawRig();
+  });
+  stoppers.push(() => { playing = false; b.classList.remove('playing'); });
+  onSlide('pod', () => { past.textContent = ''; L = 0; b.textContent = '▶ 摩耗試験'; });
+  drawRig(); plotRun();
+}
+
+/* ---------- アブレシブ摩耗（円すい圧子） ---------- */
+{
+  const svg = svgEl('abrSvg'), tS = svgEl('abrTh'), g = el('g', {}, svg);
+  let tt = 0;
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    const th = +tS.value * Math.PI / 180, r = 34, h = r / Math.tan(th);
+    // 左：正面から見た断面
+    const cx = 150, Y = 170;
+    txt(g, cx, 26, '正面から見た断面', { 'text-anchor': 'middle', class: 'note', fill: C.mu });
+    el('path', { d: `M20 ${Y}H${cx - r}L${cx} ${Y + h}L${cx + r} ${Y}H280V280H20z`, fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('path', { d: `M${cx - r} ${Y}L${cx} ${Y + h}L${cx + r} ${Y}z`, fill: '#fff', stroke: C.ord, 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, g);
+    const ch = Math.min(110 + h, 105 / Math.tan(th)) - h;
+    el('path', { d: `M${cx} ${Y + h}L${cx - (ch + h) * Math.tan(th)} ${Y - ch}H${cx + (ch + h) * Math.tan(th)}z`, fill: '#b9b5d0', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('path', { d: `M${cx} ${Y + h}V${Y - 60}`, stroke: C.ink, 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, g);
+    el('path', { d: `M${cx} ${Y - 30}A${h + 30} ${h + 30} 0 0 1 ${cx + Math.sin(th) * (h + 30) * .0 + (Y + h - (Y - 30)) * Math.tan(th) * .0 + 20 * Math.sin(th)} ${Y - 30 + 0}`, stroke: 'none', fill: 'none' }, g);
+    txt(g, cx + 8, Y - 40, 'θ', { class: 'lab', fill: C.pk });
+    el('path', { d: `M${cx - r} ${Y + 14 + h}h${2 * r}`, stroke: C.ink, 'stroke-width': 2 }, g);
+    txt(g, cx, Y + 34 + h, `深さ h ＝ r cotθ`, { 'text-anchor': 'middle', class: 'note' });
+    el('path', { d: `M${cx} ${Y - ch - 30}v24`, stroke: C.ink, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g);
+    txt(g, cx + 10, Y - ch - 18, 'W', { class: 'lab' });
+    // 右：横から見た図（溝を掘りながら進む）
+    const x = 330 + (tt * 50) % 220, Y2 = 170;
+    txt(g, 450, 26, '横から見た図', { 'text-anchor': 'middle', class: 'note', fill: C.mu });
+    el('rect', { x: 310, y: Y2, width: 280, height: 110, fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('rect', { x: 310, y: Y2, width: x - 310, height: h, fill: '#fff', stroke: C.ord, 'stroke-width': 2, 'stroke-dasharray': '4 3' }, g);
+    el('path', { d: `M${x} ${Y2 + h}L${x - 30} ${Y2 - 90}H${x + 30}z`, fill: '#b9b5d0', stroke: C.ink, 'stroke-width': 3 }, g);
+    for (let i = 0; i < 4; i++) el('path', { d: `M${x + 8 + i * 9} ${Y2 - 4 - (i % 2) * 10}l6 -4l2 6z`, fill: '#ff4f9a', stroke: C.ink, 'stroke-width': 1 }, g);
+    el('path', { d: `M${x + 40} ${Y2 - 50}h40`, stroke: C.ord, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g);
+    const ratio = (1 / Math.tan(th)) / (1 / Math.tan(50 * Math.PI / 180));
+    $('#abrThv').textContent = `${tS.value}°`;
+    $('#abrRatio').textContent = `× ${ratio.toFixed(2)}`;
+  }
+  frame(0);
+  anim('abr', frame);
+}
+
+/* ---------- 凝着摩耗：PTFE の移着膜 ---------- */
+{
+  const svg = svgEl('adhSvg'), g = el('g', {}, svg);
+  const INFO = [
+    ['(a) 移着', 'PTFE ピンから相手のガラスへ、<b>小さな摩耗粉や薄いフィルム</b>が移る。'],
+    ['(b) 成長', '移着した粉がピンを<b>削り取ったり</b>、粉どうしが集まって大きくなる。'],
+    ['(c) 合体・分裂', '小さな粉は<b>合体して巨大化</b>する。大きくなりすぎると分裂するものも（ほとんどは合体）。'],
+    ['(d) 脱落', '巨大化した粉は<b>ピンの前で</b>摩擦面に入れず、外へ排除される。'],
+    ['(e) 再移着', 'ディスク上の粉やフィルムが<b>ピンへ戻って</b>くっつくこともある。'],
+  ];
+  let step = 0, ph = 0, auto = false, tt = 0;
+  const btns = [...document.querySelectorAll('#adhSteps [data-s]')];
+  function setStep(s) { step = s; ph = 0; btns.forEach((b, i) => b.classList.toggle('on', i === s)); $('#adhInfo').innerHTML = `<div class="cardt">${INFO[s][0]}</div><div class="mini" style="font-size:17px">${INFO[s][1]}</div>`; }
+  btns.forEach((b, i) => b.addEventListener('click', () => { b.blur(); stopAuto(); setStep(i); }));
+  const pb = svgEl('adhPlay');
+  function stopAuto() { auto = false; pb.classList.remove('playing'); pb.textContent = '▶ 自動'; }
+  pb.addEventListener('click', () => { pb.blur(); if (auto) return stopAuto(); auto = true; pb.classList.add('playing'); pb.textContent = '⏸ 止める'; setStep(0); });
+  stoppers.push(stopAuto);
+  const Y = 170, px0 = 250, px1 = 380;
+  const flake = (x, y, w, h, c = '#fff') => el('ellipse', { cx: x, cy: y - h * .5, rx: w * 1.6, ry: h * 1.6, fill: c, stroke: C.ink, 'stroke-width': 2 }, g);
+  function frame(dt) {
+    tt += dt; ph += dt / 3;
+    if (ph >= 1) { ph -= 1; if (auto) setStep((step + 1) % 5); }
+    g.textContent = '';
+    el('rect', { x: 0, y: Y, width: 620, height: 50, fill: '#d4f4ff', stroke: C.ink, 'stroke-width': 3 }, g);
+    for (let k = 0; k < 16; k++) { const x = ((k * 40 + tt * 60) % 660) - 20; el('path', { d: `M${x} ${Y + 12}l10 26`, stroke: '#9cc3ff', 'stroke-width': 2 }, g); }
+    txt(g, 600, Y + 40, 'ガラス円板 →', { 'text-anchor': 'end', class: 'note', fill: C.bl });
+    el('path', { d: `M${px0} ${Y}V40H${px1}V${Y}`, fill: '#f4f1fb', stroke: C.ink, 'stroke-width': 3 }, g);
+    txt(g, (px0 + px1) / 2, 70, 'PTFE ピン', { 'text-anchor': 'middle', class: 'lab' });
+    txt(g, px0 - 8, 60, '前', { 'text-anchor': 'end', class: 'note', fill: C.mu }); txt(g, px1 + 8, 60, '後ろ', { class: 'note', fill: C.mu });
+    const u = ph;
+    if (step === 0) { for (let i = 0; i < 4; i++) { const x = px1 + ((u * 240 + i * 60) % 240); flake(x, Y - 2, 6, 2.5); } }
+    if (step === 1) { for (let i = 0; i < 3; i++) { const x = 20 + ((u * 230 + i * 70) % 230); flake(x, Y - 3, 5 + 6 * (x / 230), 3 + 1.5 * (x / 230)); } el('path', { d: `M${px0} ${Y - 10}l8 10`, stroke: C.pk, 'stroke-width': 3 }, g); }
+    if (step === 2) { const x1 = 60 + u * 120, x2 = 150 + u * 40; if (u < .6) { flake(x1, Y - 3, 9, 3); flake(x2, Y - 3, 9, 3); } else flake((x1 + x2) / 2, Y - 4, 18, 4.5); flake(400 + u * 60, Y - 3, 7, 3); if (u > .5) flake(460 + u * 80, Y - 3, 5, 2.5); }
+    if (step === 3) { const x = Math.min(px0 - 22, 60 + u * 300), up = Math.max(0, (u - .6) * 200); flake(x - up * .3, Y - 7 - up, 22, 7, '#fff7d6'); if (u > .6) txt(g, x - 60, Y - 50 - up * .5, '入れずに排除！', { class: 'note', fill: C.pk }); }
+    if (step === 4) { const x = 120 + u * 220, lift = x > px0 + 10 ? Math.min(12, (x - px0 - 10) * .2) : 0; flake(Math.min(x, px0 + 70), Y - 3 - lift, 10, 3); if (lift > 6) txt(g, px0 + 80, Y - 30, 'ピンへ戻る', { class: 'note', fill: C.pk }); }
+  }
+  setStep(0); frame(0);
+  anim('adh', frame);
+}
+
+/* ---------- パターン摩耗 ---------- */
+{
+  const svg = svgEl('patSvg'), wS = svgEl('patW'), g = el('g', {}, svg);
+  const SP = [[.98, .30], [1.47, .42], [1.96, .47]];
+  let tt = 0;
+  function frame(dt) {
+    tt += dt; g.textContent = '';
+    const [W, mm] = SP[(+wS.value)], p = mm * 190, Y = 135, sh = (tt * 18) % p;
+    $('#patWv').textContent = `${W} N → 間隔 ${mm.toFixed(2)} mm`;
+    // 研磨布（上、右へ動く）
+    el('rect', { x: 0, y: 82, width: 620, height: 40, fill: '#b9b5d0', stroke: C.ink, 'stroke-width': 3 }, g);
+    for (let k = 0; k < 40; k++) { const x = ((k * 17 + tt * 80) % 640) - 10; el('path', { d: `M${x} 122l5 6l5 -6`, fill: '#8b8fa8', stroke: C.ink, 'stroke-width': 1 }, g); }
+    el('path', { d: 'M520 70h70', stroke: C.ord, 'stroke-width': 4, 'marker-end': 'url(#arrK)' }, g);
+    txt(g, 510, 74, '研磨布', { 'text-anchor': 'end', class: 'note', fill: C.ord });
+    // ゴム表面：のこぎり状の舌（先端がすべり方向を向く）
+    let d = `M0 ${Y + 30}`;
+    for (let x = -p + sh; x < 640; x += p) d += `L${x} ${Y + 18}Q${x + p * .55} ${Y + 10} ${x + p * .9} ${Y - 6}L${x + p * .98} ${Y + 4}L${x + p * .7} ${Y + 16}Q${x + p * .85} ${Y + 24} ${x + p} ${Y + 18}`;
+    d += `L640 ${Y + 30}V270H0z`;
+    el('path', { d, fill: '#ffd0e4', stroke: C.ink, 'stroke-width': 3 }, g);
+    // 舌の下で伸びる亀裂
+    for (let x = -p + sh; x < 640; x += p) { const grow = ((tt * .5 + x / p * .37) % 1); el('path', { d: `M${x + p * .7} ${Y + 16}l${-p * .35 * grow} ${8 * grow}`, stroke: '#d61f45', 'stroke-width': 2.5 }, g);
+      if (grow > .85) for (let i = 0; i < 3; i++) el('circle', { cx: x + p * .9 + i * 6, cy: Y - 10 - (grow - .85) * 200 - i * 4, r: 3, fill: C.pk, stroke: C.ink, 'stroke-width': 1 }, g); }
+    el('path', { d: `M30 ${Y + 60}h${p}M30 ${Y + 54}v12M${30 + p} ${Y + 54}v12`, stroke: C.ink, 'stroke-width': 2.5 }, g);
+    txt(g, 30 + p / 2, Y + 84, `${mm} mm`, { 'text-anchor': 'middle', class: 'note' });
+    txt(g, 610, 262, '赤：亀裂　ピンク粒：脱落した摩耗粉', { 'text-anchor': 'end', class: 'note', fill: C.mu });
+    txt(g, 20, 262, 'パターンは形を保ったまま移動 →', { class: 'note', fill: C.pk });
+  }
+  frame(0);
+  anim('pat', frame);
+}
+
+/* ---------- SBR‐BR ブレンドの比摩耗量（傾向の模式図） ---------- */
+{
+  const xS = svgEl('blendX');
+  const sig = z => 1 / (1 + Math.exp(-z));
+  const fa = x => 10 ** (-4.3 - x / 100), ff = x => 10 ** (-6.2 - 3 * sig((x - 68) / 5));
+  const A = axes(svgEl('blendPlot'), { x: 80, y: 30, w: 500, h: 220, xr: [0, 100], yr: [1e-10, 1e-3], ylog: true, xt: [0, 20, 40, 60, 80, 100], yt: [1e-9, 1e-7, 1e-5, 1e-3], xl: 'BR（部）　SBR ＝ 100 − BR', yl: '比摩耗量 [mm³/(N·m)]' });
+  const pa = el('path', { d: curve(A, fa), class: 'cv c-or' }, A.clip), pf = el('path', { d: curve(A, ff), class: 'cv c-bl' }, A.clip);
+  const la = txt(A.top, A.X(4), A.Y(fa(4)) - 10, '研磨布 #AA-240（アブレシブ）', { class: 'note', fill: C.ord });
+  const lf = txt(A.top, A.X(4), A.Y(ff(4)) - 10, '金網 #250（疲労摩耗）', { class: 'note', fill: C.bl });
+  const da = el('circle', { r: 8, class: 'mk', fill: C.or }, A.top), df = el('circle', { r: 8, class: 'mk', fill: C.bl }, A.top);
+  let sel = 'both';
+  function draw() {
+    const x = +xS.value;
+    da.setAttribute('cx', A.X(x)); da.setAttribute('cy', A.Y(fa(x))); df.setAttribute('cx', A.X(x)); df.setAttribute('cy', A.Y(ff(x)));
+    [pa, la, da].forEach(e => e.classList.toggle('dim', sel === 'fat'));
+    [pf, lf, df].forEach(e => e.classList.toggle('dim', sel === 'abr'));
+    $('#blendXv').textContent = `SBR${100 - x}/BR${x}　研磨布 ${tenPow(fa(x))}　金網 ${tenPow(ff(x))}`;
+  }
+  segSel('blendSel', d => { sel = d.k; draw(); });
+  xS.addEventListener('input', draw); draw();
+}
+
+/* ---------- まとめマップ ---------- */
+{
+  const svg = svgEl('mapSvg');
+  const N = (id, x, y, w, t, s, c, d) => ({ id, x, y, w, t, s, c, d });
+  const nodes = [
+    N('c', 575, 255, 250, 'トライボロジー', '相対運動する表面の科学と技術', '#ffd53d', 0),
+    N('fr', 575, 70, 260, '摩擦', '3法則・凝着説・F＝F_{adh}＋F_{def}', '#ffe1c7', .1),
+    N('we', 1000, 255, 240, '摩耗', '8つの形態・比摩耗量', '#d5f5f3', .15),
+    N('lu', 150, 255, 240, '潤滑', '境界・混合・流体潤滑', '#dfe8ff', .2),
+    N('su', 220, 70, 250, '表面と接触', '粗さ・表面層・A＝W/p', '#ffe0ee', .25),
+    N('ro', 930, 70, 240, '転がり摩擦', 'ヒステリシス・微小すべり', '#ece6ff', .3),
+    N('ru', 575, 435, 300, 'ゴム（粘弾性）', 'μ‐V マスターカーブ・水・氷', '#ffe0ee', .35),
+    N('hi', 180, 435, 240, '歴史と経済', 'ダ・ヴィンチ → Jost 報告', '#fff1c2', .4),
+    N('ap', 970, 435, 280, '製品', 'タイヤ・ベルト・ロール・シール', '#d9f7e6', .45),
+  ];
+  const at = Object.fromEntries(nodes.map(n => [n.id, n]));
+  [['c', 'fr'], ['c', 'we'], ['c', 'lu'], ['c', 'su'], ['c', 'ro'], ['c', 'ru'], ['c', 'hi'], ['c', 'ap'], ['su', 'fr'], ['fr', 'ro'], ['ro', 'we'], ['su', 'lu'], ['lu', 'hi'], ['ru', 'ap'], ['we', 'ap'], ['hi', 'ru']].forEach(([a, b], i) => {
+    el('path', { d: `M${at[a].x} ${at[a].y}L${at[b].x} ${at[b].y}`, class: 'lk', style: `--d:${.05 + i * .03}s` }, svg);
+  });
+  nodes.forEach(n => {
+    const g = el('g', { class: 'nd' + (n.id === 'c' ? ' ce' : ''), style: `--d:${n.d}s` }, svg), h = n.id === 'c' ? 84 : 62;
+    el('rect', { x: n.x - n.w / 2, y: n.y - h / 2, width: n.w, height: h, rx: 16, style: `fill:${n.c};filter:drop-shadow(4px 4px 0 #1f1a3d)` }, g);
+    txt(g, n.x, n.y - (n.id === 'c' ? 2 : 4), n.t);
+    txt(g, n.x, n.y + (n.id === 'c' ? 26 : 18), n.s, { class: 'sm' });
+  });
+}
+/* ---------- 復習問題：カードをクリックすると答えが出る（もう一度押すと隠れる） ---------- */
+{
+  document.querySelectorAll('.qz').forEach(q => q.addEventListener('click', () => {
+    const open = q.classList.toggle('open');
+    q.querySelectorAll('.qgb').forEach(g => g.classList.toggle('shown', open));
+  }));
+  // 図の ? は 1 つずつクリックで開ける。全部開いたら答えの文も出す
+  document.querySelectorAll('.qgb').forEach(g => g.addEventListener('click', e => {
+    e.stopPropagation();
+    g.classList.toggle('shown');
+    const q = g.closest('.qz'), all = [...q.querySelectorAll('.qgb')];
+    q.classList.toggle('open', all.every(x => x.classList.contains('shown')));
+  }));
+  document.querySelectorAll('[data-quiz-all]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation(); b.blur();
+    const qs = [...b.closest('.slide').querySelectorAll('.qz')], open = !qs.every(q => q.classList.contains('open'));
+    qs.forEach(q => { q.classList.toggle('open', open); q.querySelectorAll('.qgb').forEach(g => g.classList.toggle('shown', open)); });
+    b.textContent = open ? '答えをぜんぶ隠す' : '答えをぜんぶ表示';
+  }));
+  // スライドを開くたびに答えを隠した状態に戻す
+  const reset = id => () => {
+    const sl = document.querySelector(`.slide[data-id="${id}"]`);
+    sl.querySelectorAll('.qz').forEach(q => q.classList.remove('open'));
+    sl.querySelectorAll('.qgb').forEach(g => g.classList.remove('shown'));
+    sl.querySelector('[data-quiz-all]').textContent = '答えをぜんぶ表示';
+  };
+
+  onSlide('quiz', reset('quiz'));
+  // 印刷（配布資料）では答えも見えるようにする
+  addEventListener('beforeprint', () => document.querySelectorAll('.qz, .qgb').forEach(q => q.classList.add(q.classList.contains('qz') ? 'open' : 'shown')));
+}
+/* ---------- スライド制御 ---------- */
+const stage = $('#stage');
+function fit() {
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+
+const slides = [...document.querySelectorAll('.slide')];
+slides.forEach((s, i) => { const p = s.querySelector('.pageno'); if (p) p.textContent = `${i + 1} / ${slides.length}`; });
+let cur = 0;
+const frags = s => [...s.querySelectorAll('.frag')];
+function showFrag(f, on) {
+  f.classList.toggle('vis', on);
+  if (f.dataset.slideClass) f.closest('.slide').classList.toggle(f.dataset.slideClass, on);
+}
+function go(n, showAll = false) {
+  if (n < 0 || n >= slides.length) return;
+  stoppers.forEach(f => f());
+  cur = n;
+  slides.forEach((s, i) => { s.classList.toggle('active', i === n); s.classList.toggle('past', i < n); });
+  frags(slides[n]).forEach(f => showFrag(f, showAll));
+  $('#counter').textContent = `${n + 1} / ${slides.length}`;
+  $('#progress').style.width = `${(n + 1) / slides.length * 100}%`;
+  history.replaceState(null, '', '#' + (n + 1));
+  const id = slides[n].dataset.id;
+  if (window.onEnter && onEnter[id]) onEnter[id]();
+  // 自動再生ボタンのあるスライドは、開いた時点で再生を始める（ボタンで停止できる）
+  slides[n].querySelectorAll('[data-autoplay]').forEach(b => b.click());
+  ink.render();
+}
+function next() {
+  const f = frags(slides[cur]).find(x => !x.classList.contains('vis'));
+  if (f) showFrag(f, true); else go(cur + 1);
+}
+function prev() {
+  const v = frags(slides[cur]).filter(x => x.classList.contains('vis'));
+  if (v.length) showFrag(v[v.length - 1], false); else go(cur - 1, true);
+}
+function fullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+}
+let overview = false;
+function layoutOverview() {
+  const cols = innerWidth < 900 ? 2 : innerWidth < 1400 ? 3 : 4;
+  const w = (document.body.clientWidth - 48 - 22 * (cols - 1)) / cols;
+  stage.style.setProperty('--cols', cols);
+  stage.style.setProperty('--z', w / 1280);
+  stage.style.setProperty('--ow', `${w}px`);
+  stage.style.setProperty('--oh', `${w * 720 / 1280}px`);
+}
+function markCurrent() { slides.forEach((s, i) => s.classList.toggle('current', i === cur)); }
+function toggleOverview(on = !overview) {
+  overview = on;
+  document.body.classList.toggle('overview', on);
+  if (on) {
+    stoppers.forEach(f => f());
+    layoutOverview(); markCurrent();
+    slides[cur].scrollIntoView({ block: 'center' });
+  } else {
+    document.body.scrollTop = 0;
+    go(cur);
+  }
+}
+slides.forEach((s, i) => s.addEventListener('click', () => {
+  if (!overview) return;
+  cur = i; toggleOverview(false);
+}));
+addEventListener('resize', () => { if (overview) layoutOverview(); });
+addEventListener('keydown', e => {
+  if (overview) {
+    if (['o', 'O', 'Escape'].includes(e.key)) toggleOverview(false);
+    else if (e.key === 'Enter') { e.preventDefault(); toggleOverview(false); }
+    else if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+      e.preventDefault();
+      cur = Math.max(0, Math.min(slides.length - 1, cur + (e.key === 'ArrowRight' ? 1 : -1)));
+      markCurrent(); slides[cur].scrollIntoView({ block: 'nearest' });
+    }
+    return;
+  }
+  if (e.target.tagName === 'SUMMARY' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'p' || e.key === 'P') return ink.setTool(ink.tool() === 'pen' ? 'laser' : 'pen');
+  if (e.key === 'z' || e.key === 'Z') return ink.undo();
+  if (e.key === 'o' || e.key === 'O') return toggleOverview(true);
+  if (['ArrowRight', 'PageDown', ' ', 'Enter', 'ArrowDown'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace', 'ArrowUp'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(slides.length - 1);
+  else if (e.key === 'f' || e.key === 'F') fullscreen();
+});
+let tx = null;
+// スライダー操作や Apple Pencil のタッチはスワイプのページ送りに使わない
+addEventListener('touchstart', e => tx = laser.blocksSwipe(e.touches[0]) || e.target.closest('input') ? null : e.touches[0].clientX, { passive: true });
+addEventListener('touchend', e => {
+  if (tx === null || overview) return;
+  const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 60) dx < 0 ? next() : prev();
+});
+// Apple Pencil のタッチは、Safari のスクリブル（手書き入力）・スクロール・拡大鏡などの判定に使わせない。
+// これらが働くと、速く書いたときにペンの動きが一瞬ページに届かなくなり、固まって見えるため。
+// タッチの既定の動作を止めるとクリックも起きなくなるので、ペンで軽くタップしたときはこちらでクリックを送る
+let penTap = null;
+const findPen = e => penTap && [...e.changedTouches].find(t => t.identifier === penTap.id);
+stage.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  if (t.touchType !== 'stylus' || overview || e.target.closest('input')) return;
+  e.preventDefault();
+  penTap = { id: t.identifier, x: t.clientX, y: t.clientY, target: e.target, moved: 0 };
+}, { passive: false });
+stage.addEventListener('touchmove', e => {
+  const t = findPen(e);
+  if (!t) return;
+  e.preventDefault();
+  penTap.moved = Math.max(penTap.moved, Math.hypot(t.clientX - penTap.x, t.clientY - penTap.y));
+}, { passive: false });
+stage.addEventListener('touchend', e => {
+  const t = findPen(e);
+  if (!t) return;
+  const { target, moved } = penTap;
+  penTap = null;
+  // ほとんど動かさなかったときはタップとみなしてクリックを送る（ボタン・回路の入力・復習問題のカードなど）
+  if (moved < 8) {
+    if (typeof target.click === 'function') target.click();
+    else target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: t.clientX, clientY: t.clientY }));
+  }
+});
+stage.addEventListener('touchcancel', () => { penTap = null; });
+$('#btnNext').onclick = e => { e.currentTarget.blur(); next(); };
+$('#btnPrev').onclick = e => { e.currentTarget.blur(); prev(); };
+$('#btnFs').onclick = e => { e.currentTarget.blur(); fullscreen(); };
+$('#btnOv').onclick = e => { e.currentTarget.blur(); toggleOverview(true); };
+$('#btnOvClose').onclick = e => { e.currentTarget.blur(); toggleOverview(false); };
+addEventListener('beforeprint', () => slides.forEach(s => frags(s).forEach(f => showFrag(f, true))));
+/* ---------- 黒ペン ----------
+   右下の道具で「黒ペン」を選ぶと、Apple Pencil（パソコンではマウス）でスライドに書き込める。指では書かない（指はスワイプやタップに使う）。
+   ペン先で軽くタップしただけのときは線を残さず、ボタンや入力の丸のクリックとして扱う。
+   書き込みはスライドごとに保持し、ページを戻ると再表示される（再読み込みで消える）。 */
+const ink = (() => {
+  const W = 1280, H = 720, COLOR = '#111';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ink';
+  stage.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const bar = $('#penbar');
+  const pages = slides.map(() => ({ strokes: [], undo: [] }));
+  let tool = 'laser', active = null;
+
+  function resize() {
+    const k = Math.min(4096 / W, stage.getBoundingClientRect().width / W * (devicePixelRatio || 1));
+    canvas.width = Math.round(W * k); canvas.height = Math.round(H * k);
+    render();
+  }
+  // 筆圧で太さを変え、点の中点を結ぶ曲線でなめらかにする。i 番目の区間は p[i-1]・p[i]・p[i+1] で決まる
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  function drawSeg(p, i) {
+    const m0 = i === 1 ? p[0] : mid(p[i - 1], p[i]);
+    const m1 = i === p.length - 1 ? p[i] : mid(p[i], p[i + 1]);
+    ctx.lineWidth = 4 * (.4 + p[i][2] * 1.2);
+    ctx.beginPath(); ctx.moveTo(m0[0], m0[1]); ctx.quadraticCurveTo(p[i][0], p[i][1], m1[0], m1[1]); ctx.stroke();
+  }
+  function drawStroke(p) { for (let i = 1; i < p.length; i++) drawSeg(p, i); }
+  // スライド全体の描き直し（元に戻す・消しゴム・スライド切り替えなどのときだけ）
+  function render() {
+    const k = canvas.width / W;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.strokeStyle = COLOR; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    pages[cur].strokes.forEach(drawStroke);
+    if (active && active.pts) { drawStroke(active.pts); active.drawn = active.pts.length - 2; }
+  }
+  // 書いている途中は、まだ描いていない区間だけを描き足す（毎回全部を描き直すと速く書いたときに固まるため）。
+  // 最後の区間は次の点が来ないと形が決まらないので、ペンを離したときに描く
+  function drawNew(final) {
+    const p = active.pts, upto = final ? p.length - 1 : p.length - 2;
+    for (let i = Math.max(1, active.drawn + 1); i <= upto; i++) drawSeg(p, i);
+    active.drawn = Math.max(active.drawn, upto);
+  }
+  // ペンの点はたくさん届くので、画面の書き換え 1 回につき 1 回だけまとめて描く
+  let queued = false;
+  function flush() {
+    queued = false;
+    if (!active) return;
+    if (active.pts) drawNew(false);
+    else if (active.erase.length) { const qs = active.erase; active.erase = []; if (qs.map(eraseAt).some(Boolean)) render(); }
+  }
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(flush); } };
+  function toStage(e) {
+    const r = stage.getBoundingClientRect();
+    // マウスは筆圧が取れないので 0.5 として扱う
+    const pr = e.pointerType === 'pen' && e.pressure > 0 ? e.pressure : .5;
+    return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H, pr];
+  }
+  function snapshot() { const pg = pages[cur]; pg.undo.push(pg.strokes.slice()); if (pg.undo.length > 100) pg.undo.shift(); }
+  function segDist(q, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const t = L ? Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L)) : 0;
+    return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy);
+  }
+  // q の近くを通る線を消す。消したら true（描き直しは呼び出し側でまとめて行う）
+  function eraseAt(q) {
+    const pg = pages[cur];
+    const keep = pg.strokes.filter(st => !st.some((pt, i) => segDist(q, st[Math.max(0, i - 1)], pt) < 14));
+    if (keep.length === pg.strokes.length) return false;
+    if (!active.erased) { snapshot(); active.erased = true; }
+    pg.strokes = keep;
+    return true;
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    if (overview || active || tool === 'laser' || e.target.closest('input')) return;
+    if (!(e.pointerType === 'pen' || (e.pointerType === 'mouse' && e.button === 0))) return;
+    e.preventDefault();
+    const q = toStage(e);
+    // ペンの消しゴム側（対応ペンのみ）は消しゴムとして扱う
+    const erase = tool === 'eraser' || e.button === 5;
+    active = { id: e.pointerId, start: q, moved: 0, pts: erase ? null : [q], drawn: 0, erase: [] };
+    if (erase) { if (eraseAt(q)) render(); }
+  });
+  addEventListener('pointermove', e => {
+    if (!active || e.pointerId !== active.id) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of evs.length ? evs : [e]) {
+      const q = toStage(ev);
+      active.moved = Math.max(active.moved, Math.hypot(q[0] - active.start[0], q[1] - active.start[1]));
+      if (active.pts) {
+        // ほとんど動いていない点は間引く（見た目は変わらず、描く量が減る）
+        const last = active.pts[active.pts.length - 1];
+        if (Math.hypot(q[0] - last[0], q[1] - last[1]) >= 1.2) active.pts.push(q); else last[2] = Math.max(last[2], q[2]);
+      } else active.erase.push(q);
+    }
+    schedule();
+  }, { passive: false });
+  function end(e) {
+    if (!active || e.pointerId !== active.id) return;
+    flush();
+    // ほとんど動かさなかったペン先はタップ（クリック）として扱い、線は残さない
+    if (active.pts && active.moved >= 4) {
+      drawNew(true); snapshot(); pages[cur].strokes.push(active.pts); active = null;
+    } else { active = null; render(); }
+  }
+  addEventListener('pointerup', end);
+  addEventListener('pointercancel', end);
+
+  function setTool(t) {
+    tool = t;
+    bar.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
+  }
+  function undo() { const pg = pages[cur]; if (pg.undo.length) { pg.strokes = pg.undo.pop(); render(); } }
+  bar.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => { b.blur(); setTool(b.dataset.tool); });
+  $('#inkUndo').onclick = e => { e.currentTarget.blur(); undo(); };
+  $('#inkClear').onclick = e => {
+    e.currentTarget.blur();
+    if (pages[cur].strokes.length) { snapshot(); pages[cur].strokes = []; render(); }
+  };
+  addEventListener('resize', resize);
+  resize();
+  return { render, undo, setTool, tool: () => tool, drawing: () => !!active };
+})();
+
+/* ---------- レーザーポインター ----------
+   Apple Pencil のペン先を画面に当てている間だけ赤く光る点を表示し、なぞった軌跡を光らせる（書き込みは残らない）。
+   軌跡はペンを離してから約1秒で消える。消えきる前にもう一度ペンを当てると、それまでの軌跡は消えずに残り続ける。
+   軽いタップは今までどおり回路の入力やボタンのクリックとして扱う。 */
+const laser = (() => {
+  const W = 1280, H = 720, LIFE = 1000;
+  const canvas = document.createElement('canvas');
+  canvas.id = 'laser';
+  stage.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  // trail は線ごとの点の配列。fadeFrom はペンを離した時刻（ペンを当てている間は null）
+  let trail = [], down = null, raf = 0, fadeFrom = null;
+
+  function resize() {
+    const k = Math.min(4096 / W, stage.getBoundingClientRect().width / W * (devicePixelRatio || 1));
+    canvas.width = Math.round(W * k); canvas.height = Math.round(H * k);
+    kick();
+  }
+  function toStage(e) {
+    const r = stage.getBoundingClientRect();
+    return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H];
+  }
+  const level = () => fadeFrom === null ? 1 : Math.max(0, 1 - (performance.now() - fadeFrom) / LIFE);
+  function frame() {
+    raf = 0;
+    const k = canvas.width / W, f = level();
+    if (!f) trail = [];
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // 影のぼかし（shadowBlur）は重いので使わず、太い半透明の線の上に細い線を重ねて光って見せる
+    const path = new Path2D();
+    trail.forEach(line => { path.moveTo(line[0][0], line[0][1]); line.forEach(q => path.lineTo(q[0], q[1])); });
+    ctx.strokeStyle = `rgba(255,40,70,${.18 * f})`; ctx.lineWidth = 6 + 14 * f; ctx.stroke(path);
+    ctx.strokeStyle = `rgba(255,40,70,${.8 * f})`; ctx.lineWidth = 2 + 5 * f; ctx.stroke(path);
+    if (down) {
+      const [x, y] = down.pos, g = ctx.createRadialGradient(x, y, 0, x, y, 13);
+      g.addColorStop(0, '#fff'); g.addColorStop(.35, '#ff5a6e'); g.addColorStop(1, 'rgba(255,30,60,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2); ctx.fill();
+    }
+    if (fadeFrom !== null && trail.length) kick();
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+  function add(q) {
+    const line = trail[trail.length - 1], last = line[line.length - 1];
+    // ほとんど動いていない点は間引く
+    if (!last || Math.hypot(q[0] - last[0], q[1] - last[1]) >= 1.5) line.push(q);
+    down.pos = q;
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    if (overview || e.pointerType !== 'pen' || down || e.target.closest('input') || ink.tool() !== 'laser') return;
+    e.preventDefault();
+    // 前の軌跡が消えきっていなければ残したまま続ける
+    if (!level()) trail = [];
+    fadeFrom = null; down = { id: e.pointerId, pos: null };
+    trail.push([]); add(toStage(e)); kick();
+  });
+  addEventListener('pointermove', e => {
+    if (!down || e.pointerId !== down.id) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    (evs.length ? evs : [e]).forEach(ev => add(toStage(ev)));
+    kick();
+  }, { passive: false });
+  const up = e => { if (down && e.pointerId === down.id) { down = null; fadeFrom = performance.now(); kick(); } };
+  addEventListener('pointerup', up);
+  addEventListener('pointercancel', up);
+  addEventListener('resize', resize);
+  resize();
+
+  // Apple Pencil のタッチはスワイプのページ送りに使わない
+  return { blocksSwipe: t => t.touchType === 'stylus' || !!down };
+})();
+
+go(Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1)) || 1) - 1)));
+</script>
+</body>
+</html>
