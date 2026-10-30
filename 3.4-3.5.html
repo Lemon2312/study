@@ -772,7 +772,6 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     <div class="card pop" style="--d:.2s;padding:16px 20px">
       <div class="pipe-row"><div class="pipe-lab">古典<br>ゲート</div><div class="pipe"><span class="tok" id="gcIn">0</span><span class="pwire" id="gcW1"></span><span class="gbox" id="gcG">NOT</span><span class="pwire" id="gcW2"></span><span class="tok" id="gcOut">1</span></div></div>
       <div class="pipe-row q"><div class="pipe-lab">量子<br>ゲート</div><div class="pipe"><span class="tok q" id="gqIn">|0⟩</span><span class="pwire" id="gqW1"></span><span class="gbox q" id="gqG">X</span><span class="pwire" id="gqW2"></span><span class="tok q" id="gqOut">|1⟩</span></div></div>
-      <div class="pipe-note" id="gNote"></div>
       <div class="hint" style="text-align:center">※ X・H・Z は第4章で詳しく扱う量子ゲートの例</div>
       <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="gAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
@@ -1800,10 +1799,10 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 /* ---------- 古典のゲートと量子ゲート ---------- */
 {
   const ex = [
-    { c: ['NOT', '0', '1'], q: ['X', '|0⟩', '|1⟩'], note: '古典の NOT は 0 を 1 に。量子ゲート X は |0⟩ を |1⟩ に（NOT に対応）' },
-    { c: ['NOT', '1', '0'], q: ['X', '|1⟩', '|0⟩'], note: 'X は |1⟩ を |0⟩ に。ここまでは古典と同じ' },
-    { c: ['AND', '1 1', '1'], q: ['H', '|0⟩', '(|0⟩+|1⟩)/√2'], note: '量子ゲート H は |0⟩ から <b>重ね合わせ状態</b> をつくれる（古典にはない！）' },
-    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'], note: '' },
+    { c: ['NOT', '0', '1'], q: ['X', '|0⟩', '|1⟩'] },
+    { c: ['NOT', '1', '0'], q: ['X', '|1⟩', '|0⟩'] },
+    { c: ['AND', '1 1', '1'], q: ['H', '|0⟩', '(|0⟩+|1⟩)/√2'] },
+    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'] },
   ];
   const ids = ['In', 'W1', 'G', 'W2', 'Out'];
   const C = Object.fromEntries(ids.map(s => [s, $('#gc' + s)])), Q = Object.fromEntries(ids.map(s => [s, $('#gq' + s)]));
@@ -1822,7 +1821,6 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
       tb.later(() => { R.W2.classList.add('on'); }, 1250);
       tb.later(() => { R.Out.classList.remove('hid'); R.G.classList.remove('on'); }, 1700);
     });
-    $('#gNote').innerHTML = e.note;
   }
   looper('#gAuto', play, 3600);
   onEnter.gates = () => { k = 0; };
