@@ -796,7 +796,6 @@ table.tt.small td .eq.inline .vec{font-size:15px}
         <svg class="plane" id="uPlane" style="height:236px"></svg>
         <div class="u-eqs"><div class="eq" id="uEq"></div><div class="eq u-res" id="uRes"></div></div>
       </div>
-      <div class="u-check" id="uCheck"></div>
       <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="uAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
@@ -1877,7 +1876,6 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const Ins = [
     { label: '|0⟩', v: [1, 0] },
     { label: '|1⟩', v: [0, 1] },
-    { label: '(1/√5, 2/√5)', v: [S5, 2 * S5] },
   ];
   let U = Us[0], v = Ins[0].v, cancel = () => {};
   function draw() {
@@ -1889,12 +1887,11 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     cancel = gateAnim(v, U.M, 1000, b => { after(b); pts.push(b); tr(pts); });
     $('#uEq').innerHTML = `${M_('U|φ⟩ =')}${matH(U.show)}${vecH(fmt(v[0]), fmt(v[1]))}`;
     $('#uRes').innerHTML = `${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}<span style="font-size:15px;font-weight:700">（長さ² = ${fmt(w[0] ** 2 + w[1] ** 2)}）</span>`;
-    $('#uCheck').innerHTML = `<span class="eq inline">${M_('U<sup>†</sup>U =')}${numMat(mmul(tr2(U.M), U.M))}${M_('= I')}</span>　✓ ${U.label} はユニタリ行列 → <b>${axisName(axisOf(U.M))}のまわりに球を回すだけ</b>`;
   }
   const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
   const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); v = s.v; draw(); });
   let k = 0;
-  const stop = looper('#uAuto', () => { const j = k++; setIn(Math.floor(j / 3) % 3); setU(j % 3); }, 2300);
+  const stop = looper('#uAuto', () => { const j = k++; setIn(Math.floor(j / 3) % 2); setU(j % 3); }, 2300);
   onEnter.unitary = () => { k = 0; };
   setU(0); setIn(0);
 }
