@@ -926,7 +926,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       <svg class="plane" id="rvPlane" style="height:270px"></svg>
       <div class="rv-chain" id="rvChain"></div>
       <div class="rv-msg" id="rvMsg"></div>
-      <div class="hint" style="text-align:center;margin:0">※ R(θ)・S・H・X は例（S は |1⟩ の係数に i をかけるゲート）。紫の線が通った道すじ</div>
+      <div class="hint" style="text-align:center;margin:0">※ R<sub>y</sub>(θ) は y 軸のまわりに θ 回すゲート、S は |1⟩ の係数に i をかけるゲート（z 軸まわり）。緑の線が回転軸、紫の線が通った道すじ</div>
       <div class="btns" style="justify-content:center"><button class="b" id="rvDo">▶ U をかける</button><button class="b" id="rvUndo">◀ U⁻¹ で戻す</button><button class="b" id="rvAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
@@ -1076,7 +1076,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     <div class="card pop" style="--d:.2s;padding:10px 16px">
       <div class="picker" id="d2Pick" data-label="かける U"></div>
       <svg class="plane" id="d2Plane" style="height:220px"></svg>
-      <label class="qslider" id="d2Sl" style="grid-template-columns:110px 1fr 52px"><span style="font-size:15px">回転の角度</span><input type="range" id="d2Th" min="-180" max="180" step="any"><span class="qs-val" id="d2Thv"></span></label>
+      <label class="qslider" id="d2Sl" style="grid-template-columns:110px 1fr 52px"><span style="font-size:15px">回転の角度</span><input type="range" id="d2Th" min="-360" max="360" step="any"><span class="qs-val" id="d2Thv"></span></label>
       <div class="sm-hists">
         <div><div class="sm-cap" style="color:#e04e00" id="d2CapA"></div><div class="hbars mini" id="d2BarsA"></div></div>
         <div><div class="sm-cap" style="color:#3b6cff" id="d2CapB"></div><div class="hbars mini" id="d2BarsB"></div></div>
@@ -1649,6 +1649,15 @@ function rotOf(M) {
   return { n: [-b[1] / sn, -b[0] / sn, -a[1] / sn], th };
 }
 const vlen = v => Math.hypot(...v);
+/* ゲート M の回転軸（回転しない・ユニタリでないときは null）と、その呼び名 */
+const axisOf = M => { if (!isUnit(M)) return null; const r = rotOf(M); return r.th > 1e-6 ? r.n : null; };
+const axisName = n => {
+  if (!n) return '';
+  const a = n.map(Math.abs), near = (v, w) => Math.abs(v - w) < 1e-6;
+  if (near(a[0], 1)) return 'x 軸'; if (near(a[1], 1)) return 'y 軸'; if (near(a[2], 1)) return 'z 軸';
+  if (near(a[1], 0) && near(a[0], a[2])) return 'x 軸と z 軸の間の軸';
+  return '回転軸';
+};
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const rodr = (v, n, t) => { const c = Math.cos(t), s = Math.sin(t), k = cross(n, v), d = dot3(n, v); return [0, 1, 2].map(i => v[i] * c + k[i] * s + n[i] * d * (1 - c)); };
@@ -1771,24 +1780,48 @@ function blochSphere(svg, { W = 300, H = 290, CX = W / 2, CY = H / 2, R = 100, m
     const [x, y, d] = proj(...b);
     return el('circle', { cx: x, cy: y, r: 4, ...attrs, opacity: d >= 0 ? (attrs.opacity ?? .8) : .3 }, parent);
   };
-  return { svg, proj, point, trail, dot, sphere, gBack, gTrail, gTop, CX, CY, R };
+  // 回転軸：球を貫く緑の線と、その名前
+  const gAxis = el('g', { visibility: 'hidden' }, gTrail);
+  const axB = el('line', { stroke: '#14a35a', 'stroke-width': 3, 'stroke-dasharray': '7 5', opacity: .45 }, gAxis);
+  const axF = el('line', { stroke: '#14a35a', 'stroke-width': 3.5, 'stroke-dasharray': '7 5' }, gAxis);
+  const axT = el('text', { 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#14a35a', stroke: '#fffaf0', 'stroke-width': 4, 'paint-order': 'stroke' }, gAxis);
+  axT.textContent = '回転軸';
+  const setAxis = (n, { label = true } = {}) => {
+    gAxis.setAttribute('visibility', n ? 'visible' : 'hidden');
+    if (!n) return;
+    // 手前に来る側を実線にする
+    const s = proj(...n)[2] >= 0 ? 1 : -1, m = n.map(c => c * s);
+    const [x0, y0] = proj(0, 0, 0), [x1, y1] = proj(...m.map(c => c * 1.2)), [x2, y2] = proj(...m.map(c => -c * 1.2));
+    axF.setAttribute('x1', x0); axF.setAttribute('y1', y0); axF.setAttribute('x2', x1); axF.setAttribute('y2', y1);
+    axB.setAttribute('x1', x0); axB.setAttribute('y1', y0); axB.setAttribute('x2', x2); axB.setAttribute('y2', y2);
+    // 名前は画面で下にくる端の横に置き、|0⟩・|1⟩ などの文字や上の見出しと重ならないようにする
+    axT.style.display = label ? '' : 'none';
+    const [ex, ey] = y1 >= y2 ? [x1, y1] : [x2, y2], dl = Math.hypot(ex - x0, ey - y0) || 1;
+    let px = -(ey - y0) / dl, py = (ex - x0) / dl;
+    if (px < 0 || (Math.abs(px) < .3 && py < 0)) { px = -px; py = -py; }
+    axT.setAttribute('x', ex + px * 14); axT.setAttribute('y', ey + py * 14 + 5);
+    axT.setAttribute('text-anchor', px > .3 ? 'start' : 'middle');
+  };
+  return { svg, proj, point, trail, dot, sphere, gBack, gTrail, gTop, CX, CY, R, setAxis };
 }
 
 const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- タイトル：量子ゲートをかけるたびに、ブロッホ球の上を状態が動く ---------- */
 {
-  const bs = blochSphere('#titlePlane', { W: 330, H: 310, CX: 160, CY: 165, R: 108 });
+  const bs = blochSphere('#titlePlane', { W: 330, H: 345, CX: 160, CY: 178, R: 108 });
   const tr = bs.trail('#8a5cff');
   const pt = bs.point('#ff6b1a', { label: '|φ⟩', lcolor: '#e04e00' });
   const gl = el('text', { x: 165, y: 22, 'text-anchor': 'middle', 'font-size': 19, 'font-weight': 800, fill: '#8a5cff' }, bs.svg);
+  const ga = el('text', { x: 165, y: 340, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, fill: '#14a35a' }, bs.svg);
   const Hm = [[S2, S2], [S2, -S2]], Sm = [[1, 0], [0, [0, 1]]];
-  const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['R(50°)', rot(50)], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
+  const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['R_{y}(100°)', rot(50)], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
   let v = cvec([1, 0]), i = 0, pts = [bvec(v)], cancel = () => {};
   pt(bvec(v));
   looper('#titleAuto', () => {
     const [name, M] = seq[i++ % seq.length];
-    gl.textContent = `量子ゲート ${name} をかける`;
+    rich(gl, `量子ゲート ${name} をかける`);
+    const n = axisOf(M); bs.setAxis(n, { label: false }); ga.textContent = `回転軸：${axisName(n)}`;
     cancel(); pts = pts.slice(-90);
     cancel = gateAnim(v, M, 1100, b => { pt(b, 'U|φ⟩'); pts.push(b); tr(pts); });
     v = cmulv(M, v);
@@ -1837,7 +1870,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     { label: 'X', M: [[0, 1], [1, 0]], show: [['0', '1'], ['1', '0']] },
     { label: 'Z', M: [[1, 0], [0, -1]], show: [['1', '0'], ['0', '−1']] },
     { label: 'H', M: [[S2, S2], [S2, -S2]], show: [[FR(1, '√2'), FR(1, '√2')], [FR(1, '√2'), FR('−1', '√2')]] },
-    { label: 'R(30°)', M: rot(30), show: [['cos30°', '−sin30°'], ['sin30°', 'cos30°']] },
+    { label: 'R<sub>y</sub>(60°)', M: rot(30), show: [['cos30°', '−sin30°'], ['sin30°', 'cos30°']] },
   ];
   const Ins = [
     { label: '|0⟩', v: [1, 0] },
@@ -1850,10 +1883,11 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     before(bvec(v));
     cancel();
     const pts = [];
+    bs.setAxis(axisOf(U.M));
     cancel = gateAnim(v, U.M, 1000, b => { after(b); pts.push(b); tr(pts); });
     $('#uEq').innerHTML = `${M_('U|φ⟩ =')}${matH(U.show)}${vecH(fmt(v[0]), fmt(v[1]))}`;
     $('#uRes').innerHTML = `${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}<span style="font-size:15px;font-weight:700">（長さ² = ${fmt(w[0] ** 2 + w[1] ** 2)}）</span>`;
-    $('#uCheck').innerHTML = `<span class="eq inline">${M_('U<sup>†</sup>U =')}${numMat(mmul(tr2(U.M), U.M))}${M_('= I')}</span>　✓ ${U.label} はユニタリ行列 → <b>球を回すだけ</b>`;
+    $('#uCheck').innerHTML = `<span class="eq inline">${M_('U<sup>†</sup>U =')}${numMat(mmul(tr2(U.M), U.M))}${M_('= I')}</span>　✓ ${U.label} はユニタリ行列 → <b>${axisName(axisOf(U.M))}のまわりに球を回すだけ</b>`;
   }
   const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
   const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); v = s.v; draw(); });
@@ -1915,7 +1949,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const note = el('text', { x: 125, y: 246, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800 }, bs.svg);
   bs.sphere.setAttribute('stroke-width', 3.5);
   const Ms = [
-    { label: 'R(60°)', M: rot(60), ok: true },
+    { label: 'R<sub>y</sub>(120°)', M: rot(60), ok: true },
     { label: 'H', M: [[S2, S2], [S2, -S2]], ok: true },
     { label: '✗ 例1', M: [[1, 1], [0, 1]], ok: false, cls: 'bad' },
     { label: '✗ 例2', M: [[1, 0], [0, .5]], ok: false, cls: 'bad' },
@@ -1926,7 +1960,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   function draw() {
     const t = deg * Math.PI / 180, v = [Math.cos(t), Math.sin(t)], w = mul(M.M, v);
     const name = M.ok ? 'U' : 'M', s = w[0] ** 2 + w[1] ** 2, ok = Math.abs(s - 1) < .005;
-    before(bvec(v)); after(bvec(w), `${name}|φ⟩`);
+    before(bvec(v)); after(bvec(w), `${name}|φ⟩`); bs.setAxis(axisOf(M.M));
     bs.sphere.setAttribute('stroke', ok ? '#14a35a' : '#d61f45');
     note.textContent = ok ? '球面の上 → 量子状態' : s < 1 ? '球の内側へ → 量子状態ではない' : '球の外側へ → 量子状態ではない';
     note.setAttribute('fill', ok ? '#14a35a' : '#d61f45');
@@ -1957,6 +1991,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const dots = el('g', {}, bs.gTrail);
   const target = bs.point('#ff4f9a', { width: 3, dash: '4 4', r: 6, label: '目標', lcolor: '#d61f45' });
   const best = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
+  bs.setAxis([0, 1, 0]);
   const sT = $('#skT'), sN = $('#skN');
   // G はブロッホ球を y 軸のまわりに 1 ラジアン（約 57.3°）回す。|0⟩ から始めると x-z の大円の上を進む
   const B = a => [Math.sin(a), 0, Math.cos(a)];
@@ -2000,11 +2035,11 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const ar = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
   const Hm = [[S2, S2], [S2, -S2]];
   const gates = [
-    { n: 'R(40°)', inv: 'R(−40°)', M: rot(40), Mi: rot(-40) },
+    { n: 'R<sub>y</sub>(80°)', inv: 'R<sub>y</sub>(−80°)', M: rot(40), Mi: rot(-40) },
     { n: 'S', inv: 'S⁻¹', M: [[1, 0], [0, [0, 1]]], Mi: [[1, 0], [0, [0, -1]]] },
     { n: 'H', inv: 'H⁻¹', M: Hm, Mi: Hm },
     { n: 'X', inv: 'X⁻¹', M: [[0, 1], [1, 0]], Mi: [[0, 1], [1, 0]] },
-    { n: 'R(−75°)', inv: 'R(75°)', M: rot(-75), Mi: rot(75) },
+    { n: 'R<sub>y</sub>(−150°)', inv: 'R<sub>y</sub>(150°)', M: rot(-75), Mi: rot(75) },
   ];
   const PHI = cvec([S5, 2 * S5]);
   let v = PHI, stack = [], pts = [], cancel = () => {}, gi = 0;
@@ -2017,26 +2052,27 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   function move(M) {
     cancel();
     const from = v; v = cmulv(M, from);
+    bs.setAxis(axisOf(M));
     cancel = gateAnim(from, M, 850, b => { ar(b, stack.length ? 'いまの状態' : '|φ⟩'); pts.push(b); if (pts.length > 800) pts.shift(); tr(pts); });
   }
   function apply() {
     if (stack.length >= 5) return;
     const g = gates[gi++ % gates.length];
     stack.push(g); move(g.M); render();
-    msg.className = 'rv-msg go'; msg.textContent = `${g.n} をかけた（${stack.length} 個目）`;
+    msg.className = 'rv-msg go'; msg.innerHTML = `${g.n} をかけた（${stack.length} 個目・${axisName(axisOf(g.M))}のまわりに回転）`;
   }
   function undo() {
     if (!stack.length) return;
     const g = stack.pop();
     move(g.Mi); render();
     if (!stack.length) { msg.className = 'rv-msg ok'; msg.innerHTML = '✓ 元に戻った！ U<sup>−1</sup>U|φ⟩ = |φ⟩'; replay(msg, 'pop2'); }
-    else { msg.className = 'rv-msg'; msg.textContent = `${g.n} の逆 ${g.inv} をかけて 1 つ戻した`; }
+    else { msg.className = 'rv-msg'; msg.innerHTML = `${g.n} の逆 ${g.inv} をかけて 1 つ戻した`; }
   }
   let k = 0;
   const stop = looper('#rvAuto', () => { (k++ % 6 < 3 ? apply : undo)(); }, 1500);
   $('#rvDo').addEventListener('click', e => { e.currentTarget.blur(); stop(); apply(); });
   $('#rvUndo').addEventListener('click', e => { e.currentTarget.blur(); stop(); undo(); });
-  const reset = () => { cancel(); k = 0; gi = 0; stack = []; v = PHI; pts = [bvec(PHI)]; tr(pts); ar(bvec(PHI), '|φ⟩'); render(); msg.className = 'rv-msg'; msg.textContent = '　'; };
+  const reset = () => { cancel(); k = 0; gi = 0; stack = []; v = PHI; pts = [bvec(PHI)]; tr(pts); ar(bvec(PHI), '|φ⟩'); bs.setAxis(null); render(); msg.className = 'rv-msg'; msg.textContent = '　'; };
   onEnter.rev = reset;
   start(bvec(PHI)); reset();
 }
@@ -2122,11 +2158,12 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     if (animate && shownH !== useH) {
       // H をかける（H をもう一度かけると元に戻る）様子を、本当の回転として見せる
       const fa = shownH ? mul(H, PHI) : PHI, fb = shownH ? mul(H, PSI) : PSI, pa = [], pb = [];
+      bs.setAxis(axisOf(H));
       cancels.push(gateAnim(fa, H, 1000, b => { arA(b, la); setH(hA, b); pa.push(b); trA(pa); }));
       cancels.push(gateAnim(fb, H, 1000, b => { arB(b, lb); setH(hB, b); pb.push(b); trB(pb); }));
     } else {
       const a = bvec(useH ? mul(H, PHI) : PHI), b = bvec(useH ? mul(H, PSI) : PSI);
-      arA(a, la); arB(b, lb); setH(hA, a); setH(hB, b); trA([]); trB([]);
+      arA(a, la); arB(b, lb); setH(hA, a); setH(hB, b); trA([]); trB([]); bs.setAxis(null);
     }
     shownH = useH;
     $('#smMode').innerHTML = useH ? '<span style="color:#8a5cff">アダマール行列 H をかけてから測定</span>' : 'そのまま測定（どちらも赤道の上 → 高さが同じ）';
@@ -2245,9 +2282,9 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     { label: 'H', n: 'H', M: () => [[S2, S2], [S2, -S2]] },
     { label: 'X', n: 'X', M: () => [[0, 1], [1, 0]] },
     { label: 'Z', n: 'Z', M: () => [[1, 0], [0, -1]] },
-    { label: 'R(θ)', n: 'R', M: () => rot(deg) },
+    { label: 'R<sub>y</sub>(θ)', n: 'R<sub>y</sub>', M: () => rot(deg / 2) },
   ];
-  let U = Us[0], deg = 40, prevM = [[1, 0], [0, 1]], cancel = () => {};
+  let U = Us[0], deg = 80, prevM = [[1, 0], [0, 1]], cancel = () => {};
   function draw(animate = true) {
     const M = U.M(), wa = cmulv(M, A), wb = cmulv(M, B);
     const la = (U.n ? U.n : '') + '|+⟩', lb = (U.n ? U.n : '') + '(−|+⟩)';
@@ -2255,14 +2292,16 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     if (animate) {
       // いま表示している状態から新しい状態への変化 = M・(前の M)⁻¹ を回転として見せる
       const from = cmulv(prevM, A), step = cmm(M, cdag(prevM)), pts = [];
+      bs.setAxis(axisOf(step));
       cancel = gateAnim(from, step, 800, b => { arA(b); arB(b); pts.push(b); trA(pts); });
-    } else { arA(bvec(wa)); arB(bvec(wb)); trA([]); }
+    } else { arA(bvec(wa)); arB(bvec(wb)); trA([]); bs.setAxis(U.n.startsWith('R') ? [0, 1, 0] : null); }
     prevM = M;
     const pa = bvec(wa)[2] / 2 + .5, pb = bvec(wb)[2] / 2 + .5;
     barsA([pa, 1 - pa], [`${Math.round(pa * 100)}%`, `${Math.round((1 - pa) * 100)}%`]);
     barsB([pb, 1 - pb], [`${Math.round(pb * 100)}%`, `${Math.round((1 - pb) * 100)}%`]);
-    $('#d2CapA').textContent = `${la} を測定`; $('#d2CapB').textContent = `${lb} を測定`;
-    sl.style.opacity = U.n === 'R' ? 1 : .35; th.disabled = U.n !== 'R';
+    $('#d2CapA').innerHTML = `${la} を測定`; $('#d2CapB').innerHTML = `${lb} を測定`;
+    const isR = U.n.startsWith('R');
+    sl.style.opacity = isR ? 1 : .35; th.disabled = !isR;
     th.value = deg; $('#d2Thv').textContent = `${Math.round(deg)}°`;
   }
   const setU = picker('#d2Pick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
@@ -2271,9 +2310,9 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const stop = looper('#d2Auto', () => {
     const j = k++ % 14;
     if (j < 4) setU(j);
-    else { if (j === 4) { deg = -150; setU(4); } else { deg += 30; draw(); } }
+    else { if (j === 4) { deg = -300; setU(4); } else { deg += 60; draw(); } }
   }, 1300);
-  onEnter.dist2 = () => { k = 0; deg = 40; prevM = [[1, 0], [0, 1]]; U = Us[0]; setU(0); draw(false); };
+  onEnter.dist2 = () => { k = 0; deg = 80; prevM = [[1, 0], [0, 1]]; U = Us[0]; setU(0); draw(false); };
   setU(0);
 }
 
@@ -2398,6 +2437,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   bs.trail('#b9b5d0', { width: 2 })(orbit);
   const tr = bs.trail('#8a5cff');
   const pt = bs.point('#ff6b1a', { label: '|φ(t)⟩', lcolor: '#e04e00' });
+  bs.setAxis([1, 0, 0]);
   const cx = (re, im) => (Math.abs(im) < 5e-3 ? fmt(re) : Math.abs(re) < 5e-3 ? `${fmt(im)}i` : `${fmt(re)}${im < 0 ? '−' : '+'}${fmt(Math.abs(im))}i`);
   let t = 0, pts = [];
   function draw() {
