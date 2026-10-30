@@ -674,6 +674,8 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .se-main{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;margin-top:4px}
 .defbox .math{white-space:nowrap}
 .pipe-note:empty{visibility:hidden}
+.u-pickers{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+.u-stage{margin-top:8px;text-align:center;font-weight:800;font-size:16px;color:var(--purple);background:#efe7ff;border:2px solid var(--ink);border-radius:999px;padding:2px 12px}
 
 </style>
 </head>
@@ -790,8 +792,8 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       <div class="point blue frag" style="font-size:18px">量子コンピュータは、ユニタリ発展を行う <b>回路を実装</b> することで、量子ビットの状態を変化させ、計算できる</div>
     </div>
     <div class="card pop" style="--d:.2s;padding:12px 16px">
-      <div class="picker" id="uPick" data-label="U ="></div>
-      <div class="picker" id="uIn" data-label="|φ⟩ =" style="margin-top:6px"></div>
+      <div class="u-pickers"><div class="picker" id="uIn" data-label="|φ⟩ ="></div><div class="picker" id="uPick" data-label="U ="></div></div>
+      <div class="u-stage" id="uStage">　</div>
       <div class="u-main">
         <svg class="plane" id="uPlane" style="height:236px"></svg>
         <div class="u-eqs"><div class="eq" id="uEq"></div><div class="eq u-res" id="uRes"></div></div>
@@ -1862,12 +1864,12 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   play();
 }
 
-/* ---------- 定義：ユニタリ発展 U|φ⟩（U はブロッホ球を回す） ---------- */
+/* ---------- 定義：ユニタリ発展 U|φ⟩：① 初期状態 |φ⟩ を置き、少し待ってから ② U を作用させる ---------- */
 {
   const bs = blochSphere('#uPlane', { W: 260, H: 255, CX: 125, CY: 130, R: 86 });
   const tr = bs.trail('#ff6b1a');
   const before = bs.point('#9a93bd', { width: 3, dash: '2 5', r: 5, label: '|φ⟩', lcolor: '#6b6790' });
-  const after = bs.point('#ff6b1a', { label: 'U|φ⟩', lcolor: '#e04e00' });
+  const after = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
   const Us = [
     { label: 'X', M: [[0, 1], [1, 0]], show: [['0', '1'], ['1', '0']] },
     { label: 'Z', M: [[1, 0], [0, -1]], show: [['1', '0'], ['0', '−1']] },
@@ -1877,25 +1879,44 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     { label: '|0⟩', v: [1, 0] },
     { label: '|1⟩', v: [0, 1] },
   ];
-  let U = Us[0], v = Ins[0].v, cancel = () => {};
-  function draw() {
-    const w = mul(U.M, v);
-    before(bvec(v));
-    cancel();
-    const pts = [];
-    bs.setAxis(axisOf(U.M));
-    cancel = gateAnim(v, U.M, 1000, b => { after(b); pts.push(b); tr(pts); });
+  const stage = $('#uStage');
+  let U = Us[0], In = Ins[0], cancel = () => {}, wait = 0;
+  const halt = () => { cancel(); clearTimeout(wait); };
+  stoppers.push(halt);
+  // ① 初期状態 |φ⟩ だけを置いて、少し待つ
+  function prepare() {
+    halt();
+    const v = In.v;
+    before(bvec(v)); after(bvec(v), ''); tr([]); bs.setAxis(null);
     $('#uEq').innerHTML = `${M_('U|φ⟩ =')}${matH(U.show)}${vecH(fmt(v[0]), fmt(v[1]))}`;
-    $('#uRes').innerHTML = `${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}<span style="font-size:15px;font-weight:700">（長さ² = ${fmt(w[0] ** 2 + w[1] ** 2)}）</span>`;
+    $('#uRes').innerHTML = '';
+    stage.innerHTML = `① 初期状態 <span class="math">|φ⟩ = ${In.label}</span> を用意`;
+    replay(stage, 'pop2');
+    wait = setTimeout(apply, 1200);
   }
-  const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
-  const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); v = s.v; draw(); });
+  // ② U を作用させて、U|φ⟩ へ回す
+  function apply() {
+    const v = In.v, w = mul(U.M, v), pts = [];
+    bs.setAxis(axisOf(U.M));
+    stage.innerHTML = `② <span class="math">U = ${U.label}</span> を作用させる（${axisName(axisOf(U.M))}のまわりに回転）`;
+    replay(stage, 'pop2');
+    cancel = gateAnim(v, U.M, 1100, (b, k) => {
+      after(b, 'U|φ⟩'); pts.push(b); tr(pts);
+      if (k >= 1) $('#uRes').innerHTML = `${M_('=')}${vecH(fmt(w[0]), fmt(w[1]), 'na', 'nb')}<span style="font-size:15px;font-weight:700">（長さ² = ${fmt(w[0] ** 2 + w[1] ** 2)}）</span>`;
+    });
+  }
+  let quiet = false;
+  const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); In = s; if (!quiet) prepare(); });
+  const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; if (!quiet) prepare(); });
   let k = 0;
-  const stop = looper('#uAuto', () => { const j = k++; setIn(Math.floor(j / 3) % 2); setU(j % 3); }, 2300);
+  const stop = looper('#uAuto', () => {
+    const j = k++;
+    quiet = true; setIn(Math.floor(j / 3) % 2); setU(j % 3); quiet = false;
+    prepare();
+  }, 3800);
   onEnter.unitary = () => { k = 0; };
-  setU(0); setIn(0);
+  quiet = true; setIn(0); setU(0); quiet = false; prepare();
 }
-
 /* ---------- 巨大なユニタリ行列 ---------- */
 {
   const cv = $('#hzCanvas'), ctx = cv.getContext('2d'), sl = $('#hzN');
