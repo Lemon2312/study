@@ -892,15 +892,15 @@ table.tt.small td .eq.inline .vec{font-size:15px}
         <li class="pop" style="--d:.2s;font-size:18px;color:var(--muted)">詳しい説明は本書の範囲を越える（巻末の参考文献 [8][9][10]）</li>
       </ul>
       <div class="point blue frag" style="font-size:18px">イメージ：<b>決まった少しの種類のゲート</b> を何個もつなげると、<b>どんなユニタリ発展にも、いくらでも近づける</b></div>
-      <div class="point frag" style="font-size:17px">右の例：使えるのは <b>G（ブロッホ球を y 軸のまわりに約57.3°回す回転）だけ</b>。<br>G を何回かければ目標に一番近いか探す。<b>使える個数を増やすほど、ずれが小さくなる</b></div>
+      <div class="point frag" style="font-size:17px">右の例：使えるのは <b>H と T の 2 種類だけ</b>。<br>H・T を最大 L 個つなげて、目標に一番近くなる並びを探す。<b>L を増やすほど、ずれが小さくなる</b></div>
     </div>
     <div class="card pop" style="--d:.2s;padding:12px 16px">
       <svg class="plane" id="skPlane" style="height:260px"></svg>
       <div class="sk-out" id="skOut"></div>
       <label class="qslider" style="grid-template-columns:150px 1fr 52px"><span style="font-size:15px;color:#d61f45">目標の向き</span><input type="range" id="skT" min="0" max="360" step="any"><span class="qs-val" id="skTv"></span></label>
-      <label class="qslider" style="grid-template-columns:150px 1fr 52px"><span style="font-size:15px;color:#8a5cff">使える G の個数 N</span><input type="range" id="skN" min="1" max="150" step="1"><span class="qs-val" id="skNv"></span></label>
+      <label class="qslider" style="grid-template-columns:150px 1fr 52px"><span style="font-size:15px;color:#8a5cff">つなげる H・T の数 L</span><input type="range" id="skN" min="1" max="24" step="1"><span class="qs-val" id="skNv"></span></label>
       <div class="btns" style="justify-content:center;margin-top:2px"><button class="b" id="skAuto" data-autoplay>▶ 自動再生</button></div>
-      <div class="hint" style="margin-top:2px">※ イメージ図（教科書外）。実際の定理は H・T のような少数のゲートの組み合わせで、効率よく近似できることを示す</div>
+      <div class="hint" style="margin-top:2px">※ イメージ図（教科書外）。T は z 軸のまわりに 45° 回すゲート。紫の点は H・T を L 個までつなげて届く状態。実際の定理は、こうした組み合わせで効率よく近似できることを示す</div>
     </div>
   </div>
   <div class="pageno"></div>
@@ -926,7 +926,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
       <svg class="plane" id="rvPlane" style="height:270px"></svg>
       <div class="rv-chain" id="rvChain"></div>
       <div class="rv-msg" id="rvMsg"></div>
-      <div class="hint" style="text-align:center;margin:0">※ R<sub>y</sub>(θ) は y 軸のまわりに θ 回すゲート、S は |1⟩ の係数に i をかけるゲート（z 軸まわり）。緑の線が回転軸、紫の線が通った道すじ</div>
+      <div class="hint" style="text-align:center;margin:0">※ S・T は |1⟩ の係数に i・e<sup>iπ/4</sup> をかけるゲート（z 軸まわり）。緑の線が回転軸、紫の線が通った道すじ</div>
       <div class="btns" style="justify-content:center"><button class="b" id="rvDo">▶ U をかける</button><button class="b" id="rvUndo">◀ U⁻¹ で戻す</button><button class="b" id="rvAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
@@ -1076,7 +1076,6 @@ table.tt.small td .eq.inline .vec{font-size:15px}
     <div class="card pop" style="--d:.2s;padding:10px 16px">
       <div class="picker" id="d2Pick" data-label="かける U"></div>
       <svg class="plane" id="d2Plane" style="height:220px"></svg>
-      <label class="qslider" id="d2Sl" style="grid-template-columns:110px 1fr 52px"><span style="font-size:15px">回転の角度</span><input type="range" id="d2Th" min="-360" max="360" step="any"><span class="qs-val" id="d2Thv"></span></label>
       <div class="sm-hists">
         <div><div class="sm-cap" style="color:#e04e00" id="d2CapA"></div><div class="hbars mini" id="d2BarsA"></div></div>
         <div><div class="sm-cap" style="color:#3b6cff" id="d2CapB"></div><div class="hbars mini" id="d2BarsB"></div></div>
@@ -1729,18 +1728,18 @@ function blochSphere(svg, { W = 300, H = 290, CX = W / 2, CY = H / 2, R = 100, m
   const names = [[[0, 0, 1], '|0⟩'], [[0, 0, -1], '|1⟩'], [[1, 0, 0], '|+⟩'], [[-1, 0, 0], '|−⟩'], [[0, 1, 0], '|+i⟩'], [[0, -1, 0], '|−i⟩']];
   names.forEach(([v]) => { const [x, y] = proj(...v); el('line', { x1: CX, y1: CY, x2: x, y2: y, stroke: '#9a93bd', 'stroke-width': 1.5, 'stroke-dasharray': '3 4' }, gBack); });
   names.forEach(([v, name]) => {
-    const [x, y] = proj(...v.map(c => c * (v[2] ? 1.2 : (c > 0 ? .74 : 1.3))));
+    const [x0, y] = proj(...v.map(c => c * (v[2] > 0 ? 1.1 : v[2] ? 1.2 : (c > 0 ? .74 : 1.3)))), x = x0 - (v[2] > 0 ? 22 : 0);
     const t = el('text', { x, y: y + 6, 'text-anchor': 'middle', 'font-size': name.length > 3 ? 14 : 17, 'font-weight': 800, fill: v[2] ? '#1f1a3d' : '#6b6790',
       'font-family': FONT, stroke: '#fffaf0', 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round' }, gBack);
     t.textContent = name;
   });
-  if (axes) {
+  {
     const ah = uid(), m = el('marker', { id: ah, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, defs);
     el('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#e04e00' }, m);
-    [[[1, 0, 0], 'x', 1.7], [[0, 1, 0], 'y', 1.45]].forEach(([v, n, k]) => {
-      const [x1, y1] = proj(...v), [x2, y2] = proj(...v.map(c => c * k)), [lx, ly] = proj(...v.map(c => c * (k + .14)));
+    [[[1, 0, 0], 'x', 1.7, 0], [[0, 1, 0], 'y', 1.45, 0], [[0, 0, 1], 'z', 1.36, 14]].forEach(([v, n, k, dx]) => {
+      const [x1, y1] = proj(...v), [x2, y2] = proj(...v.map(c => c * k)), [lx, ly] = proj(...v.map(c => c * (k + (v[2] ? .02 : .14))));
       el('line', { x1, y1, x2, y2, stroke: '#e04e00', 'stroke-width': 2, 'marker-end': `url(#${ah})` }, gBack);
-      const t = el('text', { x: lx, y: ly + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-style': 'italic', 'font-weight': 700, fill: '#e04e00', 'font-family': FONT }, gBack);
+      const t = el('text', { x: lx + dx, y: ly + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-style': 'italic', 'font-weight': 700, fill: '#e04e00', 'font-family': FONT }, gBack);
       t.textContent = n;
     });
   }
@@ -1764,7 +1763,9 @@ function blochSphere(svg, { W = 300, H = 290, CX = W / 2, CY = H / 2, R = 100, m
       g.setAttribute('opacity', d >= -0.05 ? 1 : .55);
       if (lab !== undefined) lt.textContent = lab;
       const Lq = vlen(q) || 1, [lx, ly] = proj(...q.map(c => c / Lq * (Lq + .26)));
-      lt.setAttribute('x', lx + (lx >= CX ? 30 : -30)); lt.setAttribute('y', ly + 6);
+      // 名前が図の外にはみ出さないよう、左右の端で止める
+      const half = (lt.textContent.length || 1) * 5;
+      lt.setAttribute('x', Math.max(half + 2, Math.min(W - half - 2, lx + (lx >= CX ? 30 : -30)))); lt.setAttribute('y', ly + 6);
     };
     set.show = on => { g.style.display = on ? '' : 'none'; };
     set([0, 0, 1]);
@@ -1815,7 +1816,8 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const gl = el('text', { x: 165, y: 22, 'text-anchor': 'middle', 'font-size': 19, 'font-weight': 800, fill: '#8a5cff' }, bs.svg);
   const ga = el('text', { x: 165, y: 340, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, fill: '#14a35a' }, bs.svg);
   const Hm = [[S2, S2], [S2, -S2]], Sm = [[1, 0], [0, [0, 1]]];
-  const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['R_{y}(100°)', rot(50)], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
+  const Ym = [[0, [0, -1]], [[0, 1], 0]], Tm = [[1, 0], [0, [S2, S2]]];
+  const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['T', Tm], ['Y', Ym], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
   let v = cvec([1, 0]), i = 0, pts = [bvec(v)], cancel = () => {};
   pt(bvec(v));
   looper('#titleAuto', () => {
@@ -1862,7 +1864,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- 定義：ユニタリ発展 U|φ⟩（U はブロッホ球を回す） ---------- */
 {
-  const bs = blochSphere('#uPlane', { W: 260, H: 255, CX: 125, CY: 130, R: 86, axes: false });
+  const bs = blochSphere('#uPlane', { W: 260, H: 255, CX: 125, CY: 130, R: 86 });
   const tr = bs.trail('#ff6b1a');
   const before = bs.point('#9a93bd', { width: 3, dash: '2 5', r: 5, label: '|φ⟩', lcolor: '#6b6790' });
   const after = bs.point('#ff6b1a', { label: 'U|φ⟩', lcolor: '#e04e00' });
@@ -1870,7 +1872,6 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     { label: 'X', M: [[0, 1], [1, 0]], show: [['0', '1'], ['1', '0']] },
     { label: 'Z', M: [[1, 0], [0, -1]], show: [['1', '0'], ['0', '−1']] },
     { label: 'H', M: [[S2, S2], [S2, -S2]], show: [[FR(1, '√2'), FR(1, '√2')], [FR(1, '√2'), FR('−1', '√2')]] },
-    { label: 'R<sub>y</sub>(60°)', M: rot(30), show: [['cos30°', '−sin30°'], ['sin30°', 'cos30°']] },
   ];
   const Ins = [
     { label: '|0⟩', v: [1, 0] },
@@ -1892,7 +1893,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const setU = picker('#uPick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
   const setIn = picker('#uIn', Ins, (s, i, user) => { if (user) stop(); v = s.v; draw(); });
   let k = 0;
-  const stop = looper('#uAuto', () => { const j = k++; setIn(Math.floor(j / 4) % 3); setU(j % 4); }, 2300);
+  const stop = looper('#uAuto', () => { const j = k++; setIn(Math.floor(j / 3) % 3); setU(j % 3); }, 2300);
   onEnter.unitary = () => { k = 0; };
   setU(0); setIn(0);
 }
@@ -1943,13 +1944,13 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- 3.4.1：ユニタリなら球面の上のまま／ユニタリでない行列だと球面から外れる ---------- */
 {
-  const bs = blochSphere('#kpPlane', { W: 250, H: 250, CX: 125, CY: 128, R: 70, axes: false, maxLen: 1.6 });
+  const bs = blochSphere('#kpPlane', { W: 250, H: 250, CX: 125, CY: 128, R: 70, maxLen: 1.6 });
   const before = bs.point('#9a93bd', { width: 3, dash: '2 5', r: 5, label: '|φ⟩', lcolor: '#6b6790' });
   const after = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
   const note = el('text', { x: 125, y: 246, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800 }, bs.svg);
   bs.sphere.setAttribute('stroke-width', 3.5);
   const Ms = [
-    { label: 'R<sub>y</sub>(120°)', M: rot(60), ok: true },
+    { label: 'X', M: [[0, 1], [1, 0]], ok: true },
     { label: 'H', M: [[S2, S2], [S2, -S2]], ok: true },
     { label: '✗ 例1', M: [[1, 1], [0, 1]], ok: false, cls: 'bad' },
     { label: '✗ 例2', M: [[1, 0], [0, .5]], ok: false, cls: 'bad' },
@@ -1985,44 +1986,57 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   setM(0);
 }
 
-/* ---------- 3.4.2：決まったゲート G だけで目標に近づく（イメージ） ---------- */
+/* ---------- 3.4.2：H と T の 2 種類だけをつなげて、目標の状態に近づける ---------- */
 {
-  const bs = blochSphere('#skPlane', { W: 300, H: 280, CX: 145, CY: 145, R: 104 });
+  const bs = blochSphere('#skPlane', { W: 300, H: 280, CX: 145, CY: 145, R: 100 });
   const dots = el('g', {}, bs.gTrail);
-  const target = bs.point('#ff4f9a', { width: 3, dash: '4 4', r: 6, label: '目標', lcolor: '#d61f45' });
+  const target = bs.point('#ff4f9a', { width: 3, dash: '4 4', r: 6, label: '' });
   const best = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
-  bs.setAxis([0, 1, 0]);
-  const sT = $('#skT'), sN = $('#skN');
-  // G はブロッホ球を y 軸のまわりに 1 ラジアン（約 57.3°）回す。|0⟩ から始めると x-z の大円の上を進む
+  const sT = $('#skT'), sN = $('#skN'), LMAX = +sN.max;
+  // |0⟩ から H・T を 1 個ずつ増やしてたどり着ける点を、つなげた個数ごとに求めておく（同じ点は最初に届いた並びだけ残す）
+  const Hm = [[S2, S2], [S2, -S2]], Tm = [[1, 0], [0, [S2, S2]]];
+  const key = b => b.map(c => c.toFixed(4)).join(',');
+  const reach = [{ b: [0, 0, 1], seq: '', len: 0 }], seen = new Set([key([0, 0, 1])]);
+  let layer = [{ v: cvec([1, 0]), seq: '' }];
+  for (let L = 1; L <= LMAX; L++) {
+    const next = [];
+    for (const it of layer) for (const [g, M] of [['H', Hm], ['T', Tm]]) {
+      const v = cmulv(M, it.v), b = bvec(v), k = key(b);
+      if (seen.has(k)) continue;
+      seen.add(k); next.push({ v, seq: g + it.seq }); reach.push({ b, seq: g + it.seq, len: L });
+    }
+    layer = next;
+  }
+  // 目標は x-z の大円の上（北極 |0⟩ から測った角度）
   const B = a => [Math.sin(a), 0, Math.cos(a)];
-  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
-  const sup = n => String(n).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
   let tdeg = 200, N = 1;
   function draw() {
-    const ta = tdeg * Math.PI / 180;
-    target(B(ta));
+    const ta = tdeg * Math.PI / 180, tb = B(ta);
+    target(tb);
     while (dots.firstChild) dots.removeChild(dots.firstChild);
-    let bk = 0, be = Infinity;
-    for (let k = 0; k <= N; k++) {
-      bs.dot(B(k), { r: 3.6, fill: '#8a5cff', opacity: .6 }, dots);
-      const e = Math.abs(wrap(k - ta));
-      if (e < be) { be = e; bk = k; }
+    let bi = reach[0], be = Infinity;
+    for (const r of reach) {
+      if (r.len > N) continue;
+      bs.dot(r.b, { r: 1.9, fill: '#8a5cff', opacity: .35 }, dots);
+      const e = Math.acos(Math.max(-1, Math.min(1, dot3(r.b, tb))));
+      if (e < be) { be = e; bi = r; }
     }
-    best(B(bk), `G${sup(bk)}|0⟩`);
+    best(bi.b);
     sT.value = tdeg; sN.value = N;
     $('#skTv').textContent = `${Math.round(tdeg)}°`; $('#skNv').textContent = N;
     const ed = be * 180 / Math.PI;
-    $('#skOut').innerHTML = `G を <b>${bk}</b> 回かけるのが一番近い → 目標とのずれ <b style="color:${ed < 2 ? '#14a35a' : ed < 10 ? '#e04e00' : '#d61f45'}">${ed.toFixed(1)}°</b>`;
+    const seq = !bi.seq ? '（何もかけない）' : bi.seq.length > 10 ? `${bi.seq.slice(0, 10).split('').join(' ')} …（${bi.seq.length} 個）` : bi.seq.split('').join(' ');
+    $('#skOut').innerHTML = `<span style="color:#d61f45">● 目標</span>　<span style="color:#e04e00">● 一番近い点</span>：<span class="math">${seq} |0⟩</span><br>→ 目標とのずれ <b style="color:${ed < 3 ? '#14a35a' : ed < 12 ? '#e04e00' : '#d61f45'}">${ed.toFixed(1)}°</b>`;
   }
   sT.addEventListener('input', () => { stop(); tdeg = +sT.value; draw(); });
   sN.addEventListener('input', () => { stop(); N = +sN.value; draw(); });
   const targets = [200, 75, 310, 140];
   let ti = 0;
   const stop = looper('#skAuto', () => {
-    N = N < 10 ? N + 1 : N < 150 ? Math.min(150, Math.round(N * 1.15)) : 1;
-    if (N === 1) { ti = (ti + 1) % targets.length; tdeg = targets[ti]; }
+    N = N >= LMAX ? 2 : N + 2;
+    if (N === 2) { ti = (ti + 1) % targets.length; tdeg = targets[ti]; }
     draw();
-  }, 480);
+  }, 900);
   onEnter.sk = () => { ti = 0; tdeg = targets[0]; N = 0; draw(); };
   draw();
 }
@@ -2035,11 +2049,11 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const ar = bs.point('#ff6b1a', { label: '', lcolor: '#e04e00' });
   const Hm = [[S2, S2], [S2, -S2]];
   const gates = [
-    { n: 'R<sub>y</sub>(80°)', inv: 'R<sub>y</sub>(−80°)', M: rot(40), Mi: rot(-40) },
     { n: 'S', inv: 'S⁻¹', M: [[1, 0], [0, [0, 1]]], Mi: [[1, 0], [0, [0, -1]]] },
     { n: 'H', inv: 'H⁻¹', M: Hm, Mi: Hm },
+    { n: 'T', inv: 'T⁻¹', M: [[1, 0], [0, [S2, S2]]], Mi: [[1, 0], [0, [S2, -S2]]] },
     { n: 'X', inv: 'X⁻¹', M: [[0, 1], [1, 0]], Mi: [[0, 1], [1, 0]] },
-    { n: 'R<sub>y</sub>(−150°)', inv: 'R<sub>y</sub>(150°)', M: rot(-75), Mi: rot(75) },
+    { n: 'H', inv: 'H⁻¹', M: Hm, Mi: Hm },
   ];
   const PHI = cvec([S5, 2 * S5]);
   let v = PHI, stack = [], pts = [], cancel = () => {}, gi = 0;
@@ -2134,7 +2148,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- 3.5.1 区別できる例：|±⟩ は H をかけると北極・南極に分かれる ---------- */
 {
-  const bs = blochSphere('#smPlane', { W: 300, H: 265, CX: 145, CY: 138, R: 98, axes: false });
+  const bs = blochSphere('#smPlane', { W: 300, H: 265, CX: 145, CY: 138, R: 98 });
   const hA = el('line', { stroke: '#e04e00', 'stroke-width': 2.5, 'stroke-dasharray': '3 4' }, bs.gTrail);
   const hB = el('line', { stroke: '#3b6cff', 'stroke-width': 2.5, 'stroke-dasharray': '3 4' }, bs.gTrail);
   const trA = bs.trail('#ff6b1a'), trB = bs.trail('#3b6cff');
@@ -2267,7 +2281,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
 
 /* ---------- 3.5.2 区別できない例：|+⟩ と −|+⟩ はブロッホ球の上で同じ点。どの U をかけても一緒に動く ---------- */
 {
-  const bs = blochSphere('#d2Plane', { W: 300, H: 262, CX: 140, CY: 120, R: 86, axes: false });
+  const bs = blochSphere('#d2Plane', { W: 300, H: 262, CX: 140, CY: 120, R: 86 });
   const trA = bs.trail('#ff6b1a');
   const arA = bs.point('#ff6b1a', { width: 6, r: 10, label: '', lcolor: '#e04e00' });
   const arB = bs.point('#3b6cff', { width: 2.5, r: 5, label: '' });
@@ -2276,15 +2290,15 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const A = [S2, S2], B = [-S2, -S2];
   const barsA = hbars('#d2BarsA', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
   const barsB = hbars('#d2BarsB', [{ label: '|0⟩', cls: 'a' }, { label: '|1⟩', cls: 'b' }]);
-  const th = $('#d2Th'), sl = $('#d2Sl');
   const Us = [
     { label: 'なし', n: '', M: () => [[1, 0], [0, 1]] },
     { label: 'H', n: 'H', M: () => [[S2, S2], [S2, -S2]] },
     { label: 'X', n: 'X', M: () => [[0, 1], [1, 0]] },
     { label: 'Z', n: 'Z', M: () => [[1, 0], [0, -1]] },
-    { label: 'R<sub>y</sub>(θ)', n: 'R<sub>y</sub>', M: () => rot(deg / 2) },
+    { label: 'Y', n: 'Y', M: () => [[0, [0, -1]], [[0, 1], 0]] },
+    { label: 'S', n: 'S', M: () => [[1, 0], [0, [0, 1]]] },
   ];
-  let U = Us[0], deg = 80, prevM = [[1, 0], [0, 1]], cancel = () => {};
+  let U = Us[0], prevM = [[1, 0], [0, 1]], cancel = () => {};
   function draw(animate = true) {
     const M = U.M(), wa = cmulv(M, A), wb = cmulv(M, B);
     const la = (U.n ? U.n : '') + '|+⟩', lb = (U.n ? U.n : '') + '(−|+⟩)';
@@ -2294,25 +2308,19 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
       const from = cmulv(prevM, A), step = cmm(M, cdag(prevM)), pts = [];
       bs.setAxis(axisOf(step));
       cancel = gateAnim(from, step, 800, b => { arA(b); arB(b); pts.push(b); trA(pts); });
-    } else { arA(bvec(wa)); arB(bvec(wb)); trA([]); bs.setAxis(U.n.startsWith('R') ? [0, 1, 0] : null); }
+    } else { arA(bvec(wa)); arB(bvec(wb)); trA([]); bs.setAxis(null); }
     prevM = M;
     const pa = bvec(wa)[2] / 2 + .5, pb = bvec(wb)[2] / 2 + .5;
     barsA([pa, 1 - pa], [`${Math.round(pa * 100)}%`, `${Math.round((1 - pa) * 100)}%`]);
     barsB([pb, 1 - pb], [`${Math.round(pb * 100)}%`, `${Math.round((1 - pb) * 100)}%`]);
     $('#d2CapA').innerHTML = `${la} を測定`; $('#d2CapB').innerHTML = `${lb} を測定`;
-    const isR = U.n.startsWith('R');
-    sl.style.opacity = isR ? 1 : .35; th.disabled = !isR;
-    th.value = deg; $('#d2Thv').textContent = `${Math.round(deg)}°`;
   }
   const setU = picker('#d2Pick', Us, (u, i, user) => { if (user) stop(); U = u; draw(); });
-  th.addEventListener('input', () => { stop(); deg = +th.value; draw(false); });
   let k = 0;
   const stop = looper('#d2Auto', () => {
-    const j = k++ % 14;
-    if (j < 4) setU(j);
-    else { if (j === 4) { deg = -300; setU(4); } else { deg += 60; draw(); } }
+    setU(k++ % Us.length);
   }, 1300);
-  onEnter.dist2 = () => { k = 0; deg = 80; prevM = [[1, 0], [0, 1]]; U = Us[0]; setU(0); draw(false); };
+  onEnter.dist2 = () => { k = 0; prevM = [[1, 0], [0, 1]]; U = Us[0]; setU(0); draw(false); };
   setU(0);
 }
 
@@ -2323,7 +2331,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const arZ = pl.arrow('#8a5cff', { width: 4, label: 'z', lcolor: '#8a5cff' });
   const arB = pl.arrow('#3b6cff', { label: '' });
   const arA = pl.arrow('#ff6b1a', { label: '', lcolor: '#e04e00' });
-  const bs = blochSphere('#zpBloch', { W: 250, H: 230, CX: 115, CY: 118, R: 82, axes: false });
+  const bs = blochSphere('#zpBloch', { W: 250, H: 230, CX: 115, CY: 118, R: 82 });
   const bP = bs.point('#9a93bd', { width: 7, r: 11, label: '' });
   const bZ = bs.point('#ff6b1a', { label: 'z|φ⟩ = |φ⟩ の点', lcolor: '#e04e00' });
   const th = $('#zpTh');
