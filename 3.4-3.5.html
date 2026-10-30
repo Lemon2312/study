@@ -673,6 +673,7 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .zp-vals{display:flex;gap:14px;justify-content:center;font-size:15px;margin-top:4px}
 .se-main{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center;margin-top:4px}
 .defbox .math{white-space:nowrap}
+.pipe-note:empty{visibility:hidden}
 
 </style>
 </head>
@@ -1802,7 +1803,7 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
     { c: ['NOT', '0', '1'], q: ['X', '|0⟩', '|1⟩'], note: '古典の NOT は 0 を 1 に。量子ゲート X は |0⟩ を |1⟩ に（NOT に対応）' },
     { c: ['NOT', '1', '0'], q: ['X', '|1⟩', '|0⟩'], note: 'X は |1⟩ を |0⟩ に。ここまでは古典と同じ' },
     { c: ['AND', '1 1', '1'], q: ['H', '|0⟩', '(|0⟩+|1⟩)/√2'], note: '量子ゲート H は |0⟩ から <b>重ね合わせ状態</b> をつくれる（古典にはない！）' },
-    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'], note: 'Z は |1⟩ の係数の符号を反転。<b>測定確率は変わらないがベクトルは変わる</b>（3.5.1 で H を使って区別する2つの状態）' },
+    { c: ['XOR', '1 0', '1'], q: ['Z', '(|0⟩+|1⟩)/√2', '(|0⟩−|1⟩)/√2'], note: '' },
   ];
   const ids = ['In', 'W1', 'G', 'W2', 'Out'];
   const C = Object.fromEntries(ids.map(s => [s, $('#gc' + s)])), Q = Object.fromEntries(ids.map(s => [s, $('#gq' + s)]));
