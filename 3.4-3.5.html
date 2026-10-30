@@ -1815,9 +1815,10 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   const pt = bs.point('#ff6b1a', { label: '|φ⟩', lcolor: '#e04e00' });
   const gl = el('text', { x: 165, y: 22, 'text-anchor': 'middle', 'font-size': 19, 'font-weight': 800, fill: '#8a5cff' }, bs.svg);
   const ga = el('text', { x: 165, y: 340, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, fill: '#14a35a' }, bs.svg);
-  const Hm = [[S2, S2], [S2, -S2]], Sm = [[1, 0], [0, [0, 1]]];
-  const Ym = [[0, [0, -1]], [[0, 1], 0]], Tm = [[1, 0], [0, [S2, S2]]];
-  const seq = [['H', Hm], ['S', Sm], ['H', Hm], ['T', Tm], ['Y', Ym], ['X', [[0, 1], [1, 0]]], ['S', Sm], ['Z', [[1, 0], [0, -1]]]];
+  const Hm = [[S2, S2], [S2, -S2]], Ym = [[0, [0, -1]], [[0, 1], 0]];
+  // H・X・Y・Z だけを使い、毎回点が動く順番にする（|0⟩ → |+⟩ → |−⟩ → |1⟩ → |0⟩ → |+⟩ → |−⟩ → |1⟩ → |0⟩）
+  const Xm = [[0, 1], [1, 0]], Zm = [[1, 0], [0, -1]];
+  const seq = [['H', Hm], ['Z', Zm], ['H', Hm], ['X', Xm], ['H', Hm], ['Y', Ym], ['H', Hm], ['X', Xm]];
   let v = cvec([1, 0]), i = 0, pts = [bvec(v)], cancel = () => {};
   pt(bvec(v));
   looper('#titleAuto', () => {
