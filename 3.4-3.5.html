@@ -676,6 +676,21 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .pipe-note:empty{visibility:hidden}
 .u-pickers{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
 
+/* 重ね合わせで少ないビット数で多くの情報を */
+.sp-row{display:grid;grid-template-columns:138px 1fr;gap:10px;align-items:center;margin-top:8px}
+.sp-lab{font-weight:900;font-size:14.5px;line-height:1.3;white-space:nowrap}
+.sp-lab small{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.sp-row.c .sp-lab{color:var(--accent-d)}
+.sp-row.q .sp-lab{color:var(--purple)}
+.sp-bits{font-size:13.5px;font-weight:700;color:#3b3560}
+.sp-bits b{font-family:Consolas,Menlo,monospace}
+.sp-row canvas{display:block;width:100%;height:46px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;margin-top:2px}
+.sp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.sp-stats div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:3px 8px}
+.sp-stats small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
+.sp-stats b{font:800 16px Consolas,Menlo,monospace}
+.sp-msg{text-align:center;font-size:15px;font-weight:700;min-height:24px;margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -793,33 +808,29 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <div class="pageno"></div>
 </section>
 
-<!-- 巨大な行列でも高速 -->
+<!-- 巨大な行列でも高速（重ね合わせで、少ないビット数で多くの情報を扱える） -->
 <section class="slide" data-id="huge">
   <div class="chap">第3章 量子コンピュータの基本ルール ／ 3.4 ビットの状態を変化させる「量子ゲート」</div>
-  <h2>巨大なユニタリ発展も高速に<small>p.92</small></h2>
-  <div class="body cols even">
+  <h2>重ね合わせで、少ないビット数で多くの情報を<small>p.92</small></h2>
+  <div class="body cols" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
     <div>
-      <ul>
-        <li class="pop" style="font-size:19px">ユニタリ発展に使うユニタリ行列のサイズが <b class="k">指数関数的に巨大</b> になっても、量子コンピュータの計算時間への影響は <b>古典コンピュータほど大きくならない</b></li>
-        <li class="pop" style="--d:.1s;font-size:19px">そのため、量子コンピュータは指数関数的に巨大なユニタリ発展を <b class="k">高速に</b> 行える</li>
-      </ul>
-      <div class="point frag" style="font-size:18px">⚠ ただし、<b>あらゆる行列計算を高速化できる訳ではない</b>。<br>ユニタリ発展による <b class="k">高速なアルゴリズムが発見されている場合だけ</b> 高速化できる</div>
-      <div class="point blue frag" style="font-size:18px">よく使うユニタリ発展は、<b>第4章・第6章・第8章</b> で具体的な計算例と共に紹介される</div>
+      <div class="quote pop" style="font-size:16px;line-height:1.65">ユニタリ発展に利用するユニタリ行列のサイズが指数関数的に巨大になっても、量子コンピュータの計算時間への影響は古典コンピュータほど大きくなりません。そのため、量子コンピュータは指数関数的に巨大なユニタリ発展を高速に行えます。<small>― 教科書 p.92</small></div>
+      <div class="point frag" style="font-size:18px">💡 解釈：量子ビットは <b class="k">0 と 1 の重ね合わせ状態</b> を使えるので、<b class="k">より多くの情報を少ないビット数で扱える</b>
+        <div style="font-size:15px;margin-top:4px;line-height:1.55;color:#3b3560">n 量子ビットは 2ⁿ 通りすべての重ね合わせ（<b>2ⁿ 個の係数</b>）を同時に持ち、量子ゲート1回でそれをまとめて変化させる。古典で同じことをするには <b>2ⁿ×2ⁿ の巨大な行列計算</b> が必要</div></div>
+      <div class="point blue frag" style="font-size:16px">⚠ ただし、<b>あらゆる行列計算を高速化できる訳ではない</b>。高速なアルゴリズムが発見されている場合だけ高速化できる<span style="font-size:14px;color:var(--muted)">（測定で一度に取り出せるのは n ビット分なので、工夫が必要）</span></div>
     </div>
-    <div class="card pop" style="--d:.2s;padding:14px 18px">
-      <label class="qslider hz-sl"><span>量子ビットの数 <span class="math">n</span></span><input type="range" id="hzN" min="1" max="40" step="1" value="1"><span class="qs-val" id="hzNv"></span></label>
-      <div class="hz-main">
-        <canvas id="hzCanvas" width="360" height="360"></canvas>
-        <div class="hz-stats">
-          <div><small>ユニタリ行列のサイズ</small><b id="hzSize"></b></div>
-          <div><small>成分の数（4ⁿ 個）</small><b id="hzCnt"></b></div>
-          <div><small>古典で全成分を保存すると（複素数1個 = 16バイト）</small><b id="hzMem"></b></div>
-          <div class="hz-tag" id="hzTag"></div>
-        </div>
+    <div class="card pop" style="--d:.2s;padding:12px 16px">
+      <label class="qslider hz-sl"><span>ビットの数 <span class="math">n</span></span><input type="range" id="hzN" min="1" max="50" step="1" value="3"><span class="qs-val" id="hzNv"></span></label>
+      <div class="sp-row c"><div class="sp-lab">古典 <span class="math">n</span> ビット<small>2ⁿ 通りのうち<br><b>1 つだけ</b></small></div><div><div class="sp-bits" id="spCBits"></div><canvas id="spC" width="640" height="70"></canvas></div></div>
+      <div class="sp-row q"><div class="sp-lab">量子 <span class="math">n</span> 量子ビット<small>2ⁿ 通り<b>すべて</b>の<br>重ね合わせ</small></div><div><div class="sp-bits" id="spQBits"></div><canvas id="spQ" width="640" height="70"></canvas></div></div>
+      <div class="sp-stats">
+        <div><small>量子状態の係数の数</small><b id="spAmp"></b></div>
+        <div><small>古典で保存すると（1個 16 バイト）</small><b id="spMem"></b></div>
+        <div><small>ゲートを古典で再現する行列</small><b id="spMat"></b></div>
       </div>
-      <div class="hz-bar"><div id="hzBar"></div></div>
-      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="hzAuto" data-autoplay>▶ 自動再生</button></div>
-      <div class="hint">※ n 量子ビットでは 2ⁿ×2ⁿ のユニタリ行列になる（複数の量子ビットは第4章以降）。バーは対数目盛</div>
+      <div class="sp-msg" id="spMsg">　</div>
+      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="spGate">⚡ ゲートを 1 回かける</button><button class="b" id="hzAuto" data-autoplay>▶ 自動再生</button></div>
+      <div class="hint" style="margin-top:2px">※ 量子側の棒の高さは各パターンの確率（係数の絶対値の2乗）。複数の量子ビットの扱いは第4章以降</div>
     </div>
   </div>
   <div class="pageno"></div>
@@ -1903,50 +1914,67 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   onEnter.unitary = () => { k = 0; };
   quiet = true; setIn(0); setU(0); quiet = false; prepare();
 }
-/* ---------- 巨大なユニタリ行列 ---------- */
+/* ---------- 重ね合わせで、少ないビット数で多くの情報を（古典 n ビットと量子 n 量子ビットの比較） ---------- */
 {
-  const cv = $('#hzCanvas'), ctx = cv.getContext('2d'), sl = $('#hzN');
+  const sl = $('#hzN'), cC = $('#spC'), cQ = $('#spQ'), xC = cC.getContext('2d'), xQ = cQ.getContext('2d');
+  const MAXDRAW = 256;  // これより多いパターンは描ききれないので、先頭だけ描く
   const sup = n => String(n).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
   const sci = x => { const e = Math.floor(Math.log10(x)), m = x / 10 ** e; return `${m.toFixed(1)} × 10${sup(e)}`; };
   const big = x => (x < 1e9 ? Math.round(x).toLocaleString('ja-JP') : sci(x));
   const units = ['バイト', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   const mem = b => { let i = 0; while (b >= 1000 && i < units.length - 1) { b /= 1000; i++; } return b >= 1000 ? `${sci(b)} ${units[i]}` : `${b < 10 ? b.toFixed(1) : Math.round(b)} ${units[i]}`; };
-  const MAXLOG = Math.log10(16 * 4 ** 40);
-  function draw(n) {
-    const N = 2 ** n, cnt = 4 ** n, bytes = 16 * cnt;
-    $('#hzNv').textContent = n; sl.value = n;
-    $('#hzSize').textContent = N < 1e9 ? `${big(N)} × ${big(N)}` : `2${sup(n)} × 2${sup(n)}`;
-    $('#hzCnt').textContent = big(cnt);
-    $('#hzMem').textContent = mem(bytes);
-    const tag = bytes < 1e9 ? ['📱 スマホでも余裕', '#d9f7e6'] : bytes < 1e12 ? ['💻 パソコンで何とか', '#fff1c2'] : bytes < 1e17 ? ['🏢 スーパーコンピュータ級', '#ffe1c7'] : ['🌍 地球上のどこにも保存できない', '#ffe0e6'];
-    const t = $('#hzTag'); t.textContent = tag[0]; t.style.background = tag[1];
-    $('#hzBar').style.width = `${Math.log10(bytes) / MAXLOG * 100}%`;
-    // 行列の図：2ⁿ × 2ⁿ のマス（細かすぎるときは模様だけ）
-    const S = cv.width;
-    ctx.clearRect(0, 0, S, S);
-    const cells = Math.min(N, 64), c = S / cells;
-    for (let i = 0; i < cells; i++) for (let j = 0; j < cells; j++) {
-      const h = (Math.sin(i * 12.9898 + j * 78.233 + n) * 43758.5453) % 1;
-      ctx.fillStyle = `hsl(${250 + 60 * Math.abs(h)},70%,${70 + 18 * Math.abs(h)}%)`;
-      ctx.fillRect(i * c, j * c, c, c);
+  const bits = (i, n) => i.toString(2).padStart(n, '0');
+  let n = 3, cIdx = 0, probs = [], anim = 0;
+  const randProbs = N => { const a = Array.from({ length: Math.min(N, MAXDRAW) }, () => Math.random() ** 2 + .02), s = a.reduce((x, y) => x + y, 0); return a.map(x => x / s); };
+  function paint(p) {
+    const N = 2 ** n, M = Math.min(N, MAXDRAW), W = cC.width, H = cC.height, w = W / M, gap = M <= 32 ? 3 : M <= 64 ? 1 : 0;
+    xC.clearRect(0, 0, W, H); xQ.clearRect(0, 0, W, H);
+    for (let i = 0; i < M; i++) {
+      // 古典：1 つのパターンだけが「いまの値」
+      xC.fillStyle = i === cIdx ? '#ff6b1a' : '#ece6ff';
+      xC.fillRect(i * w + gap / 2, 6, w - gap, H - 12);
+      // 量子：すべてのパターンに確率がある
+      const mx = Math.max(...p), h = (H - 10) * (p[i] / mx);
+      xQ.fillStyle = '#ece6ff'; xQ.fillRect(i * w + gap / 2, 4, w - gap, H - 8);
+      xQ.fillStyle = `hsl(${255 + 40 * (i / M)},75%,60%)`; xQ.fillRect(i * w + gap / 2, H - 4 - h, w - gap, h);
     }
-    if (cells <= 32) {
-      ctx.strokeStyle = '#1f1a3d'; ctx.lineWidth = cells <= 8 ? 3 : 1;
-      for (let i = 0; i <= cells; i++) { ctx.beginPath(); ctx.moveTo(i * c, 0); ctx.lineTo(i * c, S); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, i * c); ctx.lineTo(S, i * c); ctx.stroke(); }
-    }
-    if (N > 64) {
-      ctx.fillStyle = 'rgba(255,250,240,.82)'; ctx.fillRect(0, S / 2 - 46, S, 92);
-      ctx.fillStyle = '#1f1a3d'; ctx.font = '900 34px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('細かすぎて', S / 2, S / 2 - 6); ctx.fillText('描けない！', S / 2, S / 2 + 34);
+    if (N > MAXDRAW) {
+      [xC, xQ].forEach(x => { x.fillStyle = 'rgba(255,250,240,.85)'; x.fillRect(W / 2 - 170, H / 2 - 16, 340, 32); x.fillStyle = '#1f1a3d'; x.font = '900 20px sans-serif'; x.textAlign = 'center'; x.fillText(`2${sup(n)} 本は描ききれない（先頭 ${MAXDRAW} 本）`, W / 2, H / 2 + 7); });
     }
   }
-  sl.addEventListener('input', () => { stop(); draw(+sl.value); });
-  let n = 1;
-  const stop = looper('#hzAuto', () => { n = n >= 40 ? 1 : n + 1; draw(n); }, 420);
-  onEnter.huge = () => { n = 0; draw(1); };
-  draw(1);
+  function info() {
+    const N = 2 ** n;
+    sl.value = n; $('#hzNv').textContent = n;
+    $('#spCBits').innerHTML = `いまの値：<b>${n <= 16 ? bits(cIdx, n) : bits(cIdx, 16) + '…'}</b>（${n} ビットで <b>1 個</b>）`;
+    $('#spQBits').innerHTML = `<b>${big(N)} 個</b> の係数を同時に持つ`;
+    $('#spAmp').textContent = `2${sup(n)} = ${big(N)}`;
+    $('#spMem').textContent = mem(16 * N);
+    $('#spMat').textContent = N < 1e5 ? `${big(N)} × ${big(N)}` : `2${sup(n)} × 2${sup(n)}`;
+  }
+  function setN(m) { cancelAnimationFrame(anim); n = m; cIdx = Math.floor(Math.random() * Math.min(2 ** n, MAXDRAW)); probs = randProbs(2 ** n); info(); paint(probs); $('#spMsg').innerHTML = '　'; }
+  // ゲートを 1 回：古典は 1 つの値が別の値に変わるだけ、量子は 2ⁿ 個の係数がまとめて変わる
+  function gate() {
+    cancelAnimationFrame(anim);
+    const from = probs, to = randProbs(2 ** n), t0 = performance.now();
+    cIdx = Math.floor(Math.random() * Math.min(2 ** n, MAXDRAW)); info();
+    const step = now => {
+      const k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3);
+      probs = from.map((p, i) => p + (to[i] - p) * e); paint(probs);
+      if (k < 1) anim = requestAnimationFrame(step);
+    };
+    anim = requestAnimationFrame(step);
+    $('#spMsg').innerHTML = `古典：<b>1 個</b> の値が変わる　／　量子：<b style="color:#8a5cff">${big(2 ** n)} 個</b> の係数が <b>まとめて</b> 変わる`;
+    replay($('#spMsg'), 'pop2');
+  }
+  sl.addEventListener('input', () => { stop(); setN(+sl.value); });
+  $('#spGate').addEventListener('click', e => { e.currentTarget.blur(); stop(); gate(); });
+  let k = 0;
+  const seq = [1, 2, 3, 4, 5, 6, 8, 10, 20, 30, 50];
+  const stop = looper('#hzAuto', () => { if (k % 2 === 0) setN(seq[(k / 2) % seq.length]); else gate(); k++; }, 1600);
+  stoppers.push(() => cancelAnimationFrame(anim));
+  onEnter.huge = () => { k = 0; setN(3); };
+  setN(3);
 }
-
 /* ---------- 3.4.1：ユニタリなら球面の上のまま／ユニタリでない行列だと球面から外れる ---------- */
 {
   const bs = blochSphere('#kpPlane', { W: 250, H: 250, CX: 125, CY: 128, R: 70, maxLen: 1.6 });
