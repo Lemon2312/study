@@ -676,20 +676,44 @@ table.tt.small td .eq.inline .vec{font-size:15px}
 .pipe-note:empty{visibility:hidden}
 .u-pickers{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
 
-/* 重ね合わせで少ないビット数で多くの情報を */
-.sp-row{display:grid;grid-template-columns:138px 1fr;gap:10px;align-items:center;margin-top:8px}
-.sp-lab{font-weight:900;font-size:14.5px;line-height:1.3;white-space:nowrap}
-.sp-lab small{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
-.sp-row.c .sp-lab{color:var(--accent-d)}
-.sp-row.q .sp-lab{color:var(--purple)}
-.sp-bits{font-size:13.5px;font-weight:700;color:#3b3560}
-.sp-bits b{font-family:Consolas,Menlo,monospace}
-.sp-row canvas{display:block;width:100%;height:46px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;margin-top:2px}
-.sp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.sp-stats div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:3px 8px}
-.sp-stats small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
-.sp-stats b{font:800 16px Consolas,Menlo,monospace}
-.sp-msg{text-align:center;font-size:15px;font-weight:700;min-height:24px;margin-top:6px}
+
+/* 重ね合わせで少ないビット数で多くの情報を（①〜⑤） */
+.sp-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.sp-steps button{font:800 13.5px inherit;font-family:inherit;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:10px;padding:4px 2px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+.sp-steps button.on{background:var(--yellow)}
+.sp-n{grid-template-columns:150px 1fr 30px;font-size:15px;margin-top:6px}
+.sp-stage{display:grid;grid-template-columns:1fr 196px;gap:12px;margin-top:4px;align-items:start}
+.sp-qubits{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.sp-qb{display:flex;flex-direction:column;align-items:center;border:2px solid var(--ink);border-radius:10px;background:#e3d9ff;padding:1px 8px;font-size:14px;line-height:1.25}
+.sp-qb small{font-size:10.5px;font-weight:800;color:var(--purple)}
+.card[data-step="0"] .sp-qb{animation:mwob 1.6s ease-in-out infinite}
+.sp-list{display:flex;flex-direction:column;gap:2px}
+.sp-r{display:grid;grid-template-columns:62px 1fr 50px;align-items:center;gap:6px;height:var(--rh,24px);border-radius:6px;transition:opacity .4s,background .3s}
+.sp-k{font-size:14px;text-align:right}
+.sp-t{position:relative;height:72%;background:#f1ecff;border-radius:5px;border:1.5px solid #d9d4ea}
+.sp-t::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;border-left:2px solid #9a93bd}
+.sp-t i{position:absolute;top:0;bottom:0;border-radius:4px}
+.sp-t i.p{background:var(--accent)}
+.sp-t i.m{background:var(--blue)}
+.sp-v{font:800 12.5px Consolas,Menlo,monospace;text-align:right}
+.card[data-step="0"] .sp-list{opacity:.25}
+.sp-r.flash{animation:spflash .6s ease}
+@keyframes spflash{0%{background:#ffe58a}100%{background:transparent}}
+.sp-r.gone{opacity:.3}
+.sp-r.hit{background:#fff1c2;outline:2.5px solid var(--ink)}
+.sp-right{position:relative;min-height:200px}
+.sp-panel{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;background:#fffaf0;border:2.5px solid var(--ink);border-radius:14px;padding:8px}
+.sp-panel.on{display:flex;animation:qzIn .4s cubic-bezier(.3,1.6,.5,1)}
+.sp-ptitle{font-weight:900;font-size:14px}
+.sp-pnote{font-size:13px;font-weight:700;color:#3b3560;line-height:1.5}
+.sp-cbits{display:flex;gap:5px}
+.sp-cbits span{width:34px;height:40px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 22px Consolas,Menlo,monospace;color:var(--accent-d)}
+.sp-gate{width:110px;height:110px;border:4px solid var(--ink);border-radius:20px;background:#e3d9ff;display:flex;align-items:center;justify-content:center;font:700 54px "Cambria Math","Times New Roman",serif;box-shadow:5px 5px 0 var(--ink)}
+.sp-gate.sp-zap{animation:spzap .7s ease}
+@keyframes spzap{30%{transform:scale(1.18) rotate(-4deg);background:#ffe58a;box-shadow:0 0 22px rgba(255,213,61,.95)}}
+#spMat{width:176px;height:176px;border:2px solid var(--ink);border-radius:6px;background:#fff}
+.sp-res{font-size:34px;font-weight:700;border:3px solid var(--ink);border-radius:999px;background:var(--yellow);padding:2px 18px;box-shadow:3px 3px 0 var(--ink)}
+.sp-cap{margin-top:8px;text-align:center;font-size:15.5px;line-height:1.5;background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:5px 10px;min-height:52px;display:flex;align-items:center;justify-content:center}
 
 </style>
 </head>
@@ -820,17 +844,22 @@ table.tt.small td .eq.inline .vec{font-size:15px}
         <div style="font-size:14px;margin-top:4px;color:var(--muted)">※ 測定で一度に取り出せるのは n ビット分なので、引用の後半のとおり、うまく使うアルゴリズムが必要</div></div>
     </div>
     <div class="card pop" style="--d:.2s;padding:12px 16px">
-      <label class="qslider hz-sl"><span>ビットの数 <span class="math">n</span></span><input type="range" id="hzN" min="1" max="50" step="1" value="3"><span class="qs-val" id="hzNv"></span></label>
-      <div class="sp-row c"><div class="sp-lab">古典 <span class="math">n</span> ビット<small>2ⁿ 通りのうち<br><b>1 つだけ</b></small></div><div><div class="sp-bits" id="spCBits"></div><canvas id="spC" width="640" height="70"></canvas></div></div>
-      <div class="sp-row q"><div class="sp-lab">量子 <span class="math">n</span> 量子ビット<small>2ⁿ 通り<b>すべて</b>の<br>重ね合わせ</small></div><div><div class="sp-bits" id="spQBits"></div><canvas id="spQ" width="640" height="70"></canvas></div></div>
-      <div class="sp-stats">
-        <div><small>量子状態の係数の数</small><b id="spAmp"></b></div>
-        <div><small>古典で保存すると（1個 16 バイト）</small><b id="spMem"></b></div>
-        <div><small>ゲートを古典で再現する行列</small><b id="spMat"></b></div>
+      <div class="sp-steps" id="spSteps"></div>
+      <label class="qslider sp-n"><span>量子ビットの数 <span class="math">n</span></span><input type="range" id="hzN" min="1" max="4" step="1" value="3"><span class="qs-val" id="hzNv"></span></label>
+      <div class="sp-stage">
+        <div class="sp-left">
+          <div class="sp-qubits" id="spQubits"></div>
+          <div class="sp-list" id="spList"></div>
+        </div>
+        <div class="sp-right">
+          <div class="sp-panel" data-p="c"><div class="sp-ptitle">古典 <span class="math">n</span> ビット</div><div class="sp-cbits" id="spCBits"></div><div class="sp-pnote" id="spCNote"></div></div>
+          <div class="sp-panel" data-p="u"><div class="sp-gate" id="spGateBox">U</div><div class="sp-pnote">量子ゲート <b>1 回</b></div></div>
+          <div class="sp-panel" data-p="m"><div class="sp-ptitle"><span class="math" id="spMatT"></span> の行列 × ベクトル</div><canvas id="spMat" width="300" height="300"></canvas><div class="sp-pnote" id="spMul"></div></div>
+          <div class="sp-panel" data-p="r"><div class="sp-ptitle">測定結果</div><div class="sp-res" id="spRes"></div><div class="sp-pnote" id="spResNote"></div></div>
+        </div>
       </div>
-      <div class="sp-msg" id="spMsg">　</div>
-      <div class="btns" style="justify-content:center;margin-top:4px"><button class="b" id="spGate">⚡ ゲートを 1 回かける</button><button class="b" id="hzAuto" data-autoplay>▶ 自動再生</button></div>
-      <div class="hint" style="margin-top:2px">※ 量子側の棒の高さは各パターンの確率（係数の絶対値の2乗）。複数の量子ビットの扱いは第4章以降</div>
+      <div class="sp-cap" id="spCap"></div>
+      <div class="btns" style="justify-content:center;margin-top:6px"><button class="b" id="spPrev">◀ 前へ</button><button class="b" id="spNext">次へ ▶</button><button class="b" id="hzAuto" data-autoplay>▶ 自動再生</button></div>
     </div>
   </div>
   <div class="pageno"></div>
@@ -1914,65 +1943,139 @@ const tr2 = M => [[M[0][0], M[1][0]], [M[0][1], M[1][1]]];
   onEnter.unitary = () => { k = 0; };
   quiet = true; setIn(0); setU(0); quiet = false; prepare();
 }
-/* ---------- 重ね合わせで、少ないビット数で多くの情報を（古典 n ビットと量子 n 量子ビットの比較） ---------- */
+/* ---------- 重ね合わせで、少ないビット数で多くの情報を：解釈の文章を ①〜⑤ の順に見せる ---------- */
 {
-  const sl = $('#hzN'), cC = $('#spC'), cQ = $('#spQ'), xC = cC.getContext('2d'), xQ = cQ.getContext('2d');
-  const MAXDRAW = 256;  // これより多いパターンは描ききれないので、先頭だけ描く
-  const sup = n => String(n).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
-  const sci = x => { const e = Math.floor(Math.log10(x)), m = x / 10 ** e; return `${m.toFixed(1)} × 10${sup(e)}`; };
-  const big = x => (x < 1e9 ? Math.round(x).toLocaleString('ja-JP') : sci(x));
-  const units = ['バイト', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-  const mem = b => { let i = 0; while (b >= 1000 && i < units.length - 1) { b /= 1000; i++; } return b >= 1000 ? `${sci(b)} ${units[i]}` : `${b < 10 ? b.toFixed(1) : Math.round(b)} ${units[i]}`; };
-  const bits = (i, n) => i.toString(2).padStart(n, '0');
-  let n = 3, cIdx = 0, probs = [], anim = 0;
-  const randProbs = N => { const a = Array.from({ length: Math.min(N, MAXDRAW) }, () => Math.random() ** 2 + .02), s = a.reduce((x, y) => x + y, 0); return a.map(x => x / s); };
-  function paint(p) {
-    const N = 2 ** n, M = Math.min(N, MAXDRAW), W = cC.width, H = cC.height, w = W / M, gap = M <= 32 ? 3 : M <= 64 ? 1 : 0;
-    xC.clearRect(0, 0, W, H); xQ.clearRect(0, 0, W, H);
-    for (let i = 0; i < M; i++) {
-      // 古典：1 つのパターンだけが「いまの値」
-      xC.fillStyle = i === cIdx ? '#ff6b1a' : '#ece6ff';
-      xC.fillRect(i * w + gap / 2, 6, w - gap, H - 12);
-      // 量子：すべてのパターンに確率がある
-      const mx = Math.max(...p), h = (H - 10) * (p[i] / mx);
-      xQ.fillStyle = '#ece6ff'; xQ.fillRect(i * w + gap / 2, 4, w - gap, H - 8);
-      xQ.fillStyle = `hsl(${255 + 40 * (i / M)},75%,60%)`; xQ.fillRect(i * w + gap / 2, H - 4 - h, w - gap, h);
+  const STEPS = [
+    { t: '① 重ね合わせ', cap: '量子ビットは <b>0 と 1 の重ね合わせ状態</b> を使える（古典ビットは 0 か 1 のどちらか一方だけ）' },
+    { t: '② 2ⁿ 個の係数', cap: 'n 量子ビットは <b>2ⁿ 通りすべての重ね合わせ</b> ＝ <b>2ⁿ 個の係数</b> を同時に持つ' },
+    { t: '③ ゲート 1 回', cap: '<b>量子ゲート 1 回</b> で、2ⁿ 個の係数を <b>まとめて変化</b> させる' },
+    { t: '④ 古典なら…', cap: '古典で同じことをするには <b>2ⁿ×2ⁿ の巨大な行列計算</b> が必要' },
+    { t: '⑤ 測定', cap: '※ 測定で一度に取り出せるのは <b>n ビット分</b>（2ⁿ 通りのうち 1 つ）' },
+  ];
+  const sl = $('#hzN'), list = $('#spList'), qubits = $('#spQubits'), cap = $('#spCap'), mat = $('#spMat'), mx = mat.getContext('2d');
+  const panels = Object.fromEntries([...document.querySelectorAll('.sp-panel')].map(p => [p.dataset.p, p]));
+  const tabs = $('#spSteps');
+  tabs.innerHTML = STEPS.map((s, i) => `<button data-i="${i}">${s.t}</button>`).join('');
+  const tabBtns = [...tabs.querySelectorAll('button')];
+  const tb = timerBag();
+  let n = 3, step = 0, amp = [], U = null, raf = 0;
+  const N = () => 2 ** n;
+  const bits = i => i.toString(2).padStart(n, '0');
+  // 2ⁿ 次元のランダムな直交行列（実数のユニタリ行列）を作る
+  function randU(d) {
+    const Q = [];
+    for (let i = 0; i < d; i++) {
+      let v = Array.from({ length: d }, () => Math.random() * 2 - 1);
+      for (const q of Q) { const p = v.reduce((s, x, k) => s + x * q[k], 0); v = v.map((x, k) => x - p * q[k]); }
+      const l = Math.hypot(...v); Q.push(v.map(x => x / l));
     }
-    if (N > MAXDRAW) {
-      [xC, xQ].forEach(x => { x.fillStyle = 'rgba(255,250,240,.85)'; x.fillRect(W / 2 - 170, H / 2 - 16, 340, 32); x.fillStyle = '#1f1a3d'; x.font = '900 20px sans-serif'; x.textAlign = 'center'; x.fillText(`2${sup(n)} 本は描ききれない（先頭 ${MAXDRAW} 本）`, W / 2, H / 2 + 7); });
-    }
+    return Q;
   }
-  function info() {
-    const N = 2 ** n;
-    sl.value = n; $('#hzNv').textContent = n;
-    $('#spCBits').innerHTML = `いまの値：<b>${n <= 16 ? bits(cIdx, n) : bits(cIdx, 16) + '…'}</b>（${n} ビットで <b>1 個</b>）`;
-    $('#spQBits').innerHTML = `<b>${big(N)} 個</b> の係数を同時に持つ`;
-    $('#spAmp').textContent = `2${sup(n)} = ${big(N)}`;
-    $('#spMem').textContent = mem(16 * N);
-    $('#spMat').textContent = N < 1e5 ? `${big(N)} × ${big(N)}` : `2${sup(n)} × 2${sup(n)}`;
+  const apply = (M, v) => M.map(r => r.reduce((s, x, k) => s + x * v[k], 0));
+  const fmt2 = x => (x < 0 ? '−' : '+') + Math.abs(x).toFixed(2);
+  let rows = [];
+  function build() {
+    qubits.innerHTML = Array.from({ length: n }, (_, i) => `<span class="sp-qb"><small>量子ビット${i + 1}</small><span class="math">|0⟩ と |1⟩</span></span>`).join('');
+    list.style.setProperty('--rh', `${n <= 3 ? 26 : 17}px`);
+    list.innerHTML = Array.from({ length: N() }, (_, i) => `<div class="sp-r"><span class="math sp-k">|${bits(i)}⟩</span><span class="sp-t"><i></i></span><span class="sp-v"></span></div>`).join('');
+    rows = [...list.children].map(r => ({ r, f: r.querySelector('i'), v: r.querySelector('.sp-v') }));
+    const c = Array.from({ length: n }, () => Math.round(Math.random()));
+    $('#spCBits').innerHTML = c.map(b => `<span>${b}</span>`).join('');
+    $('#spCNote').innerHTML = `値は <b>2${'⁰¹²³⁴'[n]} = ${N()} 通りのうち 1 つだけ</b>`;
+    $('#spMatT').textContent = `${N()}×${N()}`;
   }
-  function setN(m) { cancelAnimationFrame(anim); n = m; cIdx = Math.floor(Math.random() * Math.min(2 ** n, MAXDRAW)); probs = randProbs(2 ** n); info(); paint(probs); $('#spMsg').innerHTML = '　'; }
-  // ゲートを 1 回：古典は 1 つの値が別の値に変わるだけ、量子は 2ⁿ 個の係数がまとめて変わる
-  function gate() {
-    cancelAnimationFrame(anim);
-    const from = probs, to = randProbs(2 ** n), t0 = performance.now();
-    cIdx = Math.floor(Math.random() * Math.min(2 ** n, MAXDRAW)); info();
-    const step = now => {
-      const k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3);
-      probs = from.map((p, i) => p + (to[i] - p) * e); paint(probs);
-      if (k < 1) anim = requestAnimationFrame(step);
+  function drawAmp(a, show = true) {
+    rows.forEach((o, i) => {
+      const x = a[i] ?? 0;
+      o.f.style.width = `${Math.abs(x) * 50}%`;
+      o.f.style.left = x >= 0 ? '50%' : `${50 - Math.abs(x) * 50}%`;
+      o.f.className = x >= 0 ? 'p' : 'm';
+      o.v.textContent = show ? fmt2(x) : '';
+    });
+  }
+  function tween(from, to, dur, done) {
+    cancelAnimationFrame(raf);
+    const t0 = performance.now();
+    const f = now => {
+      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      drawAmp(from.map((x, i) => x + (to[i] - x) * e));
+      if (k < 1) raf = requestAnimationFrame(f); else if (done) done();
     };
-    anim = requestAnimationFrame(step);
-    $('#spMsg').innerHTML = `古典：<b>1 個</b> の値が変わる　／　量子：<b style="color:#8a5cff">${big(2 ** n)} 個</b> の係数が <b>まとめて</b> 変わる`;
-    replay($('#spMsg'), 'pop2');
+    raf = requestAnimationFrame(f);
   }
+  const showPanel = p => Object.entries(panels).forEach(([k, el]) => el.classList.toggle('on', k === p));
+  function drawMat(upto) {
+    const d = N(), S = mat.width, c = S / d;
+    mx.clearRect(0, 0, S, S);
+    for (let i = 0; i < d; i++) for (let j = 0; j < d; j++) {
+      const idx = i * d + j, x = U[i][j];
+      mx.fillStyle = idx < upto ? (x >= 0 ? `rgba(255,107,26,${.25 + .75 * Math.abs(x)})` : `rgba(59,108,255,${.25 + .75 * Math.abs(x)})`) : '#f1ecff';
+      mx.fillRect(j * c + 1, i * c + 1, c - 2, c - 2);
+    }
+    // いま計算している行
+    if (upto < d * d) { const i = Math.floor(upto / d); mx.strokeStyle = '#1f1a3d'; mx.lineWidth = 3; mx.strokeRect(1.5, i * c + 1.5, S - 3, c - 3); }
+  }
+  function go2(s) {
+    step = (s + STEPS.length) % STEPS.length;
+    tb.clear(); cancelAnimationFrame(raf);
+    tabBtns.forEach((b, i) => b.classList.toggle('on', i === step));
+    cap.innerHTML = `<span>${STEPS[step].cap}</span>`; replay(cap, 'pop2');
+    const card = list.closest('.card');
+    card.dataset.step = step;
+    rows.forEach(o => o.r.classList.remove('hit', 'flash', 'gone'));
+    if (step === 0) {
+      showPanel('c');
+      drawAmp(new Array(N()).fill(0), false);
+      replay(qubits, 'pop2');
+    } else if (step === 1) {
+      showPanel('c');
+      amp = new Array(N()).fill(1 / Math.sqrt(N()));
+      drawAmp(new Array(N()).fill(0), false);
+      rows.forEach((o, i) => tb.later(() => { o.r.classList.add('flash'); const a = amp.map((x, k) => (k <= i ? x : 0)); drawAmp(a); rows.forEach((q, k) => { if (k > i) q.v.textContent = ''; }); }, 150 + i * (1400 / N())));
+    } else if (step === 2) {
+      showPanel('u');
+      if (!amp.length) amp = new Array(N()).fill(1 / Math.sqrt(N()));
+      drawAmp(amp);
+      U = randU(N());
+      const to = apply(U, amp);
+      tb.later(() => { replay($('#spGateBox'), 'sp-zap'); rows.forEach(o => replay(o.r, 'flash')); tween(amp, to, 900, () => { amp = to; }); }, 500);
+    } else if (step === 3) {
+      showPanel('m');
+      if (!U) U = randU(N());
+      const d = N(), total = d * d, dur = 2400;
+      drawMat(0); $('#spMul').innerHTML = `掛け算 <b>0</b> / ${total} 回`;
+      const t0 = performance.now();
+      const f = now => {
+        const k = Math.min(1, (now - t0) / dur), u = Math.floor(total * k);
+        drawMat(u); $('#spMul').innerHTML = `掛け算 <b>${u}</b> / ${total} 回（${d}×${d}）`;
+        if (k < 1) raf = requestAnimationFrame(f);
+      };
+      raf = requestAnimationFrame(f);
+    } else {
+      showPanel('r');
+      if (!amp.length) amp = new Array(N()).fill(1 / Math.sqrt(N()));
+      drawAmp(amp);
+      let r = Math.random(), pick = 0;
+      for (let i = 0; i < N(); i++) { r -= amp[i] ** 2; if (r <= 0) { pick = i; break; } pick = i; }
+      $('#spRes').textContent = '?'; $('#spResNote').innerHTML = '　';
+      tb.later(() => {
+        const to = amp.map((_, i) => (i === pick ? 1 : 0));
+        rows.forEach((o, i) => o.r.classList.toggle(i === pick ? 'hit' : 'gone', true));
+        tween(amp, to, 800, () => { amp = to; });
+        $('#spRes').innerHTML = `<span class="math">|${bits(pick)}⟩</span>`; replay($('#spRes'), 'pop2');
+        $('#spResNote').innerHTML = `取り出せたのは <b>${n} ビット分</b> だけ<br>（${N()} 個の係数そのものは見えない）`;
+      }, 700);
+    }
+  }
+  function setN(m) { n = m; sl.value = n; $('#hzNv').textContent = n; amp = []; U = null; build(); go2(step); }
+  tabBtns.forEach((b, i) => b.addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(i); }));
+  $('#spPrev').addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(step - 1); });
+  $('#spNext').addEventListener('click', e => { e.currentTarget.blur(); stop(); go2(step + 1); });
   sl.addEventListener('input', () => { stop(); setN(+sl.value); });
-  $('#spGate').addEventListener('click', e => { e.currentTarget.blur(); stop(); gate(); });
-  let k = 0;
-  const seq = [1, 2, 3, 4, 5, 6, 8, 10, 20, 30, 50];
-  const stop = looper('#hzAuto', () => { if (k % 2 === 0) setN(seq[(k / 2) % seq.length]); else gate(); k++; }, 1600);
-  stoppers.push(() => cancelAnimationFrame(anim));
-  onEnter.huge = () => { k = 0; setN(3); };
+  let first = true;
+  const stop = looper('#hzAuto', () => { if (first) { first = false; go2(0); } else go2(step + 1); }, 3600);
+  stoppers.push(() => cancelAnimationFrame(raf));
+  onEnter.huge = () => { first = true; step = 0; setN(3); };
   setN(3);
 }
 /* ---------- 3.4.1：ユニタリなら球面の上のまま／ユニタリでない行列だと球面から外れる ---------- */
