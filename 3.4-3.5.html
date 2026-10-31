@@ -814,10 +814,10 @@ table.tt.small td .eq.inline .vec{font-size:15px}
   <h2>重ね合わせで、少ないビット数で多くの情報を<small>p.92</small></h2>
   <div class="body cols" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
     <div>
-      <div class="quote pop" style="font-size:16px;line-height:1.65">ユニタリ発展に利用するユニタリ行列のサイズが指数関数的に巨大になっても、量子コンピュータの計算時間への影響は古典コンピュータほど大きくなりません。そのため、量子コンピュータは指数関数的に巨大なユニタリ発展を高速に行えます。<small>― 教科書 p.92</small></div>
+      <div class="quote pop" style="font-size:16px;line-height:1.65">ユニタリ発展に利用するユニタリ行列のサイズが指数関数的に巨大になっても、量子コンピュータの計算時間への影響は古典コンピュータほど大きくなりません。そのため、量子コンピュータは指数関数的に巨大なユニタリ発展を高速に行えます。<b>あらゆる行列計算を高速化できる訳ではなく、ユニタリ発展による高速なアルゴリズムが発見されている場合だけ高速化できます。</b><small>― 教科書 p.92</small></div>
       <div class="point frag" style="font-size:18px">💡 解釈：量子ビットは <b class="k">0 と 1 の重ね合わせ状態</b> を使えるので、<b class="k">より多くの情報を少ないビット数で扱える</b>
-        <div style="font-size:15px;margin-top:4px;line-height:1.55;color:#3b3560">n 量子ビットは 2ⁿ 通りすべての重ね合わせ（<b>2ⁿ 個の係数</b>）を同時に持ち、量子ゲート1回でそれをまとめて変化させる。古典で同じことをするには <b>2ⁿ×2ⁿ の巨大な行列計算</b> が必要</div></div>
-      <div class="point blue frag" style="font-size:16px">⚠ ただし、<b>あらゆる行列計算を高速化できる訳ではない</b>。高速なアルゴリズムが発見されている場合だけ高速化できる<span style="font-size:14px;color:var(--muted)">（測定で一度に取り出せるのは n ビット分なので、工夫が必要）</span></div>
+        <div style="font-size:15px;margin-top:4px;line-height:1.55;color:#3b3560">n 量子ビットは 2ⁿ 通りすべての重ね合わせ（<b>2ⁿ 個の係数</b>）を同時に持ち、量子ゲート1回でそれをまとめて変化させる。古典で同じことをするには <b>2ⁿ×2ⁿ の巨大な行列計算</b> が必要</div>
+        <div style="font-size:14px;margin-top:4px;color:var(--muted)">※ 測定で一度に取り出せるのは n ビット分なので、引用の後半のとおり、うまく使うアルゴリズムが必要</div></div>
     </div>
     <div class="card pop" style="--d:.2s;padding:12px 16px">
       <label class="qslider hz-sl"><span>ビットの数 <span class="math">n</span></span><input type="range" id="hzN" min="1" max="50" step="1" value="3"><span class="qs-val" id="hzNv"></span></label>
